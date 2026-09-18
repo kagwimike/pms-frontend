@@ -1,9 +1,10 @@
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
-
+import 'package:go_router/go_router.dart';
 import '../ui/layouts/main_layout.dart';
 import '../ui/screens/home.dart';
 import '../ui/screens/placeholder_screen.dart';
+import '../ui/screens/auth/login_screen.dart';
+import '../ui/screens/auth/register_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -12,6 +13,14 @@ final appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: '/',
   routes: [
+    GoRoute(
+      path: '/login',
+      builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: '/register',
+      builder: (context, state) => const RegisterScreen(),
+    ),
     GoRoute(
       path: '/',
       builder: (context, state) => const HomeScreen(),
@@ -22,7 +31,6 @@ final appRouter = GoRouter(
         return MainLayout(child: child);
       },
       routes: [
-
         GoRoute(
           path: '/properties',
           builder: (context, state) => const PlaceholderScreen(title: 'Properties'),

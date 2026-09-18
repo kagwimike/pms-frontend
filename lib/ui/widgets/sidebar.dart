@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 
 class Sidebar extends StatelessWidget {
   const Sidebar({super.key});
@@ -8,6 +10,8 @@ class Sidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     const bgColor = Color(0xFF1E2733);
     const dividerColor = Color(0xFF334155);
+    final authProvider = Provider.of<AuthProvider>(context);
+    final user = authProvider.user;
 
     return Container(
       width: 250,
@@ -15,7 +19,7 @@ class Sidebar extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildHeader(),
+          _buildHeader(user?.username ?? 'Guest User', user?.role ?? 'GUEST'),
           const Divider(color: dividerColor, height: 1),
           Expanded(
             child: ListView(
@@ -66,10 +70,20 @@ class Sidebar extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              onPressed: () {
-                // Handle logout
+              onPressed: () async {
+                if (authProvider.isAuthenticated) {
+                  await authProvider.logout();
+                  if (context.mounted) {
+                    context.go('/login');
+                  }
+                } else {
+                  context.go('/login');
+                }
               },
-              child: const Text('Logout', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              child: Text(
+                authProvider.isAuthenticated ? 'Logout' : 'Login',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
             ),
           ),
         ],
@@ -77,7 +91,7 @@ class Sidebar extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(String name, String role) {
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Row(
@@ -85,9 +99,9 @@ class Sidebar extends StatelessWidget {
           CircleAvatar(
             backgroundColor: const Color(0xFF3B82F6),
             radius: 24,
-            child: const Text(
-              'P',
-              style: TextStyle(
+            child: Text(
+              name.isNotEmpty ? name[0].toUpperCase() : 'U',
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -95,31 +109,36 @@ class Sidebar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 16),
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Property',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              Text(
-                'OWNER',
-                style: TextStyle(
-                  color: Color(0xFF94A3B8),
-                  fontSize: 12,
-                  letterSpacing: 1.2,
+                Text(
+                  role,
+                  style: const TextStyle(
+                    color: Color(0xFF94A3B8),
+                    fontSize: 11,
+                    letterSpacing: 1.2,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
     );
   }
+
 
   Widget _buildSectionTitle(String title) {
     return Padding(

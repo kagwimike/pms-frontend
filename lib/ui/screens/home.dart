@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -168,7 +171,14 @@ class _HomeScreenState extends State<HomeScreen> {
           // PROMINENT "JOIN NOW" BUTTON (Far Right)
           if (!isMobile)
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                if (authProvider.isAuthenticated) {
+                  context.go('/properties');
+                } else {
+                  context.go('/register');
+                }
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0D9488),
                 foregroundColor: Colors.white,
@@ -178,14 +188,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 elevation: 0,
               ),
-              child: const Text(
-                'Join now',
-                style: TextStyle(
+              child: Text(
+                Provider.of<AuthProvider>(context).isAuthenticated ? 'Dashboard' : 'Join now',
+                style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             )
+
           else
             IconButton(
               icon: const Icon(Icons.menu_rounded, color: Color(0xFF0F172A), size: 28),
@@ -290,7 +301,14 @@ class _HomeScreenState extends State<HomeScreen> {
           runSpacing: 12,
           children: [
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                if (authProvider.isAuthenticated) {
+                  context.go('/properties');
+                } else {
+                  context.go('/register');
+                }
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0D9488),
                 foregroundColor: Colors.white,
@@ -313,7 +331,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             OutlinedButton(
-              onPressed: () {},
+              onPressed: () {
+                context.go('/contact');
+              },
               style: OutlinedButton.styleFrom(
                 foregroundColor: const Color(0xFF0F172A),
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
@@ -327,6 +347,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
               ),
             ),
+
           ],
         ),
 
