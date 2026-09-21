@@ -1,35 +1,43 @@
+import 'package:flutter/foundation.dart';
+
 class ApiEndpoints {
-  static const String baseUrl = 'http://localhost:5000/api';
+  static String get baseUrl {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:3005/api';
+    }
+    return 'http://localhost:3005/api';
+  }
 
   // Auth
-  static const String login = '$baseUrl/auth/login';
-  static const String register = '$baseUrl/auth/register';
-  static const String googleAuth = '$baseUrl/auth/google';
+  static String get login => '$baseUrl/auth/login';
+  static String get register => '$baseUrl/auth/register';
+  static String get googleAuth => '$baseUrl/auth/google';
 
   // Properties & Units
-  static const String properties = '$baseUrl/properties';
-  static const String units = '$baseUrl/units';
+  static String get properties => '$baseUrl/properties';
+  static String get units => '$baseUrl/units';
 
   // Users
-  static const String users = '$baseUrl/users';
+  static String get users => '$baseUrl/users';
 
   // Bookings & Leases
-  static const String bookings = '$baseUrl/bookings';
-  static const String leases = '$baseUrl/leases';
+  static String get bookings => '$baseUrl/bookings';
+  static String get leases => '$baseUrl/leases';
 
   // Finance
-  static const String finance = '$baseUrl/finance';
-  static const String invoices = '$baseUrl/finance/invoices';
-  static const String payments = '$baseUrl/finance/payments';
-  static const String refunds = '$baseUrl/finance/refunds';
+  static String get finance => '$baseUrl/finance';
+  static String get invoices => '$baseUrl/finance/invoices';
+  static String get payments => '$baseUrl/finance/payments';
+  static String get refunds => '$baseUrl/finance/refunds';
 
   // Maintenance & Vendors
-  static const String maintenance = '$baseUrl/maintenance';
-  static const String vendors = '$baseUrl/maintenance/vendors';
+  static String get maintenance => '$baseUrl/maintenance';
+  static String get vendors => '$baseUrl/maintenance/vendors';
 
   // Inspections & Documents
-  static const String inspections = '$baseUrl/inspections';
-  static const String documents = '$baseUrl/documents';
-  static const String notifications = '$baseUrl/notifications';
-  static const String auditLogs = '$baseUrl/auditlogs';
+  static String get inspections => '$baseUrl/inspections';
+  static String get documents => '$baseUrl/documents';
+  static String get notifications => '$baseUrl/notifications';
+  static String get auditLogs => '$baseUrl/auditlogs';
 }
+

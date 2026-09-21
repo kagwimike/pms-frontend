@@ -375,7 +375,7 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.teal.withOpacity(0.15),
+            color: Colors.teal.withValues(alpha: 0.15),
             blurRadius: 30,
             offset: const Offset(0, 15),
           ),
@@ -492,7 +492,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      const Text('48,290 Views', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+                                      const Flexible(child: Text('48,290 Views', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
                                       // Sparkline icon representation
                                       const Icon(Icons.show_chart_rounded, color: Color(0xFF0D9488), size: 20),
                                     ],
@@ -638,7 +638,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF0D9488).withOpacity(0.2) : Colors.transparent,
+          color: isSelected ? const Color(0xFF0D9488).withValues(alpha: 0.2) : Colors.transparent,
           borderRadius: BorderRadius.circular(6),
         ),
         child: Row(
@@ -816,7 +816,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF0D9488).withOpacity(0.15),
+              color: const Color(0xFF0D9488).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.bolt_rounded, color: Color(0xFF2DD4BF), size: 28),
@@ -1022,8 +1022,11 @@ class _HomeScreenState extends State<HomeScreen> {
           LayoutBuilder(
             builder: (context, constraints) {
               int cols = 4;
-              if (constraints.maxWidth < 640) cols = 1;
-              else if (constraints.maxWidth < 1024) cols = 2;
+              if (constraints.maxWidth < 640) {
+                cols = 1;
+              } else if (constraints.maxWidth < 1024) {
+                cols = 2;
+              }
 
               final featuresData = [
                 {
@@ -1470,8 +1473,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(0.2),
-                    Colors.black.withOpacity(0.85),
+                    Colors.black.withValues(alpha: 0.2),
+                    Colors.black.withValues(alpha: 0.85),
                   ],
                 ),
               ),

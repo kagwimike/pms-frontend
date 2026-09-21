@@ -124,8 +124,8 @@ class AuthProvider with ChangeNotifier {
       final account = await _googleSignIn.authenticate();
       final idToken = account.authentication.idToken;
 
-      if (idToken == null) {
-        _errorMessage = "Failed to obtain Google ID Token";
+      if (idToken == null || idToken.isEmpty) {
+        _errorMessage = "Failed to obtain Google ID Token.";
         _isLoading = false;
         notifyListeners();
         return false;
