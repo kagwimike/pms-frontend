@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../widgets/sidebar.dart';
 
 class MainLayout extends StatelessWidget {
@@ -8,15 +9,20 @@ class MainLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Row(
-        children: [
-          const Sidebar(),
-          Expanded(
-            child: child,
-          ),
-        ],
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 900;
+        return Scaffold(
+          body: compact
+              ? child
+              : Row(
+                  children: [
+                    const Sidebar(),
+                    Expanded(child: child),
+                  ],
+                ),
+        );
+      },
     );
   }
 }

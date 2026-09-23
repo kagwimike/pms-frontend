@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+
 import '../../../providers/auth_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -37,7 +38,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (mounted) {
       if (success) {
-        context.go('/');
+        context.go('/dashboard');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -108,10 +109,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const Text(
                     'Join PMS Pro to start managing your properties',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFF94A3B8),
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
                   ),
                   const SizedBox(height: 28),
                   TextFormField(
@@ -120,7 +118,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     decoration: InputDecoration(
                       labelText: 'Username',
                       labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
-                      prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF94A3B8)),
+                      prefixIcon: const Icon(
+                        Icons.person_outline,
+                        color: Color(0xFF94A3B8),
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: const BorderSide(color: Color(0xFF334155)),
@@ -147,7 +148,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     decoration: InputDecoration(
                       labelText: 'Email Address',
                       labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
-                      prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF94A3B8)),
+                      prefixIcon: const Icon(
+                        Icons.email_outlined,
+                        color: Color(0xFF94A3B8),
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: const BorderSide(color: Color(0xFF334155)),
@@ -174,7 +178,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     decoration: InputDecoration(
                       labelText: 'Password',
                       labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
-                      prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF94A3B8)),
+                      prefixIcon: const Icon(
+                        Icons.lock_outline,
+                        color: Color(0xFF94A3B8),
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: const BorderSide(color: Color(0xFF334155)),
@@ -201,7 +208,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     decoration: InputDecoration(
                       labelText: 'Account Role',
                       labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
-                      prefixIcon: const Icon(Icons.badge_outlined, color: Color(0xFF94A3B8)),
+                      prefixIcon: const Icon(
+                        Icons.badge_outlined,
+                        color: Color(0xFF94A3B8),
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: const BorderSide(color: Color(0xFF334155)),
@@ -214,9 +224,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       fillColor: const Color(0xFF0F172A),
                     ),
                     items: const [
-                      DropdownMenuItem(value: 'OWNER', child: Text('Property Owner / Landlord')),
+                      DropdownMenuItem(
+                        value: 'OWNER',
+                        child: Text('Property Owner / Landlord'),
+                      ),
                       DropdownMenuItem(value: 'TENANT', child: Text('Tenant')),
-                      DropdownMenuItem(value: 'ADMIN', child: Text('System Administrator')),
+                      DropdownMenuItem(
+                        value: 'ADMIN',
+                        child: Text('System Administrator'),
+                      ),
                     ],
                     onChanged: (val) {
                       if (val != null) {
@@ -248,7 +264,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           )
                         : const Text(
                             'Sign Up',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                   ),
                   const SizedBox(height: 24),

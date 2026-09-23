@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+
 import '../../providers/auth_provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -65,9 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
-        ),
+        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -126,7 +125,9 @@ class _HomeScreenState extends State<HomeScreen> {
           // CENTER NAV LINKS (Desktop)
           if (!isMobile)
             Row(
-              children: ['Home', 'Features', 'Pricing', 'Blog', 'Contact'].map((item) {
+              children: ['Home', 'Features', 'Pricing', 'Blog', 'Contact'].map((
+                item,
+              ) {
                 final isActive = item == _activeNav;
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -138,7 +139,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     borderRadius: BorderRadius.circular(8),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -146,8 +150,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             item,
                             style: TextStyle(
                               fontSize: 15,
-                              fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                              color: isActive ? const Color(0xFF0D9488) : const Color(0xFF475569),
+                              fontWeight: isActive
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              color: isActive
+                                  ? const Color(0xFF0D9488)
+                                  : const Color(0xFF475569),
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -172,7 +180,10 @@ class _HomeScreenState extends State<HomeScreen> {
           if (!isMobile)
             ElevatedButton(
               onPressed: () {
-                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                final authProvider = Provider.of<AuthProvider>(
+                  context,
+                  listen: false,
+                );
                 if (authProvider.isAuthenticated) {
                   context.go('/properties');
                 } else {
@@ -182,28 +193,35 @@ class _HomeScreenState extends State<HomeScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0D9488),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
                 elevation: 0,
               ),
               child: Text(
-                Provider.of<AuthProvider>(context).isAuthenticated ? 'Dashboard' : 'Join now',
+                Provider.of<AuthProvider>(context).isAuthenticated
+                    ? 'Dashboard'
+                    : 'Join now',
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             )
-
           else
             IconButton(
-              icon: const Icon(Icons.menu_rounded, color: Color(0xFF0F172A), size: 28),
+              icon: const Icon(
+                Icons.menu_rounded,
+                color: Color(0xFF0F172A),
+                size: 28,
+              ),
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Menu tapped')),
-                );
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(const SnackBar(content: Text('Menu tapped')));
               },
             ),
         ],
@@ -233,15 +251,9 @@ class _HomeScreenState extends State<HomeScreen> {
           : Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Expanded(
-                  flex: 5,
-                  child: _buildHeroTextContent(isMobile),
-                ),
+                Expanded(flex: 5, child: _buildHeroTextContent(isMobile)),
                 const SizedBox(width: 48),
-                Expanded(
-                  flex: 6,
-                  child: _buildHeroDashboardMockup(isMobile),
-                ),
+                Expanded(flex: 6, child: _buildHeroDashboardMockup(isMobile)),
               ],
             ),
     );
@@ -287,11 +299,7 @@ class _HomeScreenState extends State<HomeScreen> {
         // Supporting paragraph
         const Text(
           'Collect more rent owed, fill vacant units faster, and save endless hours of administrative hassle through automated M-Pesa invoicing and tenant reconciliation.',
-          style: TextStyle(
-            fontSize: 17,
-            color: Color(0xFF475569),
-            height: 1.6,
-          ),
+          style: TextStyle(fontSize: 17, color: Color(0xFF475569), height: 1.6),
         ),
         const SizedBox(height: 32),
 
@@ -302,7 +310,10 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             ElevatedButton(
               onPressed: () {
-                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                final authProvider = Provider.of<AuthProvider>(
+                  context,
+                  listen: false,
+                );
                 if (authProvider.isAuthenticated) {
                   context.go('/properties');
                 } else {
@@ -312,7 +323,10 @@ class _HomeScreenState extends State<HomeScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0D9488),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 18,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -336,7 +350,10 @@ class _HomeScreenState extends State<HomeScreen> {
               },
               style: OutlinedButton.styleFrom(
                 foregroundColor: const Color(0xFF0F172A),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 18,
+                ),
                 side: const BorderSide(color: Color(0xFFCBD5E1), width: 1.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -347,20 +364,41 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
               ),
             ),
-
           ],
         ),
 
         const SizedBox(height: 28),
         Row(
           children: const [
-            Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 20),
+            Icon(
+              Icons.check_circle_rounded,
+              color: Color(0xFF10B981),
+              size: 20,
+            ),
             SizedBox(width: 8),
-            Text('M-Pesa STK Push Integrated', style: TextStyle(color: Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.w600)),
+            Text(
+              'M-Pesa STK Push Integrated',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             SizedBox(width: 16),
-            Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 20),
+            Icon(
+              Icons.check_circle_rounded,
+              color: Color(0xFF10B981),
+              size: 20,
+            ),
             SizedBox(width: 8),
-            Text('No Credit Card Required', style: TextStyle(color: Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.w600)),
+            Text(
+              'No Credit Card Required',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
       ],
@@ -393,17 +431,41 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Row(
                   children: [
-                    Container(width: 10, height: 10, decoration: const BoxDecoration(color: Color(0xFFEF4444), shape: BoxShape.circle)),
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFEF4444),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
                     const SizedBox(width: 6),
-                    Container(width: 10, height: 10, decoration: const BoxDecoration(color: Color(0xFFF59E0B), shape: BoxShape.circle)),
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF59E0B),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
                     const SizedBox(width: 6),
-                    Container(width: 10, height: 10, decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle)),
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF10B981),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF0F172A),
                       borderRadius: BorderRadius.circular(6),
@@ -427,18 +489,43 @@ class _HomeScreenState extends State<HomeScreen> {
                 Container(
                   width: 170,
                   color: const Color(0xFF111827),
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 16,
+                    horizontal: 12,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildSidebarItem(Icons.dashboard_rounded, 'Dashboard', isSelected: true),
+                      _buildSidebarItem(
+                        Icons.dashboard_rounded,
+                        'Dashboard',
+                        isSelected: true,
+                      ),
                       _buildSidebarItem(Icons.add_box_rounded, 'Add listing'),
-                      _buildSidebarItem(Icons.holiday_village_rounded, 'My listings'),
-                      _buildSidebarItem(Icons.people_outline_rounded, 'List of Agents'),
-                      _buildSidebarItem(Icons.person_add_outlined, 'Add an agent'),
-                      _buildSidebarItem(Icons.group_work_rounded, 'Our Clients'),
-                      _buildSidebarItem(Icons.person_add_alt_1_rounded, 'Add a client'),
-                      _buildSidebarItem(Icons.pie_chart_outline_rounded, 'Our Portfolio'),
+                      _buildSidebarItem(
+                        Icons.holiday_village_rounded,
+                        'My listings',
+                      ),
+                      _buildSidebarItem(
+                        Icons.people_outline_rounded,
+                        'List of Agents',
+                      ),
+                      _buildSidebarItem(
+                        Icons.person_add_outlined,
+                        'Add an agent',
+                      ),
+                      _buildSidebarItem(
+                        Icons.group_work_rounded,
+                        'Our Clients',
+                      ),
+                      _buildSidebarItem(
+                        Icons.person_add_alt_1_rounded,
+                        'Add a client',
+                      ),
+                      _buildSidebarItem(
+                        Icons.pie_chart_outline_rounded,
+                        'Our Portfolio',
+                      ),
                     ],
                   ),
                 ),
@@ -460,16 +547,38 @@ class _HomeScreenState extends State<HomeScreen> {
                               decoration: BoxDecoration(
                                 color: const Color(0xFF1E293B),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFF334155)),
+                                border: Border.all(
+                                  color: const Color(0xFF334155),
+                                ),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: const [
-                                  Text('Total Rent Collected', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11)),
+                                  Text(
+                                    'Total Rent Collected',
+                                    style: TextStyle(
+                                      color: Color(0xFF94A3B8),
+                                      fontSize: 11,
+                                    ),
+                                  ),
                                   SizedBox(height: 6),
-                                  Text('KES 14,850,000', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+                                  Text(
+                                    'KES 14,850,000',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                   SizedBox(height: 4),
-                                  Text('+18.4% vs last month', style: TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.w600)),
+                                  Text(
+                                    '+18.4% vs last month',
+                                    style: TextStyle(
+                                      color: Color(0xFF10B981),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -482,23 +591,52 @@ class _HomeScreenState extends State<HomeScreen> {
                               decoration: BoxDecoration(
                                 color: const Color(0xFF1E293B),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFF334155)),
+                                border: Border.all(
+                                  color: const Color(0xFF334155),
+                                ),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('Property Views', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11)),
+                                  const Text(
+                                    'Property Views',
+                                    style: TextStyle(
+                                      color: Color(0xFF94A3B8),
+                                      fontSize: 11,
+                                    ),
+                                  ),
                                   const SizedBox(height: 6),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      const Flexible(child: Text('48,290 Views', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
+                                      const Flexible(
+                                        child: Text(
+                                          '48,290 Views',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
                                       // Sparkline icon representation
-                                      const Icon(Icons.show_chart_rounded, color: Color(0xFF0D9488), size: 20),
+                                      const Icon(
+                                        Icons.show_chart_rounded,
+                                        color: Color(0xFF0D9488),
+                                        size: 20,
+                                      ),
                                     ],
                                   ),
                                   const SizedBox(height: 4),
-                                  const Text('High interest in Kilimani', style: TextStyle(color: Color(0xFF38BDF8), fontSize: 10)),
+                                  const Text(
+                                    'High interest in Kilimani',
+                                    style: TextStyle(
+                                      color: Color(0xFF38BDF8),
+                                      fontSize: 10,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -533,8 +671,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
                                 // Time-range filter buttons (All / 1M / 6M / 1Y)
                                 Row(
-                                  children: ['All', '1M', '6M', '1Y'].map((filter) {
-                                    final isSelected = _selectedTimeFilter == filter;
+                                  children: ['All', '1M', '6M', '1Y'].map((
+                                    filter,
+                                  ) {
+                                    final isSelected =
+                                        _selectedTimeFilter == filter;
                                     return InkWell(
                                       onTap: () {
                                         setState(() {
@@ -542,18 +683,29 @@ class _HomeScreenState extends State<HomeScreen> {
                                         });
                                       },
                                       child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
                                         margin: const EdgeInsets.only(left: 4),
                                         decoration: BoxDecoration(
-                                          color: isSelected ? const Color(0xFF0D9488) : const Color(0xFF0F172A),
-                                          borderRadius: BorderRadius.circular(6),
+                                          color: isSelected
+                                              ? const Color(0xFF0D9488)
+                                              : const Color(0xFF0F172A),
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
                                         ),
                                         child: Text(
                                           filter,
                                           style: TextStyle(
-                                            color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+                                            color: isSelected
+                                                ? Colors.white
+                                                : const Color(0xFF94A3B8),
                                             fontSize: 10,
-                                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                            fontWeight: isSelected
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
                                           ),
                                         ),
                                       ),
@@ -575,16 +727,27 @@ class _HomeScreenState extends State<HomeScreen> {
                                     alignment: Alignment.center,
                                     children: [
                                       CircularProgressIndicator(
-                                        value: _selectedTimeFilter == '1M' ? 0.88 : (_selectedTimeFilter == '1Y' ? 0.96 : 0.94),
+                                        value: _selectedTimeFilter == '1M'
+                                            ? 0.88
+                                            : (_selectedTimeFilter == '1Y'
+                                                  ? 0.96
+                                                  : 0.94),
                                         strokeWidth: 10,
-                                        backgroundColor: const Color(0xFF334155),
+                                        backgroundColor: const Color(
+                                          0xFF334155,
+                                        ),
                                         color: const Color(0xFF0D9488),
                                       ),
                                       Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           Text(
-                                            _selectedTimeFilter == '1M' ? '88%' : (_selectedTimeFilter == '1Y' ? '96%' : '94%'),
+                                            _selectedTimeFilter == '1M'
+                                                ? '88%'
+                                                : (_selectedTimeFilter == '1Y'
+                                                      ? '96%'
+                                                      : '94%'),
                                             style: const TextStyle(
                                               color: Colors.white,
                                               fontWeight: FontWeight.bold,
@@ -593,7 +756,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                           const Text(
                                             'Avg',
-                                            style: TextStyle(color: Color(0xFF94A3B8), fontSize: 9),
+                                            style: TextStyle(
+                                              color: Color(0xFF94A3B8),
+                                              fontSize: 9,
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -606,13 +772,33 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Expanded(
                                   child: Column(
                                     children: [
-                                      _buildOccupancyPropertyRow('Kilimani Heights', '45 units', '94%', const Color(0xFF0D9488)),
+                                      _buildOccupancyPropertyRow(
+                                        'Kilimani Heights',
+                                        '45 units',
+                                        '94%',
+                                        const Color(0xFF0D9488),
+                                      ),
                                       const SizedBox(height: 6),
-                                      _buildOccupancyPropertyRow('Westlands Towers', '32 units', '98%', const Color(0xFF10B981)),
+                                      _buildOccupancyPropertyRow(
+                                        'Westlands Towers',
+                                        '32 units',
+                                        '98%',
+                                        const Color(0xFF10B981),
+                                      ),
                                       const SizedBox(height: 6),
-                                      _buildOccupancyPropertyRow('Karen Villas', '18 units', '88%', const Color(0xFFF59E0B)),
+                                      _buildOccupancyPropertyRow(
+                                        'Karen Villas',
+                                        '18 units',
+                                        '88%',
+                                        const Color(0xFFF59E0B),
+                                      ),
                                       const SizedBox(height: 6),
-                                      _buildOccupancyPropertyRow('Parklands Suites', '25 units', '92%', const Color(0xFF38BDF8)),
+                                      _buildOccupancyPropertyRow(
+                                        'Parklands Suites',
+                                        '25 units',
+                                        '92%',
+                                        const Color(0xFF38BDF8),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -632,18 +818,30 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSidebarItem(IconData icon, String title, {bool isSelected = false}) {
+  Widget _buildSidebarItem(
+    IconData icon,
+    String title, {
+    bool isSelected = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF0D9488).withValues(alpha: 0.2) : Colors.transparent,
+          color: isSelected
+              ? const Color(0xFF0D9488).withValues(alpha: 0.2)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(6),
         ),
         child: Row(
           children: [
-            Icon(icon, size: 14, color: isSelected ? const Color(0xFF2DD4BF) : const Color(0xFF94A3B8)),
+            Icon(
+              icon,
+              size: 14,
+              color: isSelected
+                  ? const Color(0xFF2DD4BF)
+                  : const Color(0xFF94A3B8),
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -662,17 +860,43 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildOccupancyPropertyRow(String name, String count, String percent, Color dotColor) {
+  Widget _buildOccupancyPropertyRow(
+    String name,
+    String count,
+    String percent,
+    Color dotColor,
+  ) {
     return Row(
       children: [
-        Container(width: 8, height: 8, decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle)),
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
+        ),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(name, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500)),
+          child: Text(
+            name,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ),
-        Text(count, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10)),
+        Text(
+          count,
+          style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10),
+        ),
         const SizedBox(width: 8),
-        Text(percent, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+        Text(
+          percent,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ],
     );
   }
@@ -807,7 +1031,11 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFF334155)),
         boxShadow: const [
-          BoxShadow(color: Colors.black26, blurRadius: 15, offset: Offset(0, 8)),
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 15,
+            offset: Offset(0, 8),
+          ),
         ],
       ),
       child: Column(
@@ -819,7 +1047,11 @@ class _HomeScreenState extends State<HomeScreen> {
               color: const Color(0xFF0D9488).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.bolt_rounded, color: Color(0xFF2DD4BF), size: 28),
+            child: const Icon(
+              Icons.bolt_rounded,
+              color: Color(0xFF2DD4BF),
+              size: 28,
+            ),
           ),
           const SizedBox(height: 20),
           Text(
@@ -891,10 +1123,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const Text(
             'Real usage figures verified across landlords, property managers, and agencies in Kenya as of September 2026.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 15,
-              color: Color(0xFF64748B),
-            ),
+            style: TextStyle(fontSize: 15, color: Color(0xFF64748B)),
           ),
           const SizedBox(height: 48),
 
@@ -904,13 +1133,29 @@ class _HomeScreenState extends State<HomeScreen> {
               if (constraints.maxWidth < 640) {
                 return Column(
                   children: [
-                    _buildStatBlock(Icons.home_outlined, '25,000+', 'Rental Units Managed'),
+                    _buildStatBlock(
+                      Icons.home_outlined,
+                      '25,000+',
+                      'Rental Units Managed',
+                    ),
                     const SizedBox(height: 24),
-                    _buildStatBlock(Icons.receipt_long_rounded, 'KES 2.4B+', 'Rent Tracked & Auto-Reconciled'),
+                    _buildStatBlock(
+                      Icons.receipt_long_rounded,
+                      'KES 2.4B+',
+                      'Rent Tracked & Auto-Reconciled',
+                    ),
                     const SizedBox(height: 24),
-                    _buildStatBlock(Icons.people_outline_rounded, '1,200+', 'Landlords, Agents & Agencies'),
+                    _buildStatBlock(
+                      Icons.people_outline_rounded,
+                      '1,200+',
+                      'Landlords, Agents & Agencies',
+                    ),
                     const SizedBox(height: 24),
-                    _buildStatBlock(Icons.description_outlined, '450,000+', 'Invoices Generated & Issued'),
+                    _buildStatBlock(
+                      Icons.description_outlined,
+                      '450,000+',
+                      'Invoices Generated & Issued',
+                    ),
                   ],
                 );
               } else if (constraints.maxWidth < 1024) {
@@ -919,19 +1164,71 @@ class _HomeScreenState extends State<HomeScreen> {
                   runSpacing: 24,
                   alignment: WrapAlignment.center,
                   children: [
-                    SizedBox(width: constraints.maxWidth / 2 - 24, child: _buildStatBlock(Icons.home_outlined, '25,000+', 'Rental Units Managed')),
-                    SizedBox(width: constraints.maxWidth / 2 - 24, child: _buildStatBlock(Icons.receipt_long_rounded, 'KES 2.4B+', 'Rent Tracked & Auto-Reconciled')),
-                    SizedBox(width: constraints.maxWidth / 2 - 24, child: _buildStatBlock(Icons.people_outline_rounded, '1,200+', 'Landlords, Agents & Agencies')),
-                    SizedBox(width: constraints.maxWidth / 2 - 24, child: _buildStatBlock(Icons.description_outlined, '450,000+', 'Invoices Generated & Issued')),
+                    SizedBox(
+                      width: constraints.maxWidth / 2 - 24,
+                      child: _buildStatBlock(
+                        Icons.home_outlined,
+                        '25,000+',
+                        'Rental Units Managed',
+                      ),
+                    ),
+                    SizedBox(
+                      width: constraints.maxWidth / 2 - 24,
+                      child: _buildStatBlock(
+                        Icons.receipt_long_rounded,
+                        'KES 2.4B+',
+                        'Rent Tracked & Auto-Reconciled',
+                      ),
+                    ),
+                    SizedBox(
+                      width: constraints.maxWidth / 2 - 24,
+                      child: _buildStatBlock(
+                        Icons.people_outline_rounded,
+                        '1,200+',
+                        'Landlords, Agents & Agencies',
+                      ),
+                    ),
+                    SizedBox(
+                      width: constraints.maxWidth / 2 - 24,
+                      child: _buildStatBlock(
+                        Icons.description_outlined,
+                        '450,000+',
+                        'Invoices Generated & Issued',
+                      ),
+                    ),
                   ],
                 );
               }
               return Row(
                 children: [
-                  Expanded(child: _buildStatBlock(Icons.home_outlined, '25,000+', 'Rental Units Managed')),
-                  Expanded(child: _buildStatBlock(Icons.receipt_long_rounded, 'KES 2.4B+', 'Rent Tracked & Auto-Reconciled')),
-                  Expanded(child: _buildStatBlock(Icons.people_outline_rounded, '1,200+', 'Landlords, Agents & Agencies')),
-                  Expanded(child: _buildStatBlock(Icons.description_outlined, '450,000+', 'Invoices Generated & Issued')),
+                  Expanded(
+                    child: _buildStatBlock(
+                      Icons.home_outlined,
+                      '25,000+',
+                      'Rental Units Managed',
+                    ),
+                  ),
+                  Expanded(
+                    child: _buildStatBlock(
+                      Icons.receipt_long_rounded,
+                      'KES 2.4B+',
+                      'Rent Tracked & Auto-Reconciled',
+                    ),
+                  ),
+                  Expanded(
+                    child: _buildStatBlock(
+                      Icons.people_outline_rounded,
+                      '1,200+',
+                      'Landlords, Agents & Agencies',
+                    ),
+                  ),
+                  Expanded(
+                    child: _buildStatBlock(
+                      Icons.description_outlined,
+                      '450,000+',
+                      'Invoices Generated & Issued',
+                    ),
+                  ),
                 ],
               );
             },
@@ -1011,10 +1308,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const Text(
             'Unparalleled functionality designed to optimize real estate operations and enhance decision-making.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              color: Color(0xFF64748B),
-            ),
+            style: TextStyle(fontSize: 16, color: Color(0xFF64748B)),
           ),
           const SizedBox(height: 48),
 
@@ -1037,7 +1331,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     'automated payment reconciliation',
                     'digital bookkeeping',
                     'reporting tools',
-                  ]
+                  ],
                 },
                 {
                   'title': 'Marketing & Listings',
@@ -1047,7 +1341,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     'listing uploads',
                     'short-stay management',
                     'SEO optimization',
-                  ]
+                  ],
                 },
                 {
                   'title': 'Communication & Notifications',
@@ -1057,7 +1351,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     'tenant communication',
                     'email invoices/alerts',
                     'broadcast reminders',
-                  ]
+                  ],
                 },
                 {
                   'title': 'Data Management & Integration',
@@ -1067,36 +1361,57 @@ class _HomeScreenState extends State<HomeScreen> {
                     'analytics dashboard',
                     'API integration',
                     'multi-user permission roles',
-                  ]
+                  ],
                 },
               ];
 
               if (cols == 1) {
                 return Column(
-                  children: featuresData.map((cat) => Padding(
-                    padding: const EdgeInsets.only(bottom: 24),
-                    child: _buildFeatureCategoryCard(cat['title'] as String, cat['items'] as List<String>),
-                  )).toList(),
+                  children: featuresData
+                      .map(
+                        (cat) => Padding(
+                          padding: const EdgeInsets.only(bottom: 24),
+                          child: _buildFeatureCategoryCard(
+                            cat['title'] as String,
+                            cat['items'] as List<String>,
+                          ),
+                        ),
+                      )
+                      .toList(),
                 );
               } else if (cols == 2) {
                 return Wrap(
                   spacing: 24,
                   runSpacing: 24,
-                  children: featuresData.map((cat) => SizedBox(
-                    width: (constraints.maxWidth - 24) / 2,
-                    child: _buildFeatureCategoryCard(cat['title'] as String, cat['items'] as List<String>),
-                  )).toList(),
+                  children: featuresData
+                      .map(
+                        (cat) => SizedBox(
+                          width: (constraints.maxWidth - 24) / 2,
+                          child: _buildFeatureCategoryCard(
+                            cat['title'] as String,
+                            cat['items'] as List<String>,
+                          ),
+                        ),
+                      )
+                      .toList(),
                 );
               }
 
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: featuresData.map((cat) => Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: _buildFeatureCategoryCard(cat['title'] as String, cat['items'] as List<String>),
-                  ),
-                )).toList(),
+                children: featuresData
+                    .map(
+                      (cat) => Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: _buildFeatureCategoryCard(
+                            cat['title'] as String,
+                            cat['items'] as List<String>,
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
               );
             },
           ),
@@ -1140,7 +1455,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: Color(0xFFD1FAE5),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.check, color: Color(0xFF059669), size: 14),
+                      child: const Icon(
+                        Icons.check,
+                        color: Color(0xFF059669),
+                        size: 14,
+                      ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -1189,10 +1508,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const Text(
             'Purpose-built for the local rental market, with tailored setups for how people operate.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              color: Color(0xFF64748B),
-            ),
+            style: TextStyle(fontSize: 16, color: Color(0xFF64748B)),
           ),
           const SizedBox(height: 48),
 
@@ -1234,20 +1550,38 @@ class _HomeScreenState extends State<HomeScreen> {
 
               if (constraints.maxWidth < 640) {
                 return Column(
-                  children: solutions.map((s) => Padding(
-                    padding: const EdgeInsets.only(bottom: 20),
-                    child: _buildSolutionCard(s['icon'] as IconData, s['title'] as String, s['desc'] as String),
-                  )).toList(),
+                  children: solutions
+                      .map(
+                        (s) => Padding(
+                          padding: const EdgeInsets.only(bottom: 20),
+                          child: _buildSolutionCard(
+                            s['icon'] as IconData,
+                            s['title'] as String,
+                            s['desc'] as String,
+                          ),
+                        ),
+                      )
+                      .toList(),
                 );
               }
 
               return Wrap(
                 spacing: 24,
                 runSpacing: 24,
-                children: solutions.map((s) => SizedBox(
-                  width: constraints.maxWidth < 1024 ? (constraints.maxWidth - 24) / 2 : (constraints.maxWidth - 48) / 3,
-                  child: _buildSolutionCard(s['icon'] as IconData, s['title'] as String, s['desc'] as String),
-                )).toList(),
+                children: solutions
+                    .map(
+                      (s) => SizedBox(
+                        width: constraints.maxWidth < 1024
+                            ? (constraints.maxWidth - 24) / 2
+                            : (constraints.maxWidth - 48) / 3,
+                        child: _buildSolutionCard(
+                          s['icon'] as IconData,
+                          s['title'] as String,
+                          s['desc'] as String,
+                        ),
+                      ),
+                    )
+                    .toList(),
               );
             },
           ),
@@ -1268,7 +1602,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 SizedBox(width: 6),
-                Icon(Icons.arrow_forward_rounded, color: Color(0xFF0D9488), size: 18),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  color: Color(0xFF0D9488),
+                  size: 18,
+                ),
               ],
             ),
           ),
@@ -1382,7 +1720,9 @@ class _HomeScreenState extends State<HomeScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3))],
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3)),
+        ],
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -1405,7 +1745,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     child: const Center(
-                      child: Icon(Icons.calculate_rounded, size: 54, color: Colors.white),
+                      child: Icon(
+                        Icons.calculate_rounded,
+                        size: 54,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 );
@@ -1417,16 +1761,32 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
-                Text('GUIDE', style: TextStyle(color: Color(0xFF0D9488), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
+                Text(
+                  'GUIDE',
+                  style: TextStyle(
+                    color: Color(0xFF0D9488),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1,
+                  ),
+                ),
                 SizedBox(height: 8),
                 Text(
                   'Automating Rent Collection & M-Pesa Reconciliation in Kenya',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF0F172A),
+                  ),
                 ),
                 SizedBox(height: 8),
                 Text(
                   'A practical step-by-step playbook for Kenyan landlords looking to reduce rent default rates and eliminate manual payment matching.',
-                  style: TextStyle(fontSize: 13, color: Color(0xFF64748B), height: 1.5),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF64748B),
+                    height: 1.5,
+                  ),
                 ),
               ],
             ),
@@ -1442,7 +1802,13 @@ class _HomeScreenState extends State<HomeScreen> {
       height: 340,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 5))],
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
       ),
       clipBehavior: Clip.antiAlias,
       child: Stack(
@@ -1486,11 +1852,24 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
-                Text('INDUSTRY INSIGHTS', style: TextStyle(color: Color(0xFF5EEAD4), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
+                Text(
+                  'INDUSTRY INSIGHTS',
+                  style: TextStyle(
+                    color: Color(0xFF5EEAD4),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1,
+                  ),
+                ),
                 SizedBox(height: 8),
                 Text(
                   'Navigating Kenya’s Rental Market & Arrears Trends in 2026',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white, height: 1.3),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    height: 1.3,
+                  ),
                 ),
                 SizedBox(height: 8),
                 Text(
@@ -1512,7 +1891,9 @@ class _HomeScreenState extends State<HomeScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3))],
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3)),
+        ],
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -1535,7 +1916,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     child: const Center(
-                      child: Icon(Icons.dashboard_rounded, size: 54, color: Colors.white),
+                      child: Icon(
+                        Icons.dashboard_rounded,
+                        size: 54,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 );
@@ -1547,16 +1932,32 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
-                Text('COMPARISON', style: TextStyle(color: Color(0xFF0D9488), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
+                Text(
+                  'COMPARISON',
+                  style: TextStyle(
+                    color: Color(0xFF0D9488),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1,
+                  ),
+                ),
                 SizedBox(height: 8),
                 Text(
                   'Manual Excel Bookkeeping vs Cloud Software: ROI Analysis',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF0F172A),
+                  ),
                 ),
                 SizedBox(height: 8),
                 Text(
                   'Discover how switching from paper ledgers saves an average of 14 hours per week and boosts collection efficiency by 34%.',
-                  style: TextStyle(fontSize: 13, color: Color(0xFF64748B), height: 1.5),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF64748B),
+                    height: 1.5,
+                  ),
                 ),
               ],
             ),
@@ -1565,7 +1966,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
 
   // ==========================================
   // FOOTER
@@ -1579,8 +1979,14 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Flex(
+            direction: isMobile ? Axis.vertical : Axis.horizontal,
+            crossAxisAlignment: isMobile
+                ? CrossAxisAlignment.start
+                : CrossAxisAlignment.center,
+            mainAxisAlignment: isMobile
+                ? MainAxisAlignment.start
+                : MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
@@ -1590,19 +1996,36 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: const Color(0xFF0D9488),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.home_work_rounded, color: Colors.white, size: 20),
+                    child: const Icon(
+                      Icons.home_work_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 10),
                   const Text(
                     'RentPro KE',
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
-              Text(
-                '© 2026 RentPro Kenya. Built for real estate success in East Africa.',
-                style: TextStyle(color: Colors.grey.shade400, fontSize: 13),
-              ),
+              if (isMobile) const SizedBox(height: 16),
+              if (isMobile)
+                Text(
+                  '© 2026 RentPro Kenya. Built for real estate success in East Africa.',
+                  style: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+                )
+              else
+                Flexible(
+                  child: Text(
+                    '© 2026 RentPro Kenya. Built for real estate success in East Africa.',
+                    style: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+                  ),
+                ),
             ],
           ),
         ],

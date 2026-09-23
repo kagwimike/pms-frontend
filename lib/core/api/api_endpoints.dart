@@ -2,10 +2,24 @@ import 'package:flutter/foundation.dart';
 
 class ApiEndpoints {
   static String get baseUrl {
+    const configuredUrl = String.fromEnvironment('API_BASE_URL');
+    if (configuredUrl.isNotEmpty) return configuredUrl;
+
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       return 'http://10.0.2.2:3005/api';
     }
-    return 'http://localhost:3005/api';
+    return 'http://127.0.0.1:3005/api';
+  }
+
+  static String get apiOrigin {
+    final uri = Uri.parse(baseUrl);
+    return '${uri.scheme}://${uri.authority}';
+  }
+
+  static String resolveMediaUrl(String path) {
+    final value = path.trim();
+    if (value.isEmpty || Uri.tryParse(value)?.hasScheme == true) return value;
+    return '${apiOrigin}${value.startsWith('/') ? value : '/$value'}';
   }
 
   // Auth
@@ -26,9 +40,8 @@ class ApiEndpoints {
 
   // Finance
   static String get finance => '$baseUrl/finance';
-  static String get invoices => '$baseUrl/finance/invoices';
+  static String get invoices => '$baseUrl/invoices';
   static String get payments => '$baseUrl/finance/payments';
-  static String get refunds => '$baseUrl/finance/refunds';
 
   // Maintenance & Vendors
   static String get maintenance => '$baseUrl/maintenance';
@@ -40,4 +53,3 @@ class ApiEndpoints {
   static String get notifications => '$baseUrl/notifications';
   static String get auditLogs => '$baseUrl/auditlogs';
 }
-

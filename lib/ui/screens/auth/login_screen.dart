@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+
 import '../../../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -32,7 +33,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (mounted) {
       if (success) {
-        context.go('/');
+        final redirect = GoRouterState.of(context)
+            .uri
+            .queryParameters['redirect'];
+        context.go(redirect ?? '/dashboard');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -50,7 +54,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (mounted) {
       if (success) {
-        context.go('/');
+        final redirect = GoRouterState.of(context)
+            .uri
+            .queryParameters['redirect'];
+        context.go(redirect ?? '/dashboard');
       } else if (authProvider.errorMessage != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -121,10 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const Text(
                     'Sign in to manage properties, leases & finance',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFF94A3B8),
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
                   ),
                   const SizedBox(height: 32),
                   TextFormField(
@@ -134,7 +138,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: InputDecoration(
                       labelText: 'Email Address',
                       labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
-                      prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF94A3B8)),
+                      prefixIcon: const Icon(
+                        Icons.email_outlined,
+                        color: Color(0xFF94A3B8),
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: const BorderSide(color: Color(0xFF334155)),
@@ -161,7 +168,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: InputDecoration(
                       labelText: 'Password',
                       labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
-                      prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF94A3B8)),
+                      prefixIcon: const Icon(
+                        Icons.lock_outline,
+                        color: Color(0xFF94A3B8),
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: const BorderSide(color: Color(0xFF334155)),
@@ -202,7 +212,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           )
                         : const Text(
                             'Sign In',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                   ),
                   const SizedBox(height: 16),
@@ -213,7 +226,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         padding: EdgeInsets.symmetric(horizontal: 12),
                         child: Text(
                           'OR',
-                          style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+                          style: TextStyle(
+                            color: Color(0xFF94A3B8),
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                       Expanded(child: Divider(color: Color(0xFF334155))),
@@ -231,10 +247,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       backgroundColor: const Color(0xFF0F172A),
                     ),
-                    icon: const Icon(Icons.g_mobiledata, size: 28, color: Colors.redAccent),
+                    icon: const Icon(
+                      Icons.g_mobiledata,
+                      size: 28,
+                      color: Colors.redAccent,
+                    ),
                     label: const Text(
                       'Continue with Google',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
