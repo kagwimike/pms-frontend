@@ -13,8 +13,24 @@ class MainLayout extends StatelessWidget {
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 900;
         return Scaffold(
+          drawer: compact ? const Drawer(child: Sidebar()) : null,
           body: compact
-              ? child
+              ? Stack(
+                  children: [
+                    child,
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Builder(
+                        builder: (context) => IconButton.filledTonal(
+                          tooltip: 'Open navigation',
+                          onPressed: () => Scaffold.of(context).openDrawer(),
+                          icon: const Icon(Icons.menu_rounded),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
               : Row(
                   children: [
                     const Sidebar(),

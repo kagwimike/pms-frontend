@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+
 import '../../providers/auth_provider.dart';
 
 class Sidebar extends StatelessWidget {
@@ -8,82 +9,206 @@ class Sidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const bgColor = Color(0xFF1E2733);
-    const dividerColor = Color(0xFF334155);
-    final authProvider = Provider.of<AuthProvider>(context);
-    final user = authProvider.user;
+    final auth = context.watch<AuthProvider>();
+    final user = auth.user;
+    final displayName = user?.firstName.isNotEmpty == true
+        ? user!.firstName
+        : user?.username ?? 'Property owner';
+    final initials = displayName.isEmpty
+        ? 'O'
+        : displayName.substring(0, 1).toUpperCase();
 
     return Container(
-      width: 250,
-      color: bgColor,
+      width: 258,
+      color: const Color(0xFF163B36),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildHeader(user?.username ?? 'Guest User', user?.role ?? 'GUEST'),
-          const Divider(color: dividerColor, height: 1),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(22, 24, 18, 22),
+            child: Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFB8E1CB),
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  child: const Icon(
+                    Icons.apartment_rounded,
+                    color: Color(0xFF163B36),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Text(
+                  'PMS Pro',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 19,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(color: Color(0xFF315B51), height: 1),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 20, 18, 16),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: const Color(0xFFD7EBDD),
+                  child: Text(
+                    initials,
+                    style: const TextStyle(
+                      color: Color(0xFF27624D),
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        displayName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        user?.role == 'ADMIN'
+                            ? 'Administrator'
+                            : 'Property Owner',
+                        style: const TextStyle(
+                          color: Color(0xFFA9C7BB),
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: Color(0xFFA9C7BB),
+                ),
+              ],
+            ),
+          ),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               children: [
-                _buildSectionTitle('CORE'),
-                _buildNavItem(context, 'Home', '/'),
-                _buildNavItem(context, 'Properties', '/properties'),
-                _buildNavItem(context, 'Leases', '/leases'),
-                const SizedBox(height: 16),
-                _buildSectionTitle('MANAGEMENT'),
-                _buildNavItem(context, 'Add Property', '/add-property'),
-                _buildNavItem(context, 'Create Lease', '/create-lease'),
-                const SizedBox(height: 16),
-                _buildSectionTitle('FINANCIALS'),
-                _buildNavItem(context, 'Global Invoices', '/invoices'),
-                _buildNavItem(context, 'Collected Payments', '/payments'),
-                _buildNavItem(context, 'Process Deposit Refund', '/refunds'),
-                const SizedBox(height: 16),
-                _buildSectionTitle('INSPECTIONS'),
-                _buildNavItem(context, 'View Inspections', '/inspections'),
-                _buildNavItem(context, 'New Inspection', '/new-inspection'),
-                _buildNavItem(context, 'Record Damage', '/record-damage'),
-                _buildNavItem(context, 'Deposit Summary', '/deposit-summary'),
-                const SizedBox(height: 16),
-                _buildSectionTitle('MAINTENANCE'),
-                _buildNavItem(context, 'All Requests', '/maintenance-requests'),
-                _buildNavItem(context, 'New Request', '/new-maintenance'),
-                _buildNavItem(context, 'Vendors', '/vendors'),
-                const SizedBox(height: 16),
-                _buildSectionTitle('COMPANY'),
-                _buildNavItem(context, 'About PMS Pro', '/about'),
-                _buildNavItem(context, 'Contact', '/contact'),
-                const SizedBox(height: 16),
-                _buildSectionTitle('ACCOUNT'),
-                _buildNavItem(context, 'Dashboard', '/dashboard'),
+                _section('WORKSPACE'),
+                _item(
+                  context,
+                  Icons.grid_view_rounded,
+                  'Dashboard',
+                  '/dashboard',
+                ),
+                _item(
+                  context,
+                  Icons.home_work_outlined,
+                  'Properties',
+                  '/properties',
+                ),
+                _item(
+                  context,
+                  Icons.meeting_room_outlined,
+                  'Units',
+                  '/units',
+                ),
+                _item(
+                  context,
+                  Icons.people_outline_rounded,
+                  'Tenants',
+                  '/leases',
+                ),
+                _item(
+                  context,
+                  Icons.payments_outlined,
+                  'Payments',
+                  '/payments',
+                ),
+                _item(
+                  context,
+                  Icons.calendar_month_outlined,
+                  'Calendar',
+                  '/inspections',
+                ),
+                const SizedBox(height: 18),
+                _section('PROPERTY OPERATIONS'),
+                _item(
+                  context,
+                  Icons.add_home_work_outlined,
+                  'Add property',
+                  '/properties',
+                ),
+                _item(context, Icons.assignment_outlined, 'Leases', '/leases'),
+                _item(
+                  context,
+                  Icons.build_outlined,
+                  'Maintenance',
+                  '/maintenance-requests',
+                ),
+                _item(
+                  context,
+                  Icons.fact_check_outlined,
+                  'Inspections',
+                  '/inspections',
+                ),
+                const SizedBox(height: 18),
+                _section('FINANCE & RECORDS'),
+                _item(
+                  context,
+                  Icons.receipt_long_outlined,
+                  'Invoices',
+                  '/invoices',
+                ),
+                _item(
+                  context,
+                  Icons.description_outlined,
+                  'Documents',
+                  '/documents',
+                ),
+                _item(
+                  context,
+                  Icons.notifications_none_rounded,
+                  'Notifications',
+                  '/notifications',
+                ),
+                if (user?.role == 'ADMIN' || user?.role == 'OWNER')
+                  _item(
+                    context,
+                    Icons.history_rounded,
+                    'Audit logs',
+                    '/auditlogs',
+                  ),
               ],
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE5534B),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () async {
-                if (authProvider.isAuthenticated) {
-                  await authProvider.logout();
-                  if (context.mounted) {
-                    context.go('/login');
-                  }
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
+            child: _item(
+              context,
+              Icons.logout_rounded,
+              auth.isAuthenticated ? 'Sign out' : 'Sign in',
+              '/login',
+              onTap: () async {
+                if (auth.isAuthenticated) {
+                  await auth.logout();
+                  if (context.mounted) context.go('/login');
                 } else {
                   context.go('/login');
                 }
               },
-              child: Text(
-                authProvider.isAuthenticated ? 'Logout' : 'Login',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
             ),
           ),
         ],
@@ -91,86 +216,55 @@ class Sidebar extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(String name, String role) {
+  Widget _section(String title) => Padding(
+    padding: const EdgeInsets.fromLTRB(12, 8, 12, 7),
+    child: Text(
+      title,
+      style: const TextStyle(
+        color: Color(0xFF7FA99A),
+        fontSize: 10,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 1.3,
+      ),
+    ),
+  );
+
+  Widget _item(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String route, {
+    VoidCallback? onTap,
+  }) {
+    final active = GoRouterState.of(context).matchedLocation == route;
     return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: const Color(0xFF3B82F6),
-            radius: 24,
-            child: Text(
-              name.isNotEmpty ? name[0].toUpperCase() : 'U',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.only(bottom: 3),
+      child: Material(
+        color: active ? const Color(0xFF2A6858) : Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: onTap ?? () => context.go(route),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+            child: Row(
               children: [
-                Text(
-                  name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Icon(
+                  icon,
+                  size: 19,
+                  color: active ? Colors.white : const Color(0xFFA9C7BB),
                 ),
+                const SizedBox(width: 12),
                 Text(
-                  role,
-                  style: const TextStyle(
-                    color: Color(0xFF94A3B8),
-                    fontSize: 11,
-                    letterSpacing: 1.2,
+                  label,
+                  style: TextStyle(
+                    color: active ? Colors.white : const Color(0xFFD4E5DE),
+                    fontSize: 13,
+                    fontWeight: active ? FontWeight.w800 : FontWeight.w600,
                   ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      child: Text(
-        title,
-        style: const TextStyle(
-          color: Color(0xFF94A3B8),
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.2,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(BuildContext context, String title, String route) {
-    final currentRoute = GoRouterState.of(context).uri.toString();
-    final isActive = currentRoute == route;
-
-    return InkWell(
-      onTap: () {
-        context.go(route);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        child: Text(
-          title,
-          style: TextStyle(
-            color: isActive ? Colors.white : const Color(0xFFE2E8F0),
-            fontSize: 15,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
           ),
         ),
       ),

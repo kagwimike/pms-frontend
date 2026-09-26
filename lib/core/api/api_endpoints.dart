@@ -19,7 +19,7 @@ class ApiEndpoints {
   static String resolveMediaUrl(String path) {
     final value = path.trim();
     if (value.isEmpty || Uri.tryParse(value)?.hasScheme == true) return value;
-    return '${apiOrigin}${value.startsWith('/') ? value : '/$value'}';
+    return '$apiOrigin${value.startsWith('/') ? value : '/$value'}';
   }
 
   // Auth
@@ -30,6 +30,7 @@ class ApiEndpoints {
   // Properties & Units
   static String get properties => '$baseUrl/properties';
   static String get units => '$baseUrl/units';
+  static String get unitTypes => '$baseUrl/unit-types';
 
   // Users
   static String get users => '$baseUrl/users';

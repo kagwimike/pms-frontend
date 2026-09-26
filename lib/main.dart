@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/dashboard_provider.dart';
 import 'providers/property_provider.dart';
+import 'providers/unit_provider.dart';
 import 'router/app_router.dart';
 
 void main() {
@@ -14,6 +15,7 @@ void main() {
         ChangeNotifierProvider.value(value: authProvider),
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
         ChangeNotifierProvider(create: (_) => PropertyProvider()),
+        ChangeNotifierProvider(create: (_) => UnitProvider()),
       ],
       child: MyApp(authProvider: authProvider),
     ),

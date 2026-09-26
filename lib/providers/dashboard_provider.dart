@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../core/api/api_client.dart';
@@ -337,11 +336,12 @@ class DashboardProvider with ChangeNotifier {
   List<Map<String, dynamic>> _items(ApiResponse<dynamic> response) {
     if (!response.success) return [];
     final data = response.data;
-    if (data is List)
+    if (data is List) {
       return data
           .whereType<Map>()
           .map((item) => Map<String, dynamic>.from(item))
           .toList();
+    }
     if (data is Map && data['rows'] is List) {
       return (data['rows'] as List)
           .whereType<Map>()

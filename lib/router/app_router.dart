@@ -5,6 +5,7 @@ import '../ui/layouts/main_layout.dart';
 import '../ui/screens/home.dart';
 import '../ui/screens/placeholder_screen.dart';
 import '../ui/screens/properties_screen.dart';
+import '../ui/screens/units_screen.dart';
 import '../ui/screens/dashboard_screen.dart';
 import '../ui/screens/auth/login_screen.dart';
 import '../ui/screens/auth/register_screen.dart';
@@ -54,6 +55,10 @@ GoRouter createAppRouter(AuthProvider authProvider) {
           GoRoute(
             path: '/properties',
             builder: (context, state) => const PropertiesScreen(),
+          ),
+          GoRoute(
+            path: '/units',
+            builder: (context, state) => const UnitsScreen(),
           ),
           GoRoute(
             path: '/leases',
@@ -119,6 +124,21 @@ GoRouter createAppRouter(AuthProvider authProvider) {
             path: '/vendors',
             builder: (context, state) =>
                 const PlaceholderScreen(title: 'Vendors'),
+          ),
+          GoRoute(
+            path: '/documents',
+            builder: (context, state) =>
+                const PlaceholderScreen(title: 'Documents'),
+          ),
+          GoRoute(
+            path: '/notifications',
+            builder: (context, state) =>
+                const PlaceholderScreen(title: 'Notifications'),
+          ),
+          GoRoute(
+            path: '/auditlogs',
+            builder: (context, state) =>
+                const PlaceholderScreen(title: 'Audit logs'),
           ),
           GoRoute(
             path: '/about',

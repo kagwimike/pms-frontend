@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../core/api/api_client.dart';
 import '../core/api/api_endpoints.dart';
@@ -16,6 +17,58 @@ class PropertyProvider with ChangeNotifier {
   bool get isLoadingMore => _isLoadingMore;
   bool get hasMore => _nextCursor != null && _nextCursor!.isNotEmpty;
   String? get errorMessage => _errorMessage;
+
+  Future<bool> createProperty({
+    required Map<String, dynamic> fields,
+    List<XFile> images = const [],
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    final response = await ApiClient.postMultipart(
+      ApiEndpoints.properties,
+      fields: fields,
+      images: images,
+    );
+    _isLoading = false;
+    if (!response.success) {
+      _errorMessage = response.message;
+      notifyListeners();
+      return false;
+    }
+    await loadProperties(refresh: true);
+    return true;
+  }
+
+  Future<bool> updateProperty(dynamic id, Map<String, dynamic> fields) async {
+    _errorMessage = null;
+    notifyListeners();
+    final response = await ApiClient.put(
+      '${ApiEndpoints.properties}/$id',
+      fields,
+    );
+    if (!response.success) {
+      _errorMessage = response.message;
+      notifyListeners();
+      return false;
+    }
+    await loadProperties(refresh: true);
+    return true;
+  }
+
+  Future<bool> deleteProperty(dynamic id) async {
+    _errorMessage = null;
+    notifyListeners();
+    final response = await ApiClient.delete('${ApiEndpoints.properties}/$id');
+    if (!response.success) {
+      _errorMessage = response.message;
+      notifyListeners();
+      return false;
+    }
+    _properties.removeWhere((property) => property.id.toString() == id.toString());
+    notifyListeners();
+    return true;
+  }
 
   Future<void> loadProperties({bool refresh = false}) async {
     if (_isLoading || _isLoadingMore) return;
