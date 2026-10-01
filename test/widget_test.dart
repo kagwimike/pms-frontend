@@ -7,17 +7,15 @@
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:pms_pro/main.dart';
-import 'package:pms_pro/providers/auth_provider.dart';
+import 'package:pms_pro/app/app.dart';
 
 void main() {
   testWidgets('PMS Pro boots into the public home screen', (
     WidgetTester tester,
   ) async {
-    final authProvider = AuthProvider();
-    await tester.pumpWidget(MyApp(authProvider: authProvider));
+    await tester.pumpWidget(const PmsApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('RentPro KE'), findsWidgets);
+    expect(find.text('Login to PMS Pro'), findsWidgets);
   });
 }

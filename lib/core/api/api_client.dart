@@ -1,435 +1,139 @@
-
-import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
+import '../auth/auth_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
-
-import '../storage/token_storage.dart';
-
-/// Generic API response wrapper.
-///
-/// T represents the type of data returned by the backend.
-/// Example:
 
 class ApiResponse<T> {
   final bool success;
-  final String message;
+  final String? message;
   final T? data;
   final Map<String, dynamic>? meta;
-  final int statusCode;
 
   ApiResponse({
     required this.success,
-    required this.message,
+    this.message,
     this.data,
     this.meta,
-    required this.statusCode,
   });
+
+  factory ApiResponse.fromDioResponse(Response response) {
+    final responseData = response.data;
+    if (responseData is Map<String, dynamic>) {
+      return ApiResponse<T>(
+        success: responseData['success'] ?? true,
+        message: responseData['message'],
+        data: responseData['data'] as T?,
+        meta: responseData['meta'] as Map<String, dynamic>?,
+      );
+    }
+    return ApiResponse<T>(
+      success: true,
+      data: responseData as T?,
+    );
+  }
+
+  factory ApiResponse.error(String message) {
+    return ApiResponse<T>(
+      success: false,
+      message: message,
+    );
+  }
 }
 
 class ApiClient {
-  static final Dio _dio = Dio(
-    BaseOptions(
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 20),
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-    ),
-  );
+  static final ApiClient _instance = ApiClient._internal();
+  factory ApiClient() => _instance;
+  
+  late Dio dio;
 
-  /// Set the global API base URL.
-  static void init({
-    required String baseUrl,
-  }) {
-    _dio.options.baseUrl = baseUrl;
-  }
+  ApiClient._internal() {
+    dio = Dio(BaseOptions(
+      baseUrl: 'http://127.0.0.1:3005/api/',
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+    ));
 
-  // ---------------------------------------------------------------------------
-  // GET
-  // ---------------------------------------------------------------------------
-
-  static Future<ApiResponse<T>> get<T>(
-    String url, {
-    bool withAuth = true,
-    Map<String, dynamic>? queryParameters,
-    Map<String, dynamic>? headers,
-    CancelToken? cancelToken,
-  }) async {
-    try {
-      final response = await _dio.get(
-        url,
-        queryParameters: queryParameters,
-        options: await _options(
-          withAuth,
-          headers: headers,
-        ),
-        cancelToken: cancelToken,
-      );
-
-      return _parseResponse<T>(response);
-    } on DioException catch (error) {
-      return _errorResponse<T>(error);
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // POST
-  // ---------------------------------------------------------------------------
-
-  static Future<ApiResponse<T>> post<T>(
-    String url,
-    dynamic body, {
-    bool withAuth = true,
-    Map<String, dynamic>? queryParameters,
-    Map<String, dynamic>? headers,
-    CancelToken? cancelToken,
-  }) async {
-    try {
-      final response = await _dio.post(
-        url,
-        data: body,
-        queryParameters: queryParameters,
-        options: await _options(
-          withAuth,
-          headers: headers,
-        ),
-        cancelToken: cancelToken,
-      );
-
-      return _parseResponse<T>(response);
-    } on DioException catch (error) {
-      return _errorResponse<T>(error);
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // PUT
-  // ---------------------------------------------------------------------------
-
-  static Future<ApiResponse<T>> put<T>(
-    String url,
-    dynamic body, {
-    bool withAuth = true,
-    Map<String, dynamic>? queryParameters,
-    Map<String, dynamic>? headers,
-    CancelToken? cancelToken,
-  }) async {
-    try {
-      final response = await _dio.put(
-        url,
-        data: body,
-        queryParameters: queryParameters,
-        options: await _options(
-          withAuth,
-          headers: headers,
-        ),
-        cancelToken: cancelToken,
-      );
-
-      return _parseResponse<T>(response);
-    } on DioException catch (error) {
-      return _errorResponse<T>(error);
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // PATCH
-  // ---------------------------------------------------------------------------
-
-  static Future<ApiResponse<T>> patch<T>(
-    String url,
-    dynamic body, {
-    bool withAuth = true,
-    Map<String, dynamic>? queryParameters,
-    Map<String, dynamic>? headers,
-    CancelToken? cancelToken,
-  }) async {
-    try {
-      final response = await _dio.patch(
-        url,
-        data: body,
-        queryParameters: queryParameters,
-        options: await _options(
-          withAuth,
-          headers: headers,
-        ),
-        cancelToken: cancelToken,
-      );
-
-      return _parseResponse<T>(response);
-    } on DioException catch (error) {
-      return _errorResponse<T>(error);
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // DELETE
-  // ---------------------------------------------------------------------------
-
-  static Future<ApiResponse<T>> delete<T>(
-    String url, {
-    bool withAuth = true,
-    Map<String, dynamic>? queryParameters,
-    Map<String, dynamic>? headers,
-    CancelToken? cancelToken,
-  }) async {
-    try {
-      final response = await _dio.delete(
-        url,
-        queryParameters: queryParameters,
-        options: await _options(
-          withAuth,
-          headers: headers,
-        ),
-        cancelToken: cancelToken,
-      );
-
-      return _parseResponse<T>(response);
-    } on DioException catch (error) {
-      return _errorResponse<T>(error);
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // MULTIPART POST
-  // ---------------------------------------------------------------------------
-
-  static Future<ApiResponse<T>> postMultipart<T>(
-    String url, {
-    required Map<String, dynamic> fields,
-    List<XFile> images = const [],
-    String fileKey = 'images',
-    bool withAuth = true,
-    Map<String, dynamic>? headers,
-    CancelToken? cancelToken,
-  }) async {
-    try {
-      final List<MultipartFile> files = [];
-
-      for (final image in images) {
-        if (kIsWeb) {
-          final bytes = await image.readAsBytes();
-
-          files.add(
-            MultipartFile.fromBytes(
-              bytes,
-              filename: image.name.isNotEmpty
-                  ? image.name
-                  : 'upload.jpg',
-            ),
-          );
-        } else {
-          files.add(
-            await MultipartFile.fromFile(
-              image.path,
-              filename: image.name.isNotEmpty
-                  ? image.name
-                  : 'upload.jpg',
-            ),
-          );
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final token = await AuthStorage.getAccessToken();
+        if (token != null && options.headers['Authorization'] == null) {
+          options.headers['Authorization'] = 'Bearer $token';
         }
-      }
-
-      final Map<String, dynamic> sanitizedFields = {};
-
-      fields.forEach((key, value) {
-        if (value != null) {
-          sanitizedFields[key] = value.toString();
-        }
-      });
-
-      final form = FormData.fromMap({
-        ...sanitizedFields,
-        if (files.isNotEmpty)
-          fileKey: files.length == 1
-              ? files.first
-              : files,
-      });
-
-      final response = await _dio.post(
-        url,
-        data: form,
-        options: await _options(
-          withAuth,
-          headers: headers,
-        ),
-        cancelToken: cancelToken,
-      );
-
-      return _parseResponse<T>(response);
-    } on DioException catch (error) {
-      return _errorResponse<T>(error);
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // OPTIONS
-  // ---------------------------------------------------------------------------
-
-  static Future<Options> _options(
-    bool withAuth, {
-    Map<String, dynamic>? headers,
-  }) async {
-    final token = withAuth
-        ? await TokenStorage.getAccessToken()
-        : null;
-
-    return Options(
-      headers: {
-        if (token != null && token.isNotEmpty)
-          'Authorization': 'Bearer $token',
-        ...?headers,
+        return handler.next(options);
       },
-    );
+      onError: (DioException e, handler) async {
+        if (e.response?.statusCode == 401) {
+          await AuthStorage.clearTokens();
+          debugPrint('Unauthorized access. Tokens cleared.');
+        }
+        return handler.next(e);
+      },
+    ));
   }
 
-  // ---------------------------------------------------------------------------
-  // RESPONSE PARSER
-  // ---------------------------------------------------------------------------
-
-  static ApiResponse<T> _parseResponse<T>(
-    Response response,
-  ) {
-    final Map<String, dynamic> body;
-
-    if (response.data is Map) {
-      body = Map<String, dynamic>.from(
-        response.data as Map,
-      );
-    } else {
-      body = {};
-    }
-
-    final statusCode = response.statusCode ?? 0;
-
-    final isHttpSuccess =
-        statusCode >= 200 && statusCode < 300;
-
-    T? parsedData;
-
-    if (body.containsKey('data')) {
-      final data = body['data'];
-
-      if (data is T) {
-        parsedData = data;
+  static String _getErrorMessage(dynamic e) {
+    if (e is DioException) {
+      if (e.response?.data is Map) {
+        return e.response?.data['message'] ?? e.message ?? 'Unknown error';
       }
-    } else if (response.data is T) {
-      parsedData = response.data as T;
+      return e.message ?? 'Network error';
     }
-
-    Map<String, dynamic>? meta;
-
-    if (body['meta'] is Map) {
-      meta = Map<String, dynamic>.from(
-        body['meta'] as Map,
-      );
-    }
-
-    return ApiResponse<T>(
-      success: body.containsKey('success')
-          ? body['success'] == true
-          : isHttpSuccess,
-      message: body['message']?.toString() ??
-          'Response received successfully',
-      data: parsedData,
-      meta: meta,
-      statusCode: statusCode,
-    );
+    return e.toString();
   }
 
-  // ---------------------------------------------------------------------------
-  // ERROR RESPONSE
-  // ---------------------------------------------------------------------------
-
-  static ApiResponse<T> _errorResponse<T>(
-    DioException error,
-  ) {
-    final body = error.response?.data;
-
-    Map<String, dynamic>? map;
-
-    if (body is Map) {
-      map = Map<String, dynamic>.from(body);
+  static Future<ApiResponse<dynamic>> get(String path, {Map<String, dynamic>? queryParameters, bool withAuth = true}) async {
+    try {
+      final options = withAuth ? Options() : Options(headers: {'Authorization': ''});
+      final response = await ApiClient().dio.get(path, queryParameters: queryParameters, options: options);
+      return ApiResponse.fromDioResponse(response);
+    } catch (e) {
+      return ApiResponse.error(_getErrorMessage(e));
     }
-
-    String defaultMessage;
-
-    switch (error.type) {
-      case DioExceptionType.connectionTimeout:
-      case DioExceptionType.sendTimeout:
-      case DioExceptionType.receiveTimeout:
-        defaultMessage =
-            'Connection timed out. Please try again.';
-        break;
-
-      case DioExceptionType.connectionError:
-        defaultMessage =
-            'No internet connection. Please check your network.';
-        break;
-
-      case DioExceptionType.cancel:
-        defaultMessage =
-            'Request was cancelled.';
-        break;
-
-      case DioExceptionType.badResponse:
-        defaultMessage =
-            _getHttpErrorMessage(
-              error.response?.statusCode,
-            );
-        break;
-
-      default:
-        defaultMessage =
-            'Network error. Please try again.';
-    }
-
-    T? errorData;
-
-    final rawError =
-        map?['error'] ?? map?['errors'];
-
-    if (rawError is T) {
-      errorData = rawError;
-    }
-
-    return ApiResponse<T>(
-      success: false,
-      message:
-          map?['message']?.toString() ??
-          defaultMessage,
-      data: errorData,
-      statusCode:
-          error.response?.statusCode ?? 0,
-    );
   }
 
-  // ---------------------------------------------------------------------------
-  // HTTP ERROR MESSAGES
-  // ---------------------------------------------------------------------------
+  static Future<ApiResponse<dynamic>> post(String path, dynamic data, {bool withAuth = true}) async {
+    try {
+      final options = withAuth ? Options() : Options(headers: {'Authorization': ''});
+      final response = await ApiClient().dio.post(path, data: data, options: options);
+      return ApiResponse.fromDioResponse(response);
+    } catch (e) {
+      return ApiResponse.error(_getErrorMessage(e));
+    }
+  }
 
-  static String _getHttpErrorMessage(
-    int? statusCode,
-  ) {
-    switch (statusCode) {
-      case 400:
-        return 'Bad request. Please check your input.';
+  static Future<ApiResponse<dynamic>> put(String path, dynamic data, {bool withAuth = true}) async {
+    try {
+      final options = withAuth ? Options() : Options(headers: {'Authorization': ''});
+      final response = await ApiClient().dio.put(path, data: data, options: options);
+      return ApiResponse.fromDioResponse(response);
+    } catch (e) {
+      return ApiResponse.error(_getErrorMessage(e));
+    }
+  }
 
-      case 401:
-        return 'Unauthorized. Please log in again.';
+  static Future<ApiResponse<dynamic>> delete(String path, {bool withAuth = true}) async {
+    try {
+      final options = withAuth ? Options() : Options(headers: {'Authorization': ''});
+      final response = await ApiClient().dio.delete(path, options: options);
+      return ApiResponse.fromDioResponse(response);
+    } catch (e) {
+      return ApiResponse.error(_getErrorMessage(e));
+    }
+  }
 
-      case 403:
-        return 'Access denied. You do not have permission.';
-
-      case 404:
-        return 'Requested resource not found.';
-
-      case 500:
-        return 'Internal server error. Please try again later.';
-
-      default:
-        return 'Something went wrong. Please try again.';
+  static Future<ApiResponse<dynamic>> postMultipart(String path, {required Map<String, dynamic> fields, List<XFile> images = const []}) async {
+    try {
+      final formData = FormData.fromMap(fields);
+      for (var i = 0; i < images.length; i++) {
+        formData.files.add(MapEntry(
+          'image$i', // Defaulting key to image0, image1... Modify as needed
+          await MultipartFile.fromFile(images[i].path, filename: images[i].name),
+        ));
+      }
+      final response = await ApiClient().dio.post(path, data: formData);
+      return ApiResponse.fromDioResponse(response);
+    } catch (e) {
+      return ApiResponse.error(_getErrorMessage(e));
     }
   }
 }

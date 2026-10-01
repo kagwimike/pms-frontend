@@ -42,7 +42,12 @@ class PropertyModel {
       totalUnits: _toInt(json['total_units'] ?? json['totalUnits']),
       description: json['description']?.toString() ?? '',
       images: rawImages is List
-          ? rawImages.map((image) => image.toString()).toList()
+          ? rawImages.map((img) {
+              if (img is Map && img.containsKey('image')) {
+                return img['image'].toString();
+              }
+              return img.toString();
+            }).toList()
           : const [],
     );
   }

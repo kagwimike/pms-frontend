@@ -1,42 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-import 'providers/auth_provider.dart';
-import 'providers/dashboard_provider.dart';
-import 'providers/property_provider.dart';
-import 'providers/unit_provider.dart';
-import 'router/app_router.dart';
+import 'theme/app_theme.dart';
+import 'widgets/landing_page.dart';
+import 'screens/login_screen.dart';
+import 'screens/register_screen.dart';
+import 'screens/owner_dashboard.dart';
+import 'screens/tenant_dashboard.dart';
+import 'services/auth_service.dart';
 
 void main() {
-  final authProvider = AuthProvider();
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(value: authProvider),
-        ChangeNotifierProvider(create: (_) => DashboardProvider()),
-        ChangeNotifierProvider(create: (_) => PropertyProvider()),
-        ChangeNotifierProvider(create: (_) => UnitProvider()),
-      ],
-      child: MyApp(authProvider: authProvider),
-    ),
-  );
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const PmsProApp());
 }
 
-class MyApp extends StatelessWidget {
-  final AuthProvider authProvider;
-
-  const MyApp({super.key, required this.authProvider});
+class PmsProApp extends StatelessWidget {
+  const PmsProApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'PMS Pro',
+    return MaterialApp(
+      title: 'PMS Pro - Property Management',
+      theme: AppTheme.theme,
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1E2733)),
-        useMaterial3: true,
-      ),
-      routerConfig: createAppRouter(authProvider),
+      home: const LandingPage(),
+      routes: {
+        '/login': (_) => const LoginScreen(),
+        '/register': (_) => const RegisterScreen(),
+        '/owner-dashboard': (_) => const OwnerDashboard(),
+        '/tenant-dashboard': (_) => const TenantDashboard(),
+      },
     );
   }
 }
