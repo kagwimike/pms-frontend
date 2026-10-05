@@ -96,6 +96,8 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
               const SizedBox(width: 8),
               _chip('PENDING', 'Pending'),
               const SizedBox(width: 8),
+              _chip('ASSIGNED', 'Assigned'),
+              const SizedBox(width: 8),
               _chip('IN_PROGRESS', 'In Progress'),
               const SizedBox(width: 8),
               _chip('COMPLETED', 'Completed'),
@@ -163,6 +165,7 @@ class _RequestCard extends StatelessWidget {
   Color _statusColor(String status) {
     switch (status) {
       case 'PENDING': return Colors.orange;
+      case 'ASSIGNED': return Colors.blueAccent;
       case 'IN_PROGRESS': return Colors.blue;
       case 'COMPLETED': return Colors.green;
       case 'VERIFIED': return AppTheme.teal;
@@ -187,6 +190,7 @@ class _RequestCard extends StatelessWidget {
     final priority = request['priority'] ?? 'MEDIUM';
     final tenant = request['tenant'] ?? {};
     final unit = request['unit'] ?? {};
+    final vendor = request['assigned_vendor'];
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -254,6 +258,16 @@ class _RequestCard extends StatelessWidget {
                 style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText, height: 1.4),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
+              ),
+            ],
+            if (vendor != null) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Icon(Icons.engineering_outlined, size: 16, color: AppTheme.teal),
+                  const SizedBox(width: 8),
+                  Text('Assigned to: ${vendor['name']}', style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.navy)),
+                ],
               ),
             ],
             if (isOwner && onStatusUpdate != null) ...[
@@ -413,6 +427,9 @@ class _UpdateStatusDialog extends StatefulWidget {
 class _UpdateStatusDialogState extends State<_UpdateStatusDialog> {
   late String _status;
   final _notesCtrl = TextEditingController();
+  String? _assignedVendorId;
+  List<dynamic> _vendors = [];
+  bool _isLoadingVendors = true;
   bool _isSubmitting = false;
   String? _error;
 
@@ -421,6 +438,24 @@ class _UpdateStatusDialogState extends State<_UpdateStatusDialog> {
     super.initState();
     _status = widget.request['status'] ?? 'PENDING';
     _notesCtrl.text = widget.request['vendor_notes'] ?? '';
+    if (widget.request['assigned_vendor_id'] != null) {
+      _assignedVendorId = widget.request['assigned_vendor_id'].toString();
+    }
+    _loadVendors();
+  }
+
+  Future<void> _loadVendors() async {
+    try {
+      final res = await ApiService().getVendors(limit: 100);
+      if (mounted) {
+        setState(() {
+          _vendors = ApiService.extractList(res);
+          _isLoadingVendors = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoadingVendors = false);
+    }
   }
 
   @override
@@ -437,6 +472,7 @@ class _UpdateStatusDialogState extends State<_UpdateStatusDialog> {
         {
           'status': _status,
           'vendor_notes': _notesCtrl.text,
+          'assigned_vendor_id': _assignedVendorId != null ? int.tryParse(_assignedVendorId!) : null,
         },
       );
       if (mounted) Navigator.pop(context, true);
@@ -482,6 +518,7 @@ class _UpdateStatusDialogState extends State<_UpdateStatusDialog> {
               ),
               items: const [
                 DropdownMenuItem(value: 'PENDING', child: Text('Pending')),
+                DropdownMenuItem(value: 'ASSIGNED', child: Text('Assigned')),
                 DropdownMenuItem(value: 'IN_PROGRESS', child: Text('In Progress')),
                 DropdownMenuItem(value: 'COMPLETED', child: Text('Completed')),
                 DropdownMenuItem(value: 'VERIFIED', child: Text('Verified')),
@@ -490,6 +527,24 @@ class _UpdateStatusDialogState extends State<_UpdateStatusDialog> {
               onChanged: (v) => setState(() => _status = v!),
             ),
             const SizedBox(height: 16),
+            if (!_isLoadingVendors)
+              DropdownButtonFormField<String>(
+                value: _assignedVendorId,
+                decoration: InputDecoration(
+                  labelText: 'Assign Vendor',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  filled: true, fillColor: Colors.grey.shade50,
+                ),
+                items: [
+                  const DropdownMenuItem(value: null, child: Text('None')),
+                  ..._vendors.map((v) => DropdownMenuItem(
+                        value: v['id'].toString(),
+                        child: Text(v['name']),
+                      )),
+                ],
+                onChanged: (v) => setState(() => _assignedVendorId = v),
+              ),
+            if (!_isLoadingVendors) const SizedBox(height: 16),
             TextFormField(
               controller: _notesCtrl,
               decoration: InputDecoration(

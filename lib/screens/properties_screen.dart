@@ -6,6 +6,7 @@ import 'package:http_parser/http_parser.dart';
 import '../services/api_service.dart';
 import '../config.dart';
 import '../theme/app_theme.dart';
+import 'property_details_screen.dart';
 
 class PropertiesScreen extends StatefulWidget {
   const PropertiesScreen({super.key});
@@ -164,7 +165,7 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
                                     final property = _properties[index];
                                     return Padding(
                                       padding: const EdgeInsets.only(bottom: 12),
-                                      child: _PropertyCard(property: property),
+                                      child: _PropertyCard(property: property, onRefresh: _loadProperties),
                                     );
                                   },
                                 );
@@ -179,7 +180,7 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
                                 itemCount: _properties.length,
                                 itemBuilder: (context, index) {
                                   final property = _properties[index];
-                                  return _PropertyCard(property: property);
+                                  return _PropertyCard(property: property, onRefresh: _loadProperties);
                                 },
                               );
                             },
@@ -193,8 +194,50 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
 
 class _PropertyCard extends StatelessWidget {
   final Map<String, dynamic> property;
+  final VoidCallback onRefresh;
 
-  const _PropertyCard({required this.property});
+  const _PropertyCard({required this.property, required this.onRefresh});
+
+  Future<void> _delete(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Property'),
+        content: Text('Are you sure you want to delete ${property['name']}? This action cannot be undone.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        await ApiService().deleteProperty(property['id']);
+        onRefresh();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Property deleted')));
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        }
+      }
+    }
+  }
+
+  void _edit(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => EditPropertyDialog(property: property),
+    ).then((result) {
+      if (result == true) onRefresh();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -216,7 +259,7 @@ class _PropertyCard extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
-            // Navigate to Property Details
+            Navigator.push(context, MaterialPageRoute(builder: (context) => PropertyDetailsScreen(property: property)));
           },
           child: Padding(
             padding: const EdgeInsets.all(12),
@@ -274,7 +317,17 @@ class _PropertyCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const Icon(Icons.more_horiz, color: AppTheme.mutedText),
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_horiz, color: AppTheme.mutedText),
+                      onSelected: (value) {
+                        if (value == 'edit') _edit(context);
+                        if (value == 'delete') _delete(context);
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                        const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                      ],
+                    ),
                   ],
                 ),
                 const Spacer(),
@@ -667,3 +720,200 @@ class _AddPropertyDialogState extends State<AddPropertyDialog> {
     );
   }
 }
+
+class EditPropertyDialog extends StatefulWidget {
+  final Map<String, dynamic> property;
+  const EditPropertyDialog({super.key, required this.property});
+
+  @override
+  State<EditPropertyDialog> createState() => _EditPropertyDialogState();
+}
+
+class _EditPropertyDialogState extends State<EditPropertyDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _nameController;
+  late TextEditingController _addressController;
+  late TextEditingController _cityController;
+  late TextEditingController _countryController;
+  late TextEditingController _descriptionController;
+  late TextEditingController _totalUnitsController;
+  late TextEditingController _amenitiesController;
+  
+  late String _propertyType;
+  bool _isLoading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    final p = widget.property;
+    _nameController = TextEditingController(text: p['name']?.toString());
+    _addressController = TextEditingController(text: p['address']?.toString());
+    _cityController = TextEditingController(text: p['city']?.toString());
+    _countryController = TextEditingController(text: p['country']?.toString());
+    _descriptionController = TextEditingController(text: p['description']?.toString());
+    _totalUnitsController = TextEditingController(text: p['total_units']?.toString());
+    
+    // Join amenities back to comma separated string if available
+    String ams = '';
+    if (p['amenities'] is List) {
+      ams = (p['amenities'] as List).map((a) => a is Map ? a['name'] ?? '' : a.toString()).join(', ');
+    }
+    _amenitiesController = TextEditingController(text: ams);
+    
+    _propertyType = p['property_type']?.toString().toUpperCase() ?? 'APARTMENT';
+    const validTypes = ['APARTMENT', 'HOTEL', 'AIRBNB'];
+    if (!validTypes.contains(_propertyType)) _propertyType = 'APARTMENT';
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _addressController.dispose();
+    _cityController.dispose();
+    _countryController.dispose();
+    _descriptionController.dispose();
+    _totalUnitsController.dispose();
+    _amenitiesController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final data = {
+        'name': _nameController.text,
+        'property_type': _propertyType,
+        'address': _addressController.text,
+        'city': _cityController.text,
+        'country': _countryController.text,
+        'description': _descriptionController.text,
+        if (_totalUnitsController.text.isNotEmpty) 'total_units': _totalUnitsController.text,
+        if (_amenitiesController.text.isNotEmpty) 'new_amenities': _amenitiesController.text.split(',').map((e) => e.trim()).toList(),
+      };
+
+      await ApiService().updateProperty(widget.property['id'], data);
+      if (mounted) Navigator.of(context).pop(true);
+    } catch (e) {
+      setState(() => _error = e.toString());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isSmall = MediaQuery.of(context).size.width < 400;
+    return Dialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 40, vertical: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 500),
+        child: Padding(
+          padding: EdgeInsets.all(isSmall ? 16.0 : 28.0),
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          'Edit Property',
+                          style: GoogleFonts.bricolageGrotesque(
+                            fontSize: isSmall ? 18 : 22,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.navy,
+                          ),
+                        ),
+                      ),
+                      IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.of(context).pop()),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  if (_error != null)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                      child: Text(_error!, style: TextStyle(color: Colors.red.shade700, fontSize: 13)),
+                    ),
+                  TextFormField(controller: _nameController, decoration: _inputDecoration('Property Name'), validator: (v) => v!.isEmpty ? 'Required' : null),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: _propertyType,
+                    decoration: _inputDecoration('Property Type'),
+                    items: const [
+                      DropdownMenuItem(value: 'APARTMENT', child: Text('Apartment')),
+                      DropdownMenuItem(value: 'HOTEL', child: Text('Hotel')),
+                      DropdownMenuItem(value: 'AIRBNB', child: Text('Airbnb')),
+                    ],
+                    onChanged: (v) => setState(() => _propertyType = v!),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(controller: _addressController, decoration: _inputDecoration('Address'), validator: (v) => v!.isEmpty ? 'Required' : null),
+                  const SizedBox(height: 12),
+                  if (isSmall) ...[
+                    TextFormField(controller: _cityController, decoration: _inputDecoration('City'), validator: (v) => v!.isEmpty ? 'Required' : null),
+                    const SizedBox(height: 12),
+                    TextFormField(controller: _countryController, decoration: _inputDecoration('Country'), validator: (v) => v!.isEmpty ? 'Required' : null),
+                  ] else Row(
+                    children: [
+                      Expanded(child: TextFormField(controller: _cityController, decoration: _inputDecoration('City'), validator: (v) => v!.isEmpty ? 'Required' : null)),
+                      const SizedBox(width: 12),
+                      Expanded(child: TextFormField(controller: _countryController, decoration: _inputDecoration('Country'), validator: (v) => v!.isEmpty ? 'Required' : null)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(controller: _totalUnitsController, decoration: _inputDecoration('Total Units (Optional)'), keyboardType: TextInputType.number),
+                  const SizedBox(height: 12),
+                  TextFormField(controller: _amenitiesController, decoration: _inputDecoration('Amenities (comma separated)')),
+                  const SizedBox(height: 12),
+                  TextFormField(controller: _descriptionController, decoration: _inputDecoration('Description (Optional)'), maxLines: 2),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.teal,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          : const Text('UPDATE PROPERTY', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      isDense: true,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.border)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.border)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.teal, width: 2)),
+      filled: true,
+      fillColor: Colors.grey.shade50,
+    );
+  }
+}
+

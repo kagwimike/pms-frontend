@@ -78,7 +78,8 @@ class ApiService {
   }
 
   Future<void> deleteProperty(int id) async {
-    await http.delete(Uri.parse('${AppConfig.apiBaseUrl}/properties/$id'), headers: _headers);
+    final res = await http.delete(Uri.parse('${AppConfig.apiBaseUrl}/properties/$id'), headers: _headers);
+    _processResponse(res);
   }
 
   // ─── Units ───
@@ -102,12 +103,20 @@ class ApiService {
   }
 
   Future<void> deleteUnit(int id) async {
-    await http.delete(Uri.parse('${AppConfig.apiBaseUrl}/units/$id'), headers: _headers);
+    final res = await http.delete(Uri.parse('${AppConfig.apiBaseUrl}/units/$id'), headers: _headers);
+    _processResponse(res);
   }
 
   // ─── Tenants (Users with role TENANT) ───
   Future<Map<String, dynamic>> getUsers({int limit = 10, String? cursor}) async {
     final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/users/?limit=$limit${cursor != null ? '&cursor=$cursor' : ''}'), headers: _headers);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> createTenant(Map<String, dynamic> data) async {
+    // Send to auth register endpoint to create a user account for the tenant
+    data['role'] = 'TENANT';
+    final res = await http.post(Uri.parse('${AppConfig.apiBaseUrl}/auth/register'), headers: _headers, body: jsonEncode(data));
     return _processResponse(res);
   }
 
@@ -131,7 +140,8 @@ class ApiService {
   }
 
   Future<void> deleteLease(int id) async {
-    await http.delete(Uri.parse('${AppConfig.apiBaseUrl}/leases/$id'), headers: _headers);
+    final res = await http.delete(Uri.parse('${AppConfig.apiBaseUrl}/leases/$id'), headers: _headers);
+    _processResponse(res);
   }
 
   // ─── Invoices ───
@@ -154,17 +164,43 @@ class ApiService {
   }
 
   Future<void> deleteInvoice(int id) async {
-    await http.delete(Uri.parse('${AppConfig.apiBaseUrl}/invoices/$id'), headers: _headers);
+    final res = await http.delete(Uri.parse('${AppConfig.apiBaseUrl}/invoices/$id'), headers: _headers);
+    _processResponse(res);
   }
 
   // ─── Payments ───
-  Future<Map<String, dynamic>> getPayments({int limit = 10, String? cursor}) async {
-    final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/finance/?limit=$limit${cursor != null ? '&cursor=$cursor' : ''}'), headers: _headers);
+  Future<Map<String, dynamic>> getPayments({int limit = 10, String? cursor, String? status}) async {
+    var url = '${AppConfig.apiBaseUrl}/finance/payments?limit=$limit';
+    if (cursor != null) url += '&cursor=$cursor';
+    if (status != null) url += '&status=$status';
+    final res = await http.get(Uri.parse(url), headers: _headers);
     return _processResponse(res);
   }
 
   Future<Map<String, dynamic>> createPayment(Map<String, dynamic> data) async {
     final res = await http.post(Uri.parse('${AppConfig.apiBaseUrl}/finance/payments'), headers: _headers, body: jsonEncode(data));
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> initiateMpesaPayment(int invoiceId, String phone, double amount) async {
+    final res = await http.post(
+      Uri.parse('${AppConfig.apiBaseUrl}/finance/payments/mpesa/stk-push'),
+      headers: _headers,
+      body: jsonEncode({
+        'invoice_id': invoiceId,
+        'phone': phone,
+        'amount': amount,
+      }),
+    );
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> updatePaymentStatus(int id, String status) async {
+    final res = await http.patch(
+      Uri.parse('${AppConfig.apiBaseUrl}/finance/payments/$id'),
+      headers: _headers,
+      body: jsonEncode({'status': status}),
+    );
     return _processResponse(res);
   }
 
@@ -198,11 +234,31 @@ class ApiService {
     return _processResponse(res);
   }
 
-  // ─── Inspections ───
-  Future<Map<String, dynamic>> getInspections({int limit = 10, String? cursor}) async {
-    final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/inspections/?limit=$limit${cursor != null ? '&cursor=$cursor' : ''}'), headers: _headers);
+  Future<Map<String, dynamic>> updateVendor(int id, Map<String, dynamic> data) async {
+    final res = await http.put(Uri.parse('${AppConfig.apiBaseUrl}/maintenance/vendors/$id'), headers: _headers, body: jsonEncode(data));
     return _processResponse(res);
   }
+
+  Future<void> deleteVendor(int id) async {
+    final res = await http.delete(Uri.parse('${AppConfig.apiBaseUrl}/maintenance/vendors/$id'), headers: _headers);
+    _processResponse(res);
+  }
+
+  // ─── Inspections ───
+  Future<Map<String, dynamic>> getInspections({int limit = 10, String? cursor, int? leaseId, String? status}) async {
+    var url = '${AppConfig.apiBaseUrl}/inspections/?limit=$limit';
+    if (cursor != null) url += '&cursor=$cursor';
+    if (leaseId != null) url += '&lease_id=$leaseId';
+    if (status != null) url += '&status=$status';
+    final res = await http.get(Uri.parse(url), headers: _headers);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> createInspection(Map<String, dynamic> data) async {
+    final res = await http.post(Uri.parse('${AppConfig.apiBaseUrl}/inspections/'), headers: _headers, body: jsonEncode(data));
+    return _processResponse(res);
+  }
+
 
   // ─── Notifications ───
   Future<Map<String, dynamic>> getNotifications({int limit = 10, String? cursor}) async {
@@ -210,9 +266,30 @@ class ApiService {
     return _processResponse(res);
   }
 
+  Future<Map<String, dynamic>> markNotificationAsRead(String id) async {
+    final res = await http.patch(Uri.parse('${AppConfig.apiBaseUrl}/notifications/$id/read'), headers: _headers);
+    return _processResponse(res);
+  }
+
   // ─── Documents ───
   Future<Map<String, dynamic>> getDocuments({int limit = 10, String? cursor}) async {
     final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/documents/?limit=$limit${cursor != null ? '&cursor=$cursor' : ''}'), headers: _headers);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> createDocument(Map<String, dynamic> data, {http.MultipartFile? file}) async {
+    if (file == null) {
+      final res = await http.post(Uri.parse('${AppConfig.apiBaseUrl}/documents/'), headers: _headers, body: jsonEncode(data));
+      return _processResponse(res);
+    }
+    final req = http.MultipartRequest('POST', Uri.parse('${AppConfig.apiBaseUrl}/documents/'));
+    req.headers.addAll({if (_auth.accessToken != null) 'Authorization': 'Bearer ${_auth.accessToken}'});
+    data.forEach((key, value) {
+      if (value != null) req.fields[key] = value.toString();
+    });
+    req.files.add(file);
+    final streamedResponse = await req.send();
+    final res = await http.Response.fromStream(streamedResponse);
     return _processResponse(res);
   }
 

@@ -45,6 +45,17 @@ class _TenantsScreenState extends State<TenantsScreen> {
     }
   }
 
+  void _showAddTenantDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => const AddTenantDialog(),
+    ).then((result) {
+      if (result == true) {
+        _load();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -60,6 +71,17 @@ class _TenantsScreenState extends State<TenantsScreen> {
                 const SizedBox(height: 4),
                 Text('Manage tenant profiles and assignments', style: GoogleFonts.dmSans(fontSize: 14, color: AppTheme.mutedText)),
               ]),
+              ElevatedButton.icon(
+                onPressed: _showAddTenantDialog,
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('Add Tenant'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.teal,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -240,3 +262,169 @@ class _TenantRow extends StatelessWidget {
     );
   }
 }
+
+class AddTenantDialog extends StatefulWidget {
+  const AddTenantDialog({super.key});
+
+  @override
+  State<AddTenantDialog> createState() => _AddTenantDialogState();
+}
+
+class _AddTenantDialogState extends State<AddTenantDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _idPassportController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _citizenshipController = TextEditingController();
+  String _gender = 'PREFER_NOT_TO_SAY';
+  
+  bool _isSubmitting = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _idPassportController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    _citizenshipController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    setState(() { _isSubmitting = true; _error = null; });
+
+    try {
+      final email = _emailController.text.trim();
+      final username = email.split('@')[0] + DateTime.now().millisecondsSinceEpoch.toString().substring(8);
+      
+      final data = {
+        'first_name': _firstNameController.text.trim(),
+        'last_name': _lastNameController.text.trim(),
+        'email': email,
+        'username': username,
+        'password': 'DefaultPassword123!', // Required by backend for auth register
+        'tenant_id_passport': _idPassportController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        'citizenship': _citizenshipController.text.trim(),
+        'gender': _gender,
+      };
+
+      await ApiService().createTenant(data);
+      if (mounted) Navigator.of(context).pop(true);
+    } catch (e) {
+      setState(() => _error = e.toString());
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmall = screenWidth < 400;
+
+    return Dialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 40, vertical: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 500),
+        child: Padding(
+          padding: const EdgeInsets.all(28.0),
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Add Tenant', style: GoogleFonts.bricolageGrotesque(fontSize: 22, fontWeight: FontWeight.w700, color: AppTheme.navy)),
+                      IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.of(context).pop()),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  if (_error != null)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                      child: Text(_error!, style: TextStyle(color: Colors.red.shade700, fontSize: 13)),
+                    ),
+                  Row(
+                    children: [
+                      Expanded(child: TextFormField(controller: _firstNameController, decoration: _inputDecoration('First Name'), validator: (v) => v!.isEmpty ? 'Required' : null)),
+                      const SizedBox(width: 12),
+                      Expanded(child: TextFormField(controller: _lastNameController, decoration: _inputDecoration('Last Name'), validator: (v) => v!.isEmpty ? 'Required' : null)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(controller: _idPassportController, decoration: _inputDecoration('Tenant ID or Passport'), validator: (v) => v!.isEmpty ? 'Required' : null),
+                  const SizedBox(height: 12),
+                  TextFormField(controller: _emailController, decoration: _inputDecoration('Email Address'), keyboardType: TextInputType.emailAddress, validator: (v) => !v!.contains('@') ? 'Invalid email' : null),
+                  const SizedBox(height: 12),
+                  TextFormField(controller: _phoneController, decoration: _inputDecoration('Phone Number'), keyboardType: TextInputType.phone, validator: (v) => v!.isEmpty ? 'Required' : null),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: TextFormField(controller: _citizenshipController, decoration: _inputDecoration('Citizenship'), validator: (v) => v!.isEmpty ? 'Required' : null)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: _gender,
+                          decoration: _inputDecoration('Gender'),
+                          items: const [
+                            DropdownMenuItem(value: 'MALE', child: Text('Male')),
+                            DropdownMenuItem(value: 'FEMALE', child: Text('Female')),
+                            DropdownMenuItem(value: 'OTHER', child: Text('Other')),
+                            DropdownMenuItem(value: 'PREFER_NOT_TO_SAY', child: Text('Prefer not to say')),
+                          ],
+                          onChanged: (v) => setState(() => _gender = v!),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isSubmitting ? null : _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.teal, foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: _isSubmitting
+                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          : const Text('ADD TENANT', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      isDense: true,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.border)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.border)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.teal, width: 2)),
+      filled: true,
+      fillColor: Colors.grey.shade50,
+    );
+  }
+}
+

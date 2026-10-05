@@ -11,6 +11,11 @@ import 'leases_screen.dart';
 import 'invoices_screen.dart';
 import 'tenants_screen.dart';
 import 'maintenance_screen.dart';
+import 'vendors_screen.dart';
+import 'notifications_screen.dart';
+import 'payments_screen.dart';
+import 'inspections_screen.dart';
+import 'documents_screen.dart';
 
 class OwnerDashboard extends StatefulWidget {
   const OwnerDashboard({super.key});
@@ -108,6 +113,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
     SidebarItem(icon: Icons.receipt_long_outlined, label: 'Rent Collection', key: 'invoices'),
     SidebarItem(icon: Icons.account_balance_wallet_outlined, label: 'Deposits & Charges', key: 'payments'),
     SidebarItem(icon: Icons.build_outlined, label: 'Maintenance', key: 'maintenance'),
+    SidebarItem(icon: Icons.engineering_outlined, label: 'Vendors', key: 'vendors'),
     SidebarItem(icon: Icons.checklist_outlined, label: 'Inspections', key: 'inspections'),
     SidebarItem(icon: Icons.folder_outlined, label: 'Documents', key: 'documents'),
     SidebarItem(icon: Icons.notifications_outlined, label: 'Notifications', key: 'notifications'),
@@ -242,15 +248,17 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
       case 'invoices':
         return const InvoicesScreen();
       case 'payments':
-        return _buildPlaceholder('Deposits & Charges', Icons.account_balance_wallet_outlined, 'Manage deposits, refunds, and charges');
+        return const PaymentsScreen(isOwner: true);
       case 'maintenance':
         return const MaintenanceScreen(isOwner: true);
+      case 'vendors':
+        return const VendorsScreen();
       case 'inspections':
-        return _buildPlaceholder('Inspections', Icons.checklist_outlined, 'Schedule and manage property inspections');
+        return const InspectionsScreen(isOwner: true);
       case 'documents':
-        return _buildPlaceholder('Documents', Icons.folder_outlined, 'Upload, view, and manage documents');
+        return const DocumentsScreen(isOwner: true);
       case 'notifications':
-        return _buildPlaceholder('Notifications', Icons.notifications_outlined, 'View all system notifications');
+        return const NotificationsScreen(isOwner: true);
       case 'settings':
         return _buildPlaceholder('Settings', Icons.settings_outlined, 'Manage your account and preferences');
       default:

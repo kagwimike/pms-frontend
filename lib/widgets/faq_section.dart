@@ -108,11 +108,12 @@ class _FaqTileState extends State<_FaqTile> {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
+      child: Material(
         color: AppTheme.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.border),
-      ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppTheme.border),
+        ),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
@@ -126,6 +127,7 @@ class _FaqTileState extends State<_FaqTile> {
               child: Text(widget.answer, style: const TextStyle(color: AppTheme.mutedText, height: 1.5)),
             ),
           ],
+        ),
         ),
       ),
     );

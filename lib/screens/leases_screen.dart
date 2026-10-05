@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
+import 'lease_details_screen.dart';
 
 class LeasesScreen extends StatefulWidget {
   const LeasesScreen({super.key});
@@ -158,7 +159,7 @@ class _LeasesScreenState extends State<LeasesScreen> {
                             itemCount: _leases.length,
                             itemBuilder: (context, index) {
                               final lease = _leases[index];
-                              return _LeaseListItem(lease: lease);
+                              return _LeaseListItem(lease: lease, onRefresh: _loadLeases);
                             },
                           ),
           ),
@@ -195,8 +196,49 @@ class _LeasesScreenState extends State<LeasesScreen> {
 
 class _LeaseListItem extends StatelessWidget {
   final Map<String, dynamic> lease;
+  final VoidCallback onRefresh;
 
-  const _LeaseListItem({required this.lease});
+  const _LeaseListItem({required this.lease, required this.onRefresh});
+
+  Future<void> _changeStatus(BuildContext context) async {
+    final currentStatus = lease['status'] ?? 'PENDING';
+    final statuses = ['PENDING', 'ACTIVE', 'TERMINATED', 'RENEWED'];
+    
+    final newStatus = await showDialog<String>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text('Change Lease Status'),
+        children: statuses.map((s) => SimpleDialogOption(
+          onPressed: () => Navigator.pop(ctx, s),
+          child: Row(
+            children: [
+              Icon(
+                currentStatus == s ? Icons.radio_button_checked : Icons.radio_button_off,
+                color: currentStatus == s ? AppTheme.teal : Colors.grey,
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Text(s, style: TextStyle(fontWeight: currentStatus == s ? FontWeight.bold : FontWeight.normal)),
+            ],
+          ),
+        )).toList(),
+      ),
+    );
+
+    if (newStatus != null && newStatus != currentStatus) {
+      try {
+        await ApiService().updateLease(lease['id'], {'status': newStatus});
+        onRefresh();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Status updated to $newStatus')));
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -224,7 +266,9 @@ class _LeaseListItem extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: () {},
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => LeaseDetailsScreen(lease: lease)));
+          },
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 20, vertical: isSmall ? 12 : 16),
             child: Row(
@@ -282,10 +326,16 @@ class _LeaseListItem extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (!isSmall) ...[
-                  const SizedBox(width: 12),
-                  Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.mutedText.withValues(alpha: 0.5)),
-                ],
+                const SizedBox(width: 8),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_horiz, color: AppTheme.mutedText),
+                  onSelected: (value) {
+                    if (value == 'status') _changeStatus(context);
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(value: 'status', child: Text('Change Status')),
+                  ],
+                ),
               ],
             ),
           ),

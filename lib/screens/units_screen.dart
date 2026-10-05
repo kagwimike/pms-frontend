@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
+import 'unit_details_screen.dart';
 
 class UnitsScreen extends StatefulWidget {
   const UnitsScreen({super.key});
@@ -169,7 +170,7 @@ class _UnitsScreenState extends State<UnitsScreen> {
                             itemCount: _units.length,
                             itemBuilder: (context, index) {
                               final unit = _units[index];
-                              return _UnitListItem(unit: unit);
+                              return _UnitListItem(unit: unit, onRefresh: _loadUnits);
                             },
                           ),
           ),
@@ -206,8 +207,50 @@ class _UnitsScreenState extends State<UnitsScreen> {
 
 class _UnitListItem extends StatelessWidget {
   final Map<String, dynamic> unit;
+  final VoidCallback onRefresh;
 
-  const _UnitListItem({required this.unit});
+  const _UnitListItem({required this.unit, required this.onRefresh});
+
+  Future<void> _delete(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Unit'),
+        content: Text('Are you sure you want to delete Unit ${unit['unit_number']}? This action cannot be undone.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        await ApiService().deleteUnit(unit['id']);
+        onRefresh();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Unit deleted')));
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        }
+      }
+    }
+  }
+
+  void _edit(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => EditUnitDialog(unit: unit),
+    ).then((result) {
+      if (result == true) onRefresh();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -238,7 +281,7 @@ class _UnitListItem extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: () {
-            // Navigate to Unit Details
+            Navigator.push(context, MaterialPageRoute(builder: (context) => UnitDetailsScreen(unit: unit)));
           },
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 20, vertical: isSmall ? 12 : 16),
@@ -325,10 +368,18 @@ class _UnitListItem extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (!isSmall) ...[
-                  const SizedBox(width: 12),
-                  Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.mutedText.withValues(alpha: 0.5)),
-                ],
+                const SizedBox(width: 8),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_horiz, color: AppTheme.mutedText),
+                  onSelected: (value) {
+                    if (value == 'edit') _edit(context);
+                    if (value == 'delete') _delete(context);
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                    const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                  ],
+                ),
               ],
             ),
           ),
@@ -568,6 +619,241 @@ class _AddUnitDialogState extends State<AddUnitDialog> {
                       child: _isSubmitting
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                           : const Text('SAVE UNIT', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      isDense: true,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: AppTheme.border),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: AppTheme.border),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: AppTheme.teal, width: 2),
+      ),
+      filled: true,
+      fillColor: Colors.grey.shade50,
+    );
+  }
+}
+
+class EditUnitDialog extends StatefulWidget {
+  final Map<String, dynamic> unit;
+  const EditUnitDialog({super.key, required this.unit});
+
+  @override
+  State<EditUnitDialog> createState() => _EditUnitDialogState();
+}
+
+class _EditUnitDialogState extends State<EditUnitDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _unitNumberController;
+  late TextEditingController _floorController;
+  late TextEditingController _bedroomsController;
+  late TextEditingController _rentPriceController;
+  late String _status;
+  
+  final ApiService _apiService = ApiService();
+  bool _isSubmitting = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    final u = widget.unit;
+    _unitNumberController = TextEditingController(text: u['unit_number']?.toString());
+    _floorController = TextEditingController(text: u['floor']?.toString());
+    _bedroomsController = TextEditingController(text: u['bedrooms']?.toString());
+    _rentPriceController = TextEditingController(text: u['rent_price']?.toString());
+    
+    _status = u['status']?.toString().toUpperCase() ?? 'VACANT';
+    const validStatuses = ['VACANT', 'OCCUPIED', 'MAINTENANCE'];
+    if (!validStatuses.contains(_status)) _status = 'VACANT';
+  }
+
+  @override
+  void dispose() {
+    _unitNumberController.dispose();
+    _floorController.dispose();
+    _bedroomsController.dispose();
+    _rentPriceController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    setState(() {
+      _isSubmitting = true;
+      _error = null;
+    });
+
+    try {
+      final data = {
+        'unit_number': _unitNumberController.text,
+        'floor': int.tryParse(_floorController.text) ?? 1,
+        'bedrooms': int.tryParse(_bedroomsController.text) ?? 1,
+        'rent_price': double.tryParse(_rentPriceController.text) ?? 0.0,
+        'status': _status,
+      };
+
+      await _apiService.updateUnit(widget.unit['id'], data);
+      if (mounted) {
+        Navigator.of(context).pop(true);
+      }
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmall = screenWidth < 400;
+    final dialogPad = isSmall ? 16.0 : 28.0;
+
+    return Dialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 40, vertical: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 500),
+        child: Padding(
+          padding: EdgeInsets.all(dialogPad),
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          'Edit Unit',
+                          style: GoogleFonts.bricolageGrotesque(
+                            fontSize: isSmall ? 18 : 22,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.navy,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  if (_error != null)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(_error!, style: TextStyle(color: Colors.red.shade700, fontSize: 13)),
+                    ),
+                  
+                  DropdownButtonFormField<String>(
+                    value: _status,
+                    decoration: _inputDecoration('Status'),
+                    items: const [
+                      DropdownMenuItem(value: 'VACANT', child: Text('Vacant')),
+                      DropdownMenuItem(value: 'OCCUPIED', child: Text('Occupied')),
+                      DropdownMenuItem(value: 'MAINTENANCE', child: Text('Maintenance')),
+                    ],
+                    onChanged: (v) => setState(() => _status = v!),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _unitNumberController,
+                    decoration: _inputDecoration('Unit Number (e.g. A-101)'),
+                    validator: (v) => v!.isEmpty ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  if (isSmall) ...[
+                    TextFormField(
+                      controller: _floorController,
+                      decoration: _inputDecoration('Floor'),
+                      keyboardType: TextInputType.number,
+                      validator: (v) => v!.isEmpty ? 'Required' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _bedroomsController,
+                      decoration: _inputDecoration('Bedrooms'),
+                      keyboardType: TextInputType.number,
+                      validator: (v) => v!.isEmpty ? 'Required' : null,
+                    ),
+                  ] else
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _floorController,
+                            decoration: _inputDecoration('Floor'),
+                            keyboardType: TextInputType.number,
+                            validator: (v) => v!.isEmpty ? 'Required' : null,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _bedroomsController,
+                            decoration: _inputDecoration('Bedrooms'),
+                            keyboardType: TextInputType.number,
+                            validator: (v) => v!.isEmpty ? 'Required' : null,
+                          ),
+                        ),
+                      ],
+                    ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _rentPriceController,
+                    decoration: _inputDecoration('Monthly Rent (KSh)'),
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    validator: (v) => v!.isEmpty ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isSubmitting ? null : _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.teal,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: _isSubmitting
+                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          : const Text('UPDATE UNIT', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],

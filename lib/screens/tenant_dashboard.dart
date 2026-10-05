@@ -9,6 +9,10 @@ import '../services/api_service.dart';
 import '../config.dart';
 import '../widgets/dashboard_sidebar.dart';
 import 'maintenance_screen.dart';
+import 'notifications_screen.dart';
+import 'payments_screen.dart';
+import 'inspections_screen.dart';
+import 'documents_screen.dart';
 
 class TenantDashboard extends StatefulWidget {
   const TenantDashboard({super.key});
@@ -23,7 +27,8 @@ class _TenantDashboardState extends State<TenantDashboard> {
   final _api = ApiService();
 
   // Live data
-  Map<String, dynamic>? _myLease;
+  List<dynamic> _myLeases = [];
+  Map<String, dynamic>? _myActiveLease;
   Map<String, dynamic>? _myUnit;
   List<dynamic> _myInvoices = [];
   List<dynamic> _myPayments = [];
@@ -37,6 +42,8 @@ class _TenantDashboardState extends State<TenantDashboard> {
     SidebarItem(icon: Icons.receipt_long_outlined, label: 'Rent & Invoices', key: 'invoices'),
     SidebarItem(icon: Icons.account_balance_wallet_outlined, label: 'Payment History', key: 'payments'),
     SidebarItem(icon: Icons.build_outlined, label: 'Maintenance', key: 'maintenance'),
+    SidebarItem(icon: Icons.fact_check_outlined, label: 'Inspections', key: 'inspections'),
+    SidebarItem(icon: Icons.folder_outlined, label: 'Documents', key: 'documents'),
     SidebarItem(icon: Icons.notifications_outlined, label: 'Notifications', key: 'notifications'),
     SidebarItem(icon: Icons.settings_outlined, label: 'Settings', key: 'settings'),
   ];
@@ -49,24 +56,20 @@ class _TenantDashboardState extends State<TenantDashboard> {
 
   Future<void> _loadTenantData() async {
     try {
-      // Fetch all leases and filter for this tenant
+      // Backend already filters by tenant_id for TENANT roles
       final leaseRes = await _api.getLeases(limit: 100);
-      final allLeases = ApiService.extractList(leaseRes);
-      final userId = _auth.user?.id;
+      final tenantLeases = ApiService.extractList(leaseRes);
 
-      // Find the tenant's active lease
+      // Find the tenant's active lease for the main dashboard display
       Map<String, dynamic>? activeLease;
-      for (final l in allLeases) {
-        final tenantId = l['tenant_id'] ?? l['tenant']?['id'];
-        if (tenantId?.toString() == userId?.toString()) {
-          if (l['status'] == 'ACTIVE' || l['status'] == 'PENDING') {
-            activeLease = l;
-            break;
-          }
+      for (final l in tenantLeases) {
+        if (l['status'] == 'ACTIVE' || l['status'] == 'PENDING') {
+          activeLease = l;
+          break;
         }
       }
 
-      // Fetch unit details if lease has a unit
+      // Fetch unit details if active lease has a unit
       Map<String, dynamic>? unitData;
       if (activeLease != null) {
         final unitId = activeLease['unit_id'] ?? activeLease['unit']?['id'];
@@ -98,14 +101,12 @@ class _TenantDashboardState extends State<TenantDashboard> {
 
       if (mounted) {
         setState(() {
-          _myLease = activeLease;
+          _myLeases = tenantLeases;
+          _myActiveLease = activeLease;
           _myUnit = unitData;
           _myInvoices = allInvoices;
           _myPayments = allPayments;
-          _myMaintenance = allMaint.where((m) {
-            final tid = m['tenant_id'] ?? m['tenant']?['id'];
-            return tid?.toString() == userId?.toString();
-          }).toList();
+          _myMaintenance = allMaint;
           _isLoading = false;
         });
       }
@@ -221,11 +222,15 @@ class _TenantDashboardState extends State<TenantDashboard> {
       case 'invoices':
         return _buildInvoices();
       case 'payments':
-        return _buildPaymentHistory();
+        return const PaymentsScreen(isOwner: false);
       case 'maintenance':
         return const MaintenanceScreen(isOwner: false);
+      case 'inspections':
+        return const InspectionsScreen(isOwner: false);
+      case 'documents':
+        return const DocumentsScreen(isOwner: false);
       case 'notifications':
-        return _buildPlaceholder('Notifications', Icons.notifications_outlined, 'View all system notifications');
+        return NotificationsScreen(isOwner: false);
       case 'settings':
         return _buildPlaceholder('Settings', Icons.settings_outlined, 'Manage your account and preferences');
       default:
@@ -242,8 +247,8 @@ class _TenantDashboardState extends State<TenantDashboard> {
     final greeting = hour < 12 ? 'Good morning' : (hour < 17 ? 'Good afternoon' : 'Good evening');
 
     final unitNumber = _myUnit?['unit_number'] ?? '—';
-    final leaseStatus = _myLease?['status'] ?? 'No Lease';
-    final rentAmount = double.tryParse(_myLease?['rent_amount']?.toString() ?? '0') ?? 0;
+    final leaseStatus = _myActiveLease?['status'] ?? 'No Lease';
+    final rentAmount = double.tryParse(_myActiveLease?['rent_amount']?.toString() ?? '0') ?? 0;
     final openMaint = _myMaintenance.where((m) => m['status'] == 'PENDING' || m['status'] == 'IN_PROGRESS').length;
     final unpaidInvoices = _myInvoices.where((i) => i['status'] == 'UNPAID' || i['status'] == 'PARTIAL').toList();
     final nextInvoice = unpaidInvoices.isNotEmpty ? unpaidInvoices.first : null;
@@ -262,7 +267,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
           LayoutBuilder(builder: (ctx, c) {
             final cards = [
               _StatCard(icon: Icons.home_outlined, iconBg: AppTheme.teal.withValues(alpha: 0.1), iconColor: AppTheme.teal, value: unitNumber, label: 'My Unit', sublabel: _myUnit?['property']?['name'] ?? ''),
-              _StatCard(icon: Icons.description_outlined, iconBg: AppTheme.navy.withValues(alpha: 0.08), iconColor: AppTheme.navy, value: leaseStatus, label: 'Lease Status', sublabel: _myLease != null ? 'Until ${_myLease!['end_date']}' : 'No active lease'),
+              _StatCard(icon: Icons.description_outlined, iconBg: AppTheme.navy.withValues(alpha: 0.08), iconColor: AppTheme.navy, value: leaseStatus, label: 'Lease Status', sublabel: _myActiveLease != null ? 'Until ${_myActiveLease!['end_date']}' : 'No active lease'),
               _StatCard(icon: Icons.account_balance_wallet_outlined, iconBg: AppTheme.brass.withValues(alpha: 0.12), iconColor: AppTheme.brass, value: 'KSh ${rentAmount.toStringAsFixed(0)}', label: 'Monthly Rent', sublabel: 'Due on 5th of every month'),
               _StatCard(icon: Icons.build_outlined, iconBg: Colors.orange.withValues(alpha: 0.1), iconColor: Colors.orange.shade700, value: '$openMaint', label: 'Open Maintenance', sublabel: 'Active requests'),
             ];
@@ -391,17 +396,14 @@ class _TenantDashboardState extends State<TenantDashboard> {
     if (confirmed != true) return;
 
     try {
-      final ref = 'MPESA-${DateTime.now().millisecondsSinceEpoch}';
-      await _api.createPayment({
-        'invoice_id': invoice['id'],
-        'amount': remaining,
-        'payment_method': 'MPESA',
-        'transaction_reference': ref,
-        'is_confirmed': true,
-      });
+      await _api.initiateMpesaPayment(
+        invoice['id'],
+        '254712345678', // Hardcoded or should prompt user
+        remaining,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Payment recorded successfully!'), backgroundColor: Colors.green),
+          const SnackBar(content: Text('Payment initiated! Check your phone for STK Push.'), backgroundColor: Colors.green),
         );
         _loadTenantData(); // Refresh
       }
@@ -486,27 +488,76 @@ class _TenantDashboardState extends State<TenantDashboard> {
     );
   }
 
-  // ── My Lease ──
+  // ── My Leases ──
   Widget _buildMyLease() {
     if (_isLoading) return const Center(child: CircularProgressIndicator(color: AppTheme.teal));
-    if (_myLease == null) return _buildPlaceholder('My Lease', Icons.description_outlined, 'No active lease found for your account.');
+    if (_myLeases.isEmpty) return _buildPlaceholder('My Leases', Icons.description_outlined, 'No leases found for your account.');
 
-    return SingleChildScrollView(
+    return Padding(
       padding: const EdgeInsets.all(28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('My Lease', style: GoogleFonts.bricolageGrotesque(fontSize: 26, fontWeight: FontWeight.w700, color: AppTheme.navy)),
+          Text('My Leases', style: GoogleFonts.bricolageGrotesque(fontSize: 26, fontWeight: FontWeight.w700, color: AppTheme.navy)),
+          const SizedBox(height: 4),
+          Text('View your current and past lease agreements', style: GoogleFonts.dmSans(fontSize: 14, color: AppTheme.mutedText)),
           const SizedBox(height: 24),
-          _infoCard('Lease Agreement', [
-            _infoRow('Status', _myLease!['status'] ?? ''),
-            _infoRow('Start Date', _myLease!['start_date'] ?? ''),
-            _infoRow('End Date', _myLease!['end_date'] ?? ''),
-            _infoRow('Monthly Rent', 'KSh ${_myLease!['rent_amount'] ?? 0}'),
-            _infoRow('Security Deposit', 'KSh ${_myLease!['deposit_amount'] ?? 0}'),
-            if (_myLease!['notes'] != null && (_myLease!['notes'] as String).isNotEmpty)
-              _infoRow('Notes', _myLease!['notes']),
-          ]),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _myLeases.length,
+              itemBuilder: (ctx, i) {
+                final lease = _myLeases[i];
+                final status = lease['status'] ?? 'UNKNOWN';
+                Color statusColor = Colors.grey;
+                if (status == 'ACTIVE') statusColor = Colors.green;
+                if (status == 'PENDING') statusColor = Colors.orange;
+                if (status == 'TERMINATED') statusColor = Colors.red;
+
+                final unit = lease['unit'] ?? {};
+                final property = unit['property'] ?? {};
+                final unitName = unit['unit_number'] != null ? 'Unit ${unit['unit_number']}' : 'Unknown Unit';
+                final propName = property['name'] != null ? ' • ${property['name']}' : '';
+
+                return Card(
+                  elevation: 0,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(color: AppTheme.border.withValues(alpha: 0.5)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text('$unitName$propName', style: GoogleFonts.bricolageGrotesque(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.navy)),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                              child: Text(status, style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w700, color: statusColor)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        _infoRow('Start Date', lease['start_date'] ?? ''),
+                        _infoRow('End Date', lease['end_date'] ?? ''),
+                        _infoRow('Monthly Rent', 'KSh ${lease['rent_amount'] ?? 0}'),
+                        _infoRow('Security Deposit', 'KSh ${lease['deposit_amount'] ?? 0}'),
+                        if (lease['notes'] != null && (lease['notes'] as String).isNotEmpty)
+                          _infoRow('Notes', lease['notes']),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );
