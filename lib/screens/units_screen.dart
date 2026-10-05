@@ -66,13 +66,21 @@ class _UnitsScreenState extends State<UnitsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmall = screenWidth < 400;
+    final pad = isSmall ? 16.0 : 28.0;
+
     return Padding(
-      padding: const EdgeInsets.all(28.0),
+      padding: EdgeInsets.all(pad),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // Responsive header
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,7 +88,7 @@ class _UnitsScreenState extends State<UnitsScreen> {
                   Text(
                     'Units',
                     style: GoogleFonts.bricolageGrotesque(
-                      fontSize: 26,
+                      fontSize: isSmall ? 22 : 26,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.navy,
                     ),
@@ -88,37 +96,36 @@ class _UnitsScreenState extends State<UnitsScreen> {
                   const SizedBox(height: 4),
                   Text(
                     'Manage all units across your properties',
-                    style: GoogleFonts.dmSans(fontSize: 14, color: AppTheme.mutedText),
+                    style: GoogleFonts.dmSans(fontSize: isSmall ? 12 : 14, color: AppTheme.mutedText),
                   ),
                 ],
               ),
               ElevatedButton.icon(
                 onPressed: _showAddUnitDialog,
                 icon: const Icon(Icons.add, size: 18),
-                label: const Text('Add Unit'),
+                label: Text(isSmall ? 'Add' : 'Add Unit'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.teal,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 20, vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
-          // Filter Bar
-          Row(
+          SizedBox(height: isSmall ? 16 : 24),
+          // Filter Bar - Wrap instead of Row
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
               _buildFilterChip('ALL', 'All Units'),
-              const SizedBox(width: 8),
               _buildFilterChip('VACANT', 'Vacant'),
-              const SizedBox(width: 8),
               _buildFilterChip('OCCUPIED', 'Occupied'),
-              const SizedBox(width: 8),
               _buildFilterChip('MAINTENANCE', 'Maintenance'),
             ],
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: isSmall ? 16 : 24),
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator(color: AppTheme.teal))
@@ -129,7 +136,7 @@ class _UnitsScreenState extends State<UnitsScreen> {
                           children: [
                             Icon(Icons.error_outline, color: Colors.red.shade300, size: 48),
                             const SizedBox(height: 16),
-                            Text(_error!, style: TextStyle(color: Colors.red.shade700)),
+                            Text(_error!, style: TextStyle(color: Colors.red.shade700), textAlign: TextAlign.center),
                             const SizedBox(height: 16),
                             ElevatedButton(
                               onPressed: _loadUnits,
@@ -143,7 +150,7 @@ class _UnitsScreenState extends State<UnitsScreen> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.door_sliding_outlined, size: 64, color: AppTheme.mutedText.withOpacity(0.3)),
+                                Icon(Icons.door_sliding_outlined, size: 64, color: AppTheme.mutedText.withValues(alpha: 0.3)),
                                 const SizedBox(height: 16),
                                 Text(
                                   'No units found',
@@ -153,6 +160,7 @@ class _UnitsScreenState extends State<UnitsScreen> {
                                 Text(
                                   'Try changing the filter or adding a new unit.',
                                   style: GoogleFonts.dmSans(color: AppTheme.mutedText),
+                                  textAlign: TextAlign.center,
                                 ),
                               ],
                             ),
@@ -178,6 +186,7 @@ class _UnitsScreenState extends State<UnitsScreen> {
       labelStyle: GoogleFonts.dmSans(
         color: isSelected ? Colors.white : AppTheme.navy,
         fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+        fontSize: 13,
       ),
       backgroundColor: Colors.white,
       selectedColor: AppTheme.navy,
@@ -208,15 +217,17 @@ class _UnitListItem extends StatelessWidget {
     if (status == 'OCCUPIED') statusColor = AppTheme.navy;
     if (status == 'MAINTENANCE') statusColor = Colors.orange;
 
+    final isSmall = MediaQuery.of(context).size.width < 400;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+        border: Border.all(color: AppTheme.border.withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.01),
+            color: Colors.black.withValues(alpha: 0.01),
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),
@@ -230,12 +241,12 @@ class _UnitListItem extends StatelessWidget {
             // Navigate to Unit Details
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 20, vertical: isSmall ? 12 : 16),
             child: Row(
               children: [
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: isSmall ? 40 : 48,
+                  height: isSmall ? 40 : 48,
                   decoration: BoxDecoration(
                     color: AppTheme.bgGreyGreen,
                     borderRadius: BorderRadius.circular(12),
@@ -244,14 +255,15 @@ class _UnitListItem extends StatelessWidget {
                     child: Text(
                       unit['unit_number'] ?? '?',
                       style: GoogleFonts.bricolageGrotesque(
-                        fontSize: 16,
+                        fontSize: isSmall ? 13 : 16,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.navy,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: isSmall ? 10 : 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,48 +271,53 @@ class _UnitListItem extends StatelessWidget {
                       Text(
                         'Unit ${unit['unit_number']}',
                         style: GoogleFonts.dmSans(
-                          fontSize: 16,
+                          fontSize: isSmall ? 14 : 16,
                           fontWeight: FontWeight.w600,
                           color: AppTheme.navy,
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(Icons.bed_outlined, size: 14, color: AppTheme.mutedText),
-                          const SizedBox(width: 4),
-                          Text('${unit['bedrooms'] ?? 1} Bed', style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText)),
-                          const SizedBox(width: 12),
-                          Icon(Icons.stairs_outlined, size: 14, color: AppTheme.mutedText),
-                          const SizedBox(width: 4),
-                          Text('Floor ${unit['floor'] ?? 1}', style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText)),
+                          const Icon(Icons.bed_outlined, size: 13, color: AppTheme.mutedText),
+                          const SizedBox(width: 3),
+                          Text('${unit['bedrooms'] ?? 1} Bed', style: GoogleFonts.dmSans(fontSize: 12, color: AppTheme.mutedText)),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.stairs_outlined, size: 13, color: AppTheme.mutedText),
+                          const SizedBox(width: 3),
+                          Flexible(
+                            child: Text('Floor ${unit['floor'] ?? 1}', style: GoogleFonts.dmSans(fontSize: 12, color: AppTheme.mutedText), overflow: TextOverflow.ellipsis),
+                          ),
                         ],
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(width: 8),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'KSh ${unit['rent_price'] ?? 0}',
                       style: GoogleFonts.bricolageGrotesque(
-                        fontSize: 16,
+                        fontSize: isSmall ? 13 : 16,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.navy,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
+                        color: statusColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         status,
                         style: GoogleFonts.dmSans(
-                          fontSize: 10,
+                          fontSize: 9,
                           fontWeight: FontWeight.w700,
                           color: statusColor,
                         ),
@@ -308,8 +325,10 @@ class _UnitListItem extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(width: 16),
-                Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.mutedText.withOpacity(0.5)),
+                if (!isSmall) ...[
+                  const SizedBox(width: 12),
+                  Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.mutedText.withValues(alpha: 0.5)),
+                ],
               ],
             ),
           ),
@@ -333,8 +352,6 @@ class _AddUnitDialogState extends State<AddUnitDialog> {
   final _bedroomsController = TextEditingController(text: '1');
   final _rentPriceController = TextEditingController();
   
-  // We need to associate a unit with a property. In a real app, you'd fetch properties and select one.
-  // For simplicity in this dialog, we'll assume the user types a property ID, or we fetch them.
   final ApiService _apiService = ApiService();
   List<dynamic> _properties = [];
   int? _selectedPropertyId;
@@ -352,8 +369,9 @@ class _AddUnitDialogState extends State<AddUnitDialog> {
     try {
       final response = await _apiService.getProperties(limit: 50);
       List<dynamic> props = [];
-      if (response.containsKey('data') && response['data'] is List) props = response['data'];
-      else if (response.containsKey('results') && response['results'] is List) props = response['results'];
+      if (response.containsKey('data') && response['data'] is List) {
+        props = response['data'];
+      } else if (response.containsKey('results') && response['results'] is List) props = response['results'];
       else props = response.values.firstWhere((v) => v is List, orElse: () => []);
       
       setState(() {
@@ -421,113 +439,140 @@ class _AddUnitDialogState extends State<AddUnitDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmall = screenWidth < 400;
+    final dialogPad = isSmall ? 16.0 : 28.0;
+
     if (_isLoading) {
        return const Dialog(child: SizedBox(width: 100, height: 100, child: Center(child: CircularProgressIndicator())));
     }
 
     return Dialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 40, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
-        width: 500,
-        padding: const EdgeInsets.all(32),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 500),
+        child: Padding(
+          padding: EdgeInsets.all(dialogPad),
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Add New Unit',
-                    style: GoogleFonts.bricolageGrotesque(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.navy,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          'Add New Unit',
+                          style: GoogleFonts.bricolageGrotesque(
+                            fontSize: isSmall ? 18 : 22,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.navy,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  if (_error != null)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(_error!, style: TextStyle(color: Colors.red.shade700, fontSize: 13)),
                     ),
+                  if (_properties.isEmpty)
+                   const Text("You must create a property first before adding units.", style: TextStyle(color: Colors.red)),
+                  if (_properties.isNotEmpty)
+                  DropdownButtonFormField<int>(
+                    value: _selectedPropertyId,
+                    decoration: _inputDecoration('Select Property'),
+                    isExpanded: true,
+                    items: _properties.map((p) => DropdownMenuItem<int>(
+                      value: p['id'], 
+                      child: Text(p['name'] ?? 'Unknown', overflow: TextOverflow.ellipsis),
+                    )).toList(),
+                    onChanged: (v) => setState(() => _selectedPropertyId = v),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.of(context).pop(),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _unitNumberController,
+                    decoration: _inputDecoration('Unit Number (e.g. A-101)'),
+                    validator: (v) => v!.isEmpty ? 'Required' : null,
                   ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              if (_error != null)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(_error!, style: TextStyle(color: Colors.red.shade700)),
-                ),
-              if (_properties.isEmpty)
-                 const Text("You must create a property first before adding units.", style: TextStyle(color: Colors.red)),
-              if (_properties.isNotEmpty)
-              DropdownButtonFormField<int>(
-                value: _selectedPropertyId,
-                decoration: _inputDecoration('Select Property'),
-                items: _properties.map((p) => DropdownMenuItem<int>(
-                  value: p['id'], 
-                  child: Text(p['name'] ?? 'Unknown'),
-                )).toList(),
-                onChanged: (v) => setState(() => _selectedPropertyId = v),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _unitNumberController,
-                decoration: _inputDecoration('Unit Number (e.g. A-101)'),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
+                  const SizedBox(height: 12),
+                  if (isSmall) ...[
+                    TextFormField(
                       controller: _floorController,
                       decoration: _inputDecoration('Floor'),
                       keyboardType: TextInputType.number,
                       validator: (v) => v!.isEmpty ? 'Required' : null,
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: TextFormField(
+                    const SizedBox(height: 12),
+                    TextFormField(
                       controller: _bedroomsController,
                       decoration: _inputDecoration('Bedrooms'),
                       keyboardType: TextInputType.number,
                       validator: (v) => v!.isEmpty ? 'Required' : null,
                     ),
+                  ] else
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _floorController,
+                            decoration: _inputDecoration('Floor'),
+                            keyboardType: TextInputType.number,
+                            validator: (v) => v!.isEmpty ? 'Required' : null,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _bedroomsController,
+                            decoration: _inputDecoration('Bedrooms'),
+                            keyboardType: TextInputType.number,
+                            validator: (v) => v!.isEmpty ? 'Required' : null,
+                          ),
+                        ),
+                      ],
+                    ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _rentPriceController,
+                    decoration: _inputDecoration('Monthly Rent (KSh)'),
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    validator: (v) => v!.isEmpty ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isSubmitting || _properties.isEmpty ? null : _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.teal,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: _isSubmitting
+                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          : const Text('SAVE UNIT', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _rentPriceController,
-                decoration: _inputDecoration('Monthly Rent (KSh)'),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isSubmitting || _properties.isEmpty ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.teal,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  child: _isSubmitting
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('SAVE UNIT', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -537,17 +582,18 @@ class _AddUnitDialogState extends State<AddUnitDialog> {
   InputDecoration _inputDecoration(String label) {
     return InputDecoration(
       labelText: label,
+      isDense: true,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: AppTheme.border),
+        borderSide: const BorderSide(color: AppTheme.border),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: AppTheme.border),
+        borderSide: const BorderSide(color: AppTheme.border),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: AppTheme.teal, width: 2),
+        borderSide: const BorderSide(color: AppTheme.teal, width: 2),
       ),
       filled: true,
       fillColor: Colors.grey.shade50,

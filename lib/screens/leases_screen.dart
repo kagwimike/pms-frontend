@@ -66,13 +66,20 @@ class _LeasesScreenState extends State<LeasesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmall = screenWidth < 400;
+    final pad = isSmall ? 16.0 : 28.0;
+
     return Padding(
-      padding: const EdgeInsets.all(28.0),
+      padding: EdgeInsets.all(pad),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,45 +87,44 @@ class _LeasesScreenState extends State<LeasesScreen> {
                   Text(
                     'Leases',
                     style: GoogleFonts.bricolageGrotesque(
-                      fontSize: 26,
+                      fontSize: isSmall ? 22 : 26,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.navy,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Create and manage tenant lease agreements',
-                    style: GoogleFonts.dmSans(fontSize: 14, color: AppTheme.mutedText),
+                    'Create and manage lease agreements',
+                    style: GoogleFonts.dmSans(fontSize: isSmall ? 12 : 14, color: AppTheme.mutedText),
                   ),
                 ],
               ),
               ElevatedButton.icon(
                 onPressed: _showAddLeaseDialog,
                 icon: const Icon(Icons.add, size: 18),
-                label: const Text('Create Lease'),
+                label: Text(isSmall ? 'Create' : 'Create Lease'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.teal,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 20, vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
-          // Filter Bar
-          Row(
+          SizedBox(height: isSmall ? 16 : 24),
+          // Filter Bar - Wrap
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
-              _buildFilterChip('ALL', 'All Leases'),
-              const SizedBox(width: 8),
+              _buildFilterChip('ALL', 'All'),
               _buildFilterChip('ACTIVE', 'Active'),
-              const SizedBox(width: 8),
               _buildFilterChip('PENDING', 'Pending'),
-              const SizedBox(width: 8),
               _buildFilterChip('TERMINATED', 'Terminated'),
             ],
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: isSmall ? 16 : 24),
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator(color: AppTheme.teal))
@@ -129,12 +135,9 @@ class _LeasesScreenState extends State<LeasesScreen> {
                           children: [
                             Icon(Icons.error_outline, color: Colors.red.shade300, size: 48),
                             const SizedBox(height: 16),
-                            Text(_error!, style: TextStyle(color: Colors.red.shade700)),
+                            Text(_error!, style: TextStyle(color: Colors.red.shade700), textAlign: TextAlign.center),
                             const SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: _loadLeases,
-                              child: const Text('Retry'),
-                            ),
+                            ElevatedButton(onPressed: _loadLeases, child: const Text('Retry')),
                           ],
                         ),
                       )
@@ -143,17 +146,11 @@ class _LeasesScreenState extends State<LeasesScreen> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.description_outlined, size: 64, color: AppTheme.mutedText.withOpacity(0.3)),
+                                Icon(Icons.description_outlined, size: 64, color: AppTheme.mutedText.withValues(alpha: 0.3)),
                                 const SizedBox(height: 16),
-                                Text(
-                                  'No leases found',
-                                  style: GoogleFonts.bricolageGrotesque(fontSize: 20, color: AppTheme.navy),
-                                ),
+                                Text('No leases found', style: GoogleFonts.bricolageGrotesque(fontSize: 20, color: AppTheme.navy)),
                                 const SizedBox(height: 8),
-                                Text(
-                                  'Try changing the filter or creating a new lease.',
-                                  style: GoogleFonts.dmSans(color: AppTheme.mutedText),
-                                ),
+                                Text('Try changing the filter or creating a new lease.', style: GoogleFonts.dmSans(color: AppTheme.mutedText), textAlign: TextAlign.center),
                               ],
                             ),
                           )
@@ -178,6 +175,7 @@ class _LeasesScreenState extends State<LeasesScreen> {
       labelStyle: GoogleFonts.dmSans(
         color: isSelected ? Colors.white : AppTheme.navy,
         fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+        fontSize: 13,
       ),
       backgroundColor: Colors.white,
       selectedColor: AppTheme.navy,
@@ -208,101 +206,86 @@ class _LeaseListItem extends StatelessWidget {
     if (status == 'PENDING') statusColor = Colors.orange;
     if (status == 'TERMINATED') statusColor = Colors.red;
 
-    // The API might return nested objects (e.g., unit details, tenant details)
     final unit = lease['unit'] ?? {};
     final tenant = lease['tenant'] ?? {};
+    final isSmall = MediaQuery.of(context).size.width < 400;
     
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+        border: Border.all(color: AppTheme.border.withValues(alpha: 0.5)),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.01),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.01), blurRadius: 5, offset: const Offset(0, 2)),
         ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: () {
-            // Navigate to Lease Details
-          },
+          onTap: () {},
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 20, vertical: isSmall ? 12 : 16),
             child: Row(
               children: [
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: isSmall ? 40 : 48,
+                  height: isSmall ? 40 : 48,
                   decoration: BoxDecoration(
-                    color: AppTheme.brass.withOpacity(0.1),
+                    color: AppTheme.brass.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Center(
-                    child: Icon(Icons.description_outlined, color: AppTheme.brass)
-                  ),
+                  child: const Center(child: Icon(Icons.description_outlined, color: AppTheme.brass, size: 20)),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: isSmall ? 10 : 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Unit ${unit['unit_number'] ?? 'Unknown'} • ${tenant['username'] ?? 'Unknown Tenant'}',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.navy,
-                        ),
+                        'Unit ${unit['unit_number'] ?? '?'} • ${tenant['username'] ?? '?'}',
+                        style: GoogleFonts.dmSans(fontSize: isSmall ? 13 : 16, fontWeight: FontWeight.w600, color: AppTheme.navy),
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(Icons.calendar_today_outlined, size: 14, color: AppTheme.mutedText),
+                          const Icon(Icons.calendar_today_outlined, size: 12, color: AppTheme.mutedText),
                           const SizedBox(width: 4),
-                          Text('${lease['start_date']} to ${lease['end_date']}', style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText)),
+                          Flexible(
+                            child: Text(
+                              '${lease['start_date']} to ${lease['end_date']}',
+                              style: GoogleFonts.dmSans(fontSize: 11, color: AppTheme.mutedText),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                         ],
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(width: 8),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'KSh ${lease['rent_amount'] ?? 0}',
-                      style: GoogleFonts.bricolageGrotesque(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.navy,
-                      ),
+                      style: GoogleFonts.bricolageGrotesque(fontSize: isSmall ? 13 : 16, fontWeight: FontWeight.w700, color: AppTheme.navy),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        status,
-                        style: GoogleFonts.dmSans(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: statusColor,
-                        ),
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+                      child: Text(status, style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, color: statusColor)),
                     ),
                   ],
                 ),
-                const SizedBox(width: 16),
-                Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.mutedText.withOpacity(0.5)),
+                if (!isSmall) ...[
+                  const SizedBox(width: 12),
+                  Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.mutedText.withValues(alpha: 0.5)),
+                ],
               ],
             ),
           ),
@@ -349,18 +332,20 @@ class _AddLeaseDialogState extends State<AddLeaseDialog> {
       final tenantRes = await _apiService.getUsers(limit: 100);
       
       List<dynamic> u = [];
-      if (unitRes.containsKey('data')) u = unitRes['data'];
-      else if (unitRes.containsKey('results')) u = unitRes['results'];
+      if (unitRes.containsKey('data')) {
+        u = unitRes['data'];
+      } else if (unitRes.containsKey('results')) u = unitRes['results'];
       else u = unitRes.values.firstWhere((v) => v is List, orElse: () => []);
 
       List<dynamic> t = [];
-      if (tenantRes.containsKey('data')) t = tenantRes['data'];
-      else if (tenantRes.containsKey('results')) t = tenantRes['results'];
+      if (tenantRes.containsKey('data')) {
+        t = tenantRes['data'];
+      } else if (tenantRes.containsKey('results')) t = tenantRes['results'];
       else t = tenantRes.values.firstWhere((v) => v is List, orElse: () => []);
       
       setState(() {
         _units = u;
-        _tenants = t.where((u) => u['role'] == 'TENANT').toList(); // Filter tenants
+        _tenants = t.where((u) => u['role'] == 'TENANT').toList();
         if (_units.isNotEmpty) _selectedUnitId = _units[0]['id'];
         if (_tenants.isNotEmpty) _selectedTenantId = _tenants[0]['id'];
         _isLoading = false;
@@ -426,145 +411,159 @@ class _AddLeaseDialogState extends State<AddLeaseDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmall = screenWidth < 400;
+    final dialogPad = isSmall ? 16.0 : 28.0;
+
     if (_isLoading) {
        return const Dialog(child: SizedBox(width: 100, height: 100, child: Center(child: CircularProgressIndicator())));
     }
 
     return Dialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 40, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
-        width: 600,
-        padding: const EdgeInsets.all(32),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 600),
+        child: Padding(
+          padding: EdgeInsets.all(dialogPad),
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Create Lease',
-                    style: GoogleFonts.bricolageGrotesque(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.navy,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          'Create Lease',
+                          style: GoogleFonts.bricolageGrotesque(fontSize: isSmall ? 18 : 22, fontWeight: FontWeight.w700, color: AppTheme.navy),
+                        ),
+                      ),
+                      IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.of(context).pop()),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  if (_error != null)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                      child: Text(_error!, style: TextStyle(color: Colors.red.shade700, fontSize: 13)),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              if (_error != null)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(_error!, style: TextStyle(color: Colors.red.shade700)),
-                ),
-              if (_units.isEmpty || _tenants.isEmpty)
-                 const Text("You need vacant units and registered tenants to create a lease.", style: TextStyle(color: Colors.red)),
-              if (_units.isNotEmpty && _tenants.isNotEmpty) ...[
-                Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButtonFormField<int>(
+                  if (_units.isEmpty || _tenants.isEmpty)
+                   const Text("You need vacant units and registered tenants to create a lease.", style: TextStyle(color: Colors.red, fontSize: 13)),
+                  if (_units.isNotEmpty && _tenants.isNotEmpty) ...[
+                    // Unit & Tenant dropdowns - stack on small
+                    if (isSmall) ...[
+                      DropdownButtonFormField<int>(
                         value: _selectedUnitId,
                         decoration: _inputDecoration('Select Unit (Vacant)'),
-                        items: _units.map((u) => DropdownMenuItem<int>(
-                          value: u['id'], 
-                          child: Text('Unit ${u['unit_number']}'),
-                        )).toList(),
+                        isExpanded: true,
+                        items: _units.map((u) => DropdownMenuItem<int>(value: u['id'], child: Text('Unit ${u['unit_number']}', overflow: TextOverflow.ellipsis))).toList(),
                         onChanged: (v) => setState(() => _selectedUnitId = v),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: DropdownButtonFormField<int>(
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<int>(
                         value: _selectedTenantId,
                         decoration: _inputDecoration('Select Tenant'),
-                        items: _tenants.map((t) => DropdownMenuItem<int>(
-                          value: t['id'], 
-                          child: Text(t['username'] ?? t['email'] ?? 'Unknown'),
-                        )).toList(),
+                        isExpanded: true,
+                        items: _tenants.map((t) => DropdownMenuItem<int>(value: t['id'], child: Text(t['username'] ?? t['email'] ?? 'Unknown', overflow: TextOverflow.ellipsis))).toList(),
                         onChanged: (v) => setState(() => _selectedTenantId = v),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
+                    ] else
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<int>(
+                              value: _selectedUnitId,
+                              decoration: _inputDecoration('Select Unit (Vacant)'),
+                              isExpanded: true,
+                              items: _units.map((u) => DropdownMenuItem<int>(value: u['id'], child: Text('Unit ${u['unit_number']}'))).toList(),
+                              onChanged: (v) => setState(() => _selectedUnitId = v),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: DropdownButtonFormField<int>(
+                              value: _selectedTenantId,
+                              decoration: _inputDecoration('Select Tenant'),
+                              isExpanded: true,
+                              items: _tenants.map((t) => DropdownMenuItem<int>(value: t['id'], child: Text(t['username'] ?? t['email'] ?? 'Unknown', overflow: TextOverflow.ellipsis))).toList(),
+                              onChanged: (v) => setState(() => _selectedTenantId = v),
+                            ),
+                          ),
+                        ],
+                      ),
+                    const SizedBox(height: 12),
+                    // Dates - stack on small
+                    if (isSmall) ...[
+                      TextFormField(
                         controller: _startDateController,
                         decoration: _inputDecoration('Start Date (YYYY-MM-DD)'),
                         validator: (v) => v!.isEmpty ? 'Required' : null,
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: TextFormField(
+                      const SizedBox(height: 12),
+                      TextFormField(
                         controller: _endDateController,
                         decoration: _inputDecoration('End Date (YYYY-MM-DD)'),
                         validator: (v) => v!.isEmpty ? 'Required' : null,
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
+                    ] else
+                      Row(
+                        children: [
+                          Expanded(child: TextFormField(controller: _startDateController, decoration: _inputDecoration('Start Date (YYYY-MM-DD)'), validator: (v) => v!.isEmpty ? 'Required' : null)),
+                          const SizedBox(width: 12),
+                          Expanded(child: TextFormField(controller: _endDateController, decoration: _inputDecoration('End Date (YYYY-MM-DD)'), validator: (v) => v!.isEmpty ? 'Required' : null)),
+                        ],
+                      ),
+                    const SizedBox(height: 12),
+                    // Rent & Deposit - stack on small
+                    if (isSmall) ...[
+                      TextFormField(
                         controller: _rentController,
                         decoration: _inputDecoration('Monthly Rent (KSh)'),
                         keyboardType: TextInputType.number,
                         validator: (v) => v!.isEmpty ? 'Required' : null,
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: TextFormField(
+                      const SizedBox(height: 12),
+                      TextFormField(
                         controller: _depositController,
                         decoration: _inputDecoration('Deposit (KSh)'),
                         keyboardType: TextInputType.number,
                         validator: (v) => v!.isEmpty ? 'Required' : null,
                       ),
+                    ] else
+                      Row(
+                        children: [
+                          Expanded(child: TextFormField(controller: _rentController, decoration: _inputDecoration('Monthly Rent (KSh)'), keyboardType: TextInputType.number, validator: (v) => v!.isEmpty ? 'Required' : null)),
+                          const SizedBox(width: 12),
+                          Expanded(child: TextFormField(controller: _depositController, decoration: _inputDecoration('Deposit (KSh)'), keyboardType: TextInputType.number, validator: (v) => v!.isEmpty ? 'Required' : null)),
+                        ],
+                      ),
+                    const SizedBox(height: 12),
+                    TextFormField(controller: _notesController, decoration: _inputDecoration('Notes (Optional)'), maxLines: 2),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _isSubmitting ? null : _submit,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.teal, foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        child: _isSubmitting
+                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                            : const Text('CREATE LEASE', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
                     ),
                   ],
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _notesController,
-                  decoration: _inputDecoration('Notes (Optional)'),
-                  maxLines: 2,
-                ),
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isSubmitting ? null : _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.teal,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    child: _isSubmitting
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Text('CREATE LEASE', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              ],
-            ],
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -574,18 +573,10 @@ class _AddLeaseDialogState extends State<AddLeaseDialog> {
   InputDecoration _inputDecoration(String label) {
     return InputDecoration(
       labelText: label,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: AppTheme.border),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: AppTheme.border),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: AppTheme.teal, width: 2),
-      ),
+      isDense: true,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.border)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.border)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.teal, width: 2)),
       filled: true,
       fillColor: Colors.grey.shade50,
     );

@@ -95,12 +95,12 @@ class DashboardSidebar extends StatelessWidget {
                     child: InkWell(
                       onTap: () => onItemSelected(item.key),
                       borderRadius: BorderRadius.circular(12),
-                      hoverColor: Colors.white.withOpacity(0.06),
+                      hoverColor: Colors.white.withValues(alpha: 0.06),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
-                          color: isSelected ? Colors.white.withOpacity(0.12) : Colors.transparent,
+                          color: isSelected ? Colors.white.withValues(alpha: 0.12) : Colors.transparent,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -133,14 +133,14 @@ class DashboardSidebar extends StatelessWidget {
             margin: const EdgeInsets.all(12),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.06),
+              color: Colors.white.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
               children: [
                 CircleAvatar(
                   radius: 18,
-                  backgroundColor: roleBadgeColor.withOpacity(0.3),
+                  backgroundColor: roleBadgeColor.withValues(alpha: 0.3),
                   child: Text(
                     (auth.user?.username ?? 'U')[0].toUpperCase(),
                     style: GoogleFonts.dmSans(
@@ -168,7 +168,7 @@ class DashboardSidebar extends StatelessWidget {
                         margin: const EdgeInsets.only(top: 4),
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: roleBadgeColor.withOpacity(0.2),
+                          color: roleBadgeColor.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(

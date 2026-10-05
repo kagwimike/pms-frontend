@@ -20,7 +20,7 @@ class AppTheme {
         primary: navy,
         secondary: teal,
         tertiary: brass,
-        background: bgGreyGreen,
+        surface: bgGreyGreen,
       ),
       textTheme: GoogleFonts.dmSansTextTheme(base.textTheme).copyWith(
         displayLarge: GoogleFonts.bricolageGrotesque(

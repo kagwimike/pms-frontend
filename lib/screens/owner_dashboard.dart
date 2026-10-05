@@ -3,11 +3,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../theme/app_theme.dart';
 import '../services/auth_service.dart';
+import '../services/api_service.dart';
 import '../widgets/dashboard_sidebar.dart';
 import 'properties_screen.dart';
 import 'units_screen.dart';
 import 'leases_screen.dart';
 import 'invoices_screen.dart';
+import 'tenants_screen.dart';
+import 'maintenance_screen.dart';
 
 class OwnerDashboard extends StatefulWidget {
   const OwnerDashboard({super.key});
@@ -19,6 +22,82 @@ class OwnerDashboard extends StatefulWidget {
 class _OwnerDashboardState extends State<OwnerDashboard> {
   String _selectedNav = 'dashboard';
   final _auth = AuthService();
+  final _api = ApiService();
+
+  // Live dashboard stats
+  int _propertyCount = 0;
+  int _unitCount = 0;
+  int _tenantCount = 0;
+  int _maintenanceCount = 0;
+  int _invoiceCount = 0;
+  int _occupiedUnits = 0;
+  int _vacantUnits = 0;
+  double _potentialRent = 0;
+  double _collectedRent = 0;
+  double _outstandingRent = 0;
+  bool _statsLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStats();
+  }
+
+  Future<void> _loadStats() async {
+    try {
+      final propRes = await _api.getProperties(limit: 100);
+      final unitRes = await _api.getUnits(limit: 200);
+      final userRes = await _api.getUsers(limit: 200);
+      final invoiceRes = await _api.getInvoices(limit: 200);
+      final maintRes = await _api.getMaintenanceRequests(limit: 200);
+
+      final props = ApiService.extractList(propRes);
+      final units = ApiService.extractList(unitRes);
+      final users = ApiService.extractList(userRes);
+      final invoices = ApiService.extractList(invoiceRes);
+      final maints = ApiService.extractList(maintRes);
+
+      double potRent = 0;
+      for (final u in units) {
+        potRent += double.tryParse(u['rent_price']?.toString() ?? '0') ?? 0;
+      }
+
+      double collected = 0;
+      double outstanding = 0;
+      for (final inv in invoices) {
+        final amount = double.tryParse(inv['amount']?.toString() ?? '0') ?? 0;
+        final paid = double.tryParse(inv['amount_paid']?.toString() ?? '0') ?? 0;
+        if (inv['status'] == 'PAID') {
+          collected += amount;
+        } else {
+          outstanding += (amount - paid);
+        }
+      }
+
+      final openMaint = maints.where((m) => m['status'] == 'PENDING' || m['status'] == 'IN_PROGRESS').length;
+      final tenants = users.where((u) => u['role'] == 'TENANT').length;
+      final occupied = units.where((u) => u['status'] == 'OCCUPIED').length;
+      final vacant = units.where((u) => u['status'] == 'VACANT').length;
+
+      if (mounted) {
+        setState(() {
+          _propertyCount = props.length;
+          _unitCount = units.length;
+          _tenantCount = tenants;
+          _maintenanceCount = openMaint;
+          _invoiceCount = invoices.where((i) => i['status'] == 'UNPAID' || i['status'] == 'PARTIAL').length;
+          _occupiedUnits = occupied;
+          _vacantUnits = vacant;
+          _potentialRent = potRent;
+          _collectedRent = collected;
+          _outstandingRent = outstanding;
+          _statsLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _statsLoading = false);
+    }
+  }
 
   static const _navItems = [
     SidebarItem(icon: Icons.dashboard_outlined, label: 'Dashboard', key: 'dashboard'),
@@ -103,7 +182,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2)),
         ],
       ),
       child: Row(
@@ -157,7 +236,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
       case 'units':
         return const UnitsScreen();
       case 'tenants':
-        return _buildPlaceholder('Tenants', Icons.people_outline, 'Manage tenant profiles and assignments');
+        return const TenantsScreen();
       case 'leases':
         return const LeasesScreen();
       case 'invoices':
@@ -165,7 +244,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
       case 'payments':
         return _buildPlaceholder('Deposits & Charges', Icons.account_balance_wallet_outlined, 'Manage deposits, refunds, and charges');
       case 'maintenance':
-        return _buildPlaceholder('Maintenance', Icons.build_outlined, 'View and manage maintenance requests');
+        return const MaintenanceScreen(isOwner: true);
       case 'inspections':
         return _buildPlaceholder('Inspections', Icons.checklist_outlined, 'Schedule and manage property inspections');
       case 'documents':
@@ -179,10 +258,20 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
     }
   }
 
+  String _fmtKsh(double v) {
+    if (v >= 1000000) return 'KSh ${(v / 1000000).toStringAsFixed(1)}M';
+    if (v >= 1000) return 'KSh ${(v / 1000).toStringAsFixed(0)}K';
+    return 'KSh ${v.toStringAsFixed(0)}';
+  }
+
   Widget _buildDashboardHome() {
     final username = _auth.user?.username ?? 'Owner';
     final hour = DateTime.now().hour;
     final greeting = hour < 12 ? 'Good morning' : (hour < 17 ? 'Good afternoon' : 'Good evening');
+
+    if (_statsLoading) {
+      return const Center(child: CircularProgressIndicator(color: AppTheme.teal));
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(28),
@@ -212,33 +301,33 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
               final cards = [
                 _StatCard(
                   icon: Icons.home_work_outlined,
-                  iconBg: AppTheme.teal.withOpacity(0.1),
+                  iconBg: AppTheme.teal.withValues(alpha: 0.1),
                   iconColor: AppTheme.teal,
-                  value: '3',
+                  value: '$_propertyCount',
                   label: 'Properties',
                   sublabel: 'Active managed properties',
                 ),
                 _StatCard(
                   icon: Icons.door_sliding_outlined,
-                  iconBg: AppTheme.navy.withOpacity(0.08),
+                  iconBg: AppTheme.navy.withValues(alpha: 0.08),
                   iconColor: AppTheme.navy,
-                  value: '8',
+                  value: '$_unitCount',
                   label: 'Total Units',
                   sublabel: 'Available rental units',
                 ),
                 _StatCard(
                   icon: Icons.people_outline,
-                  iconBg: AppTheme.brass.withOpacity(0.12),
+                  iconBg: AppTheme.brass.withValues(alpha: 0.12),
                   iconColor: AppTheme.brass,
-                  value: '5',
+                  value: '$_tenantCount',
                   label: 'Active Tenants',
                   sublabel: 'Currently active profiles',
                 ),
                 _StatCard(
                   icon: Icons.account_balance_wallet_outlined,
-                  iconBg: Colors.green.withOpacity(0.1),
+                  iconBg: Colors.green.withValues(alpha: 0.1),
                   iconColor: Colors.green.shade700,
-                  value: 'KSh 172,000',
+                  value: _fmtKsh(_potentialRent),
                   label: 'Potential Rent',
                   sublabel: 'Monthly rent from active units',
                 ),
@@ -260,33 +349,33 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
               final cards = [
                 _StatCard(
                   icon: Icons.check_circle_outline,
-                  iconBg: Colors.green.withOpacity(0.1),
+                  iconBg: Colors.green.withValues(alpha: 0.1),
                   iconColor: Colors.green.shade700,
-                  value: 'KSh 0.00',
+                  value: _fmtKsh(_collectedRent),
                   label: 'Collected This Month',
                   sublabel: 'Rent payments received this month',
                 ),
                 _StatCard(
                   icon: Icons.warning_amber_outlined,
-                  iconBg: Colors.orange.withOpacity(0.1),
+                  iconBg: Colors.orange.withValues(alpha: 0.1),
                   iconColor: Colors.orange.shade700,
-                  value: 'KSh 1,235,000',
+                  value: _fmtKsh(_outstandingRent),
                   label: 'Outstanding Rent',
                   sublabel: 'Remaining balances across schedules',
                 ),
                 _StatCard(
                   icon: Icons.schedule_outlined,
-                  iconBg: Colors.red.withOpacity(0.08),
+                  iconBg: Colors.red.withValues(alpha: 0.08),
                   iconColor: Colors.red.shade600,
-                  value: '10',
-                  label: 'Overdue Accounts',
-                  sublabel: 'Rent schedules requiring follow-up',
+                  value: '$_invoiceCount',
+                  label: 'Unpaid Invoices',
+                  sublabel: 'Invoices requiring attention',
                 ),
                 _StatCard(
                   icon: Icons.build_outlined,
-                  iconBg: AppTheme.brass.withOpacity(0.12),
+                  iconBg: AppTheme.brass.withValues(alpha: 0.12),
                   iconColor: AppTheme.brass,
-                  value: '2',
+                  value: '$_maintenanceCount',
                   label: 'Open Maintenance',
                   sublabel: 'Unresolved maintenance requests',
                 ),
@@ -330,12 +419,16 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
   }
 
   Widget _buildOccupancyCard() {
+    final total = _occupiedUnits + _vacantUnits;
+    final double occupancyRate = total > 0 ? _occupiedUnits / total : 0.0;
+    final occupancyPercent = (occupancyRate * 100).toInt();
+
     return Container(
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+        border: Border.all(color: AppTheme.border.withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -350,49 +443,63 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
             style: GoogleFonts.dmSans(fontSize: 12, color: AppTheme.mutedText),
           ),
           const SizedBox(height: 28),
-          Row(
-            children: [
-              // Donut chart representation
-              SizedBox(
-                width: 140,
-                height: 140,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    SizedBox(
-                      width: 140,
-                      height: 140,
-                      child: CircularProgressIndicator(
-                        value: 0.63,
-                        strokeWidth: 20,
-                        backgroundColor: AppTheme.border.withOpacity(0.3),
-                        valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.navy),
-                        strokeCap: StrokeCap.round,
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isVerySmall = constraints.maxWidth < 300;
+              final content = [
+                // Donut chart representation
+                SizedBox(
+                  width: 140,
+                  height: 140,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        width: 140,
+                        height: 140,
+                        child: CircularProgressIndicator(
+                          value: occupancyRate,
+                          strokeWidth: 20,
+                          backgroundColor: AppTheme.border.withValues(alpha: 0.3),
+                          valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.navy),
+                          strokeCap: StrokeCap.round,
+                        ),
                       ),
-                    ),
-                    Text(
-                      '63%',
-                      style: GoogleFonts.bricolageGrotesque(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: AppTheme.navy,
+                      Text(
+                        '$occupancyPercent%',
+                        style: GoogleFonts.bricolageGrotesque(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.navy,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 32),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildLegendItem(AppTheme.navy, 'Occupied units', '5'),
-                    const SizedBox(height: 16),
-                    _buildLegendItem(AppTheme.border, 'Vacant units', '3'),
-                  ],
+                if (!isVerySmall) const SizedBox(width: 32) else const SizedBox(height: 24),
+                Expanded(
+                  flex: isVerySmall ? 0 : 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildLegendItem(AppTheme.navy, 'Occupied units', '$_occupiedUnits'),
+                      const SizedBox(height: 16),
+                      _buildLegendItem(AppTheme.border, 'Vacant units', '$_vacantUnits'),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ];
+              
+              if (isVerySmall) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: content,
+                );
+              }
+              return Row(
+                children: content,
+              );
+            },
           ),
         ],
       ),
@@ -428,7 +535,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+        border: Border.all(color: AppTheme.border.withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -482,7 +589,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: AppTheme.teal.withOpacity(0.1),
+              color: AppTheme.teal.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(24),
             ),
             child: Icon(icon, size: 40, color: AppTheme.teal),
@@ -541,7 +648,7 @@ class _StatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+        border: Border.all(color: AppTheme.border.withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -575,7 +682,7 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             sublabel,
-            style: GoogleFonts.dmSans(fontSize: 11, color: AppTheme.mutedText.withOpacity(0.7)),
+            style: GoogleFonts.dmSans(fontSize: 11, color: AppTheme.mutedText.withValues(alpha: 0.7)),
           ),
         ],
       ),

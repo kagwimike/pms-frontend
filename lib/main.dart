@@ -5,7 +5,6 @@ import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/owner_dashboard.dart';
 import 'screens/tenant_dashboard.dart';
-import 'services/auth_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

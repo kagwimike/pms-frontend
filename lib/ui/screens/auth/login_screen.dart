@@ -100,11 +100,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Center(
+                  const Center(
                     child: CircleAvatar(
-                      backgroundColor: const Color(0xFF3B82F6),
+                      backgroundColor: Color(0xFF3B82F6),
                       radius: 32,
-                      child: const Text(
+                      child: Text(
                         'P',
                         style: TextStyle(
                           color: Colors.white,
@@ -219,8 +219,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    children: const [
+                  const Row(
+                    children: [
                       Expanded(child: Divider(color: Color(0xFF334155))),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 12),

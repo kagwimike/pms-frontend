@@ -40,9 +40,9 @@ class HeroSection extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              Text(
+              const Text(
                 '⚡ We reply the same day',
-                style: TextStyle(color: AppTheme.teal, fontWeight: FontWeight.w600),
+                style: const TextStyle(color: AppTheme.teal, fontWeight: FontWeight.w600),
               ).animate().fadeIn(duration: 600.ms, delay: 600.ms),
             ],
           );

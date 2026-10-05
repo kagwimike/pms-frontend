@@ -33,29 +33,29 @@ class FooterSection extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Expanded(
+                  const Expanded(
                     flex: 1,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Quick Links', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 16),
-                        _FooterLink('Features'),
-                        _FooterLink('Pricing'),
-                        _FooterLink('FAQ'),
+                        Text('Quick Links', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        SizedBox(height: 16),
+                        const _FooterLink('Features'),
+                        const _FooterLink('Pricing'),
+                        const _FooterLink('FAQ'),
                       ],
                     ),
                   ),
-                  Expanded(
+                  const Expanded(
                     flex: 1,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Contact', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 16),
-                        _FooterLink(AppConfig.phone),
-                        _FooterLink(AppConfig.email),
-                        _FooterLink('Nairobi, Kenya'),
+                        Text('Contact', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        SizedBox(height: 16),
+                        const _FooterLink(AppConfig.phone),
+                        const _FooterLink(AppConfig.email),
+                        const _FooterLink('Nairobi, Kenya'),
                       ],
                     ),
                   ),
@@ -68,11 +68,11 @@ class FooterSection extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('© ${DateTime.now().year} ${AppConfig.brandName}. All rights reserved.', style: const TextStyle(color: Colors.white54, fontSize: 12)),
-                  Row(
+                  const Row(
                     children: [
-                      _FooterLink('Privacy Policy', fontSize: 12),
-                      const SizedBox(width: 16),
-                      _FooterLink('Terms of Service', fontSize: 12),
+                      const _FooterLink('Privacy Policy', fontSize: 12),
+                      SizedBox(width: 16),
+                      const _FooterLink('Terms of Service', fontSize: 12),
                     ],
                   ),
                 ],

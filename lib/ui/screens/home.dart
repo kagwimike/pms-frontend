@@ -368,8 +368,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
 
         const SizedBox(height: 28),
-        Row(
-          children: const [
+        const Row(
+          children: [
             Icon(
               Icons.check_circle_rounded,
               color: Color(0xFF10B981),
@@ -551,9 +551,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   color: const Color(0xFF334155),
                                 ),
                               ),
-                              child: Column(
+                              child: const Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                children: const [
+                                children: [
                                   Text(
                                     'Total Rent Collected',
                                     style: TextStyle(
@@ -595,22 +595,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                   color: const Color(0xFF334155),
                                 ),
                               ),
-                              child: Column(
+                              child: const Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Property Views',
                                     style: TextStyle(
                                       color: Color(0xFF94A3B8),
                                       fontSize: 11,
                                     ),
                                   ),
-                                  const SizedBox(height: 6),
+                                  SizedBox(height: 6),
                                   Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      const Flexible(
+                                      Flexible(
                                         child: Text(
                                           '48,290 Views',
                                           style: TextStyle(
@@ -622,15 +622,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                       ),
                                       // Sparkline icon representation
-                                      const Icon(
+                                      Icon(
                                         Icons.show_chart_rounded,
                                         color: Color(0xFF0D9488),
                                         size: 20,
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 4),
-                                  const Text(
+                                  SizedBox(height: 4),
+                                  Text(
                                     'High interest in Kilimani',
                                     style: TextStyle(
                                       color: Color(0xFF38BDF8),
@@ -1590,9 +1590,9 @@ class _HomeScreenState extends State<HomeScreen> {
           // Centered "View all solutions →" link
           InkWell(
             onTap: () {},
-            child: Row(
+            child: const Row(
               mainAxisSize: MainAxisSize.min,
-              children: const [
+              children: [
                 Text(
                   'View all solutions',
                   style: TextStyle(
@@ -1756,11 +1756,11 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(20),
+          const Padding(
+            padding: EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
                   'GUIDE',
                   style: TextStyle(
@@ -1846,12 +1846,12 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(24),
+          const Padding(
+            padding: EdgeInsets.all(24),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
                   'INDUSTRY INSIGHTS',
                   style: TextStyle(
@@ -1927,11 +1927,11 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(20),
+          const Padding(
+            padding: EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
                   'COMPARISON',
                   style: TextStyle(

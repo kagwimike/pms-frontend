@@ -166,7 +166,7 @@ class _PlanCard extends StatelessWidget {
         border: isHighlighted ? null : Border.all(color: AppTheme.border),
         boxShadow: isActive ? [
           BoxShadow(
-            color: AppTheme.teal.withOpacity(0.3),
+            color: AppTheme.teal.withValues(alpha: 0.3),
             blurRadius: 20,
             spreadRadius: 2,
           )

@@ -14,16 +14,16 @@ class TopBar extends StatelessWidget {
         return Container(
           color: AppTheme.navy,
           padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 8),
-          child: Row(
+          child: const Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              const Icon(Icons.access_time, color: AppTheme.border, size: 16),
-              const SizedBox(width: 8),
-              const Text('Mon–Sat 8am–8pm', style: TextStyle(color: AppTheme.border, fontSize: 12)),
-              const SizedBox(width: 24),
-              const Icon(Icons.phone, color: AppTheme.border, size: 16),
-              const SizedBox(width: 8),
-              Text(AppConfig.phone, style: const TextStyle(color: AppTheme.border, fontSize: 12)),
+              Icon(Icons.access_time, color: AppTheme.border, size: 16),
+              SizedBox(width: 8),
+              Text('Mon–Sat 8am–8pm', style: TextStyle(color: AppTheme.border, fontSize: 12)),
+              SizedBox(width: 24),
+              Icon(Icons.phone, color: AppTheme.border, size: 16),
+              SizedBox(width: 8),
+              Text(AppConfig.phone, style: TextStyle(color: AppTheme.border, fontSize: 12)),
             ],
           ),
         );

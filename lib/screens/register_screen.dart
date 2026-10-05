@@ -107,9 +107,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Container(
                   constraints: const BoxConstraints(maxWidth: 1100),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(32),
-                    border: Border.all(color: Colors.white.withOpacity(0.2)),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(32),
@@ -204,7 +204,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             'Create your account and start managing properties in minutes.',
             style: GoogleFonts.dmSans(
               fontSize: 14,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               height: 1.5,
             ),
           ),
@@ -281,7 +281,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             'Create your account and start managing\nyour properties, tenants, and rent\ncollection in minutes.',
             style: GoogleFonts.dmSans(
               fontSize: 15,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               height: 1.6,
             ),
           ),
@@ -301,7 +301,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.white.withOpacity(0.3)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -326,7 +326,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, color: AppTheme.brass, size: 18),
@@ -337,7 +337,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             text,
             style: GoogleFonts.dmSans(
               fontSize: 14,
-              color: Colors.white.withOpacity(0.85),
+              color: Colors.white.withValues(alpha: 0.85),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -462,7 +462,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 8),
                 Text(
                   'We\'ll send a verification code via SMS to confirm your number.',
-                  style: GoogleFonts.dmSans(fontSize: 11, color: AppTheme.mutedText.withOpacity(0.6)),
+                  style: GoogleFonts.dmSans(fontSize: 11, color: AppTheme.mutedText.withValues(alpha: 0.6)),
                 ),
                 const SizedBox(height: 20),
 
@@ -684,7 +684,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           curve: Curves.easeOut,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: isSelected ? AppTheme.teal.withOpacity(0.08) : AppTheme.bgGreyGreen,
+            color: isSelected ? AppTheme.teal.withValues(alpha: 0.08) : AppTheme.bgGreyGreen,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: isSelected ? AppTheme.teal : AppTheme.border,
@@ -729,18 +729,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
   InputDecoration _inputDecoration({required String hint, required IconData icon}) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: GoogleFonts.dmSans(fontSize: 14, color: AppTheme.mutedText.withOpacity(0.5)),
+      hintStyle: GoogleFonts.dmSans(fontSize: 14, color: AppTheme.mutedText.withValues(alpha: 0.5)),
       prefixIcon: Icon(icon, size: 20, color: AppTheme.mutedText),
       filled: true,
       fillColor: AppTheme.bgGreyGreen,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppTheme.border),
+        borderSide: const BorderSide(color: AppTheme.border),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppTheme.border),
+        borderSide: const BorderSide(color: AppTheme.border),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),

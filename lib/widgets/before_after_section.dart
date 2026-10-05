@@ -56,7 +56,7 @@ class BeforeAfterSection extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('With ${AppConfig.brandName}', style: const TextStyle(color: AppTheme.whatsappGreen, fontWeight: FontWeight.bold, fontSize: 18)),
+                        const Text('With ${AppConfig.brandName}', style: TextStyle(color: AppTheme.whatsappGreen, fontWeight: FontWeight.bold, fontSize: 18)),
                         const SizedBox(height: 24),
                         _buildListItem(Icons.check, 'Payments match automatically via Paybill/Till', AppTheme.whatsappGreen, textColor: Colors.white),
                         _buildListItem(Icons.check, 'Automated, polite SMS reminders to tenants', AppTheme.whatsappGreen, textColor: Colors.white),
@@ -75,9 +75,9 @@ class BeforeAfterSection extends StatelessWidget {
             },
           ).animate().fadeIn(delay: 200.ms),
           const SizedBox(height: 40),
-          Text(
+          const Text(
             '“We built ${AppConfig.brandName} because we were tired of doing this the hard way.” — The Founders',
-            style: const TextStyle(fontStyle: FontStyle.italic, color: AppTheme.mutedText),
+            style: TextStyle(fontStyle: FontStyle.italic, color: AppTheme.mutedText),
             textAlign: TextAlign.center,
           ).animate().fadeIn(delay: 400.ms),
         ],

@@ -50,7 +50,7 @@ class _RentBoardAnimationState extends State<RentBoardAnimation> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.navy.withOpacity(0.1),
+            color: AppTheme.navy.withValues(alpha: 0.1),
             blurRadius: 40,
             offset: const Offset(0, 20),
           ),
@@ -83,7 +83,7 @@ class _RentBoardAnimationState extends State<RentBoardAnimation> {
                       return AnimatedContainer(
                         duration: const Duration(milliseconds: 500),
                         decoration: BoxDecoration(
-                          color: color.withOpacity(0.2),
+                          color: color.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: color, width: 2),
                         ),

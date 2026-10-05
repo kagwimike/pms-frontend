@@ -85,10 +85,10 @@ class _TestimonialCard extends StatelessWidget {
             const SizedBox(height: 24),
             Row(
               children: [
-                CircleAvatar(
+                const CircleAvatar(
                   radius: 24,
                   backgroundColor: AppTheme.border,
-                  child: const Icon(Icons.person, color: AppTheme.mutedText),
+                  child: Icon(Icons.person, color: AppTheme.mutedText),
                 ),
                 const SizedBox(width: 16),
                 Expanded(

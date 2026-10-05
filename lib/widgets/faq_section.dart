@@ -27,22 +27,22 @@ class FaqSection extends StatelessWidget {
                   color: AppTheme.bgGreyGreen,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Column(
+                child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Have more questions?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                    const SizedBox(height: 12),
-                    const Text('Our team is ready to help you out.', style: TextStyle(color: AppTheme.mutedText)),
-                    const SizedBox(height: 24),
-                    const WhatsappButton(),
+                    Text('Have more questions?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                    SizedBox(height: 12),
+                    Text('Our team is ready to help you out.', style: TextStyle(color: AppTheme.mutedText)),
+                    SizedBox(height: 24),
+                    WhatsappButton(),
                   ],
                 ),
               ),
             ],
           ).animate().fadeIn().slideX();
 
-          final rightCol = Column(
-            children: [
+          final rightCol = const Column(
+            children: const [
               _FaqTile(
                 question: 'Do my tenants need to download an app?',
                 answer: 'No. Tenants receive simple SMS notifications and can pay using normal M-Pesa. There is no app for them to download.',

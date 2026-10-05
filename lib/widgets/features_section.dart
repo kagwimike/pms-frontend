@@ -28,7 +28,7 @@ class FeaturesSection extends StatelessWidget {
                 crossAxisSpacing: 24,
                 mainAxisSpacing: 24,
                 childAspectRatio: 1.2,
-                children: [
+                children: const [
                   _FeatureCard(
                     icon: Icons.receipt_long,
                     title: 'M-Pesa Matching',

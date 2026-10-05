@@ -81,11 +81,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Center(
+                  const Center(
                     child: CircleAvatar(
-                      backgroundColor: const Color(0xFF3B82F6),
+                      backgroundColor: Color(0xFF3B82F6),
                       radius: 32,
-                      child: const Text(
+                      child: Text(
                         'P',
                         style: TextStyle(
                           color: Colors.white,

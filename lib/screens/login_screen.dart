@@ -79,9 +79,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Container(
                   constraints: const BoxConstraints(maxWidth: 1000),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(32),
-                    border: Border.all(color: Colors.white.withOpacity(0.2)),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(32),
@@ -228,7 +228,7 @@ class _LoginScreenState extends State<LoginScreen> {
             'Collect rent, track tenants, and manage\nmaintenance — all from one dashboard.',
             style: GoogleFonts.dmSans(
               fontSize: 15,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               height: 1.6,
             ),
           ),
@@ -237,9 +237,9 @@ class _LoginScreenState extends State<LoginScreen> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.15)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
             ),
             child: Row(
               children: [
@@ -273,7 +273,7 @@ class _LoginScreenState extends State<LoginScreen> {
             label,
             style: GoogleFonts.dmSans(
               fontSize: 12,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -420,7 +420,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Divider
                 Row(
                   children: [
-                    Expanded(child: Divider(color: AppTheme.border)),
+                    const Expanded(child: const Divider(color: AppTheme.border)),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
@@ -428,7 +428,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText),
                       ),
                     ),
-                    Expanded(child: Divider(color: AppTheme.border)),
+                    const Expanded(child: const Divider(color: AppTheme.border)),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -494,18 +494,18 @@ class _LoginScreenState extends State<LoginScreen> {
   InputDecoration _inputDecoration({required String hint, required IconData icon}) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: GoogleFonts.dmSans(fontSize: 14, color: AppTheme.mutedText.withOpacity(0.5)),
+      hintStyle: GoogleFonts.dmSans(fontSize: 14, color: AppTheme.mutedText.withValues(alpha: 0.5)),
       prefixIcon: Icon(icon, size: 20, color: AppTheme.mutedText),
       filled: true,
       fillColor: AppTheme.bgGreyGreen,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppTheme.border),
+        borderSide: const BorderSide(color: AppTheme.border),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppTheme.border),
+        borderSide: const BorderSide(color: AppTheme.border),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -525,7 +525,7 @@ class _LoginScreenState extends State<LoginScreen> {
       label: Text(label, style: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w500)),
       style: OutlinedButton.styleFrom(
         foregroundColor: AppTheme.navy,
-        side: BorderSide(color: AppTheme.border),
+        side: const BorderSide(color: AppTheme.border),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
       ),
