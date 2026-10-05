@@ -116,7 +116,6 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
     SidebarItem(icon: Icons.engineering_outlined, label: 'Vendors', key: 'vendors'),
     SidebarItem(icon: Icons.checklist_outlined, label: 'Inspections', key: 'inspections'),
     SidebarItem(icon: Icons.folder_outlined, label: 'Documents', key: 'documents'),
-    SidebarItem(icon: Icons.notifications_outlined, label: 'Notifications', key: 'notifications'),
     SidebarItem(icon: Icons.settings_outlined, label: 'Settings', key: 'settings'),
   ];
 
@@ -220,13 +219,17 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
             style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText),
           ),
           const SizedBox(width: 16),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppTheme.bgGreyGreen,
-              borderRadius: BorderRadius.circular(10),
+          InkWell(
+            onTap: () => setState(() => _selectedNav = 'notifications'),
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.bgGreyGreen,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.notifications_outlined, size: 20, color: AppTheme.navy),
             ),
-            child: const Icon(Icons.notifications_outlined, size: 20, color: AppTheme.navy),
           ),
         ],
       ),

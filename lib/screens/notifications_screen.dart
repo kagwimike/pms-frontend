@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import 'package:intl/intl.dart';
@@ -18,6 +19,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   bool _isLoading = true;
   String? _error;
 
+  int _previousUnreadCount = -1;
+
   @override
   void initState() {
     super.initState();
@@ -31,8 +34,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     });
     try {
       final res = await _apiService.getNotifications(limit: 50);
+      final fetchedNotifications = res['data'] ?? [];
+      
+      int currentUnread = 0;
+      for (var n in fetchedNotifications) {
+        if (n['read'] == false || n['read'] == 0) {
+          currentUnread++;
+        }
+      }
+      
+      if (currentUnread > _previousUnreadCount && _previousUnreadCount != -1) {
+        SystemSound.play(SystemSoundType.alert);
+      }
+      
       setState(() {
-        _notifications = res['data'] ?? [];
+        _notifications = fetchedNotifications;
+        _previousUnreadCount = currentUnread;
         _isLoading = false;
       });
     } catch (e) {
