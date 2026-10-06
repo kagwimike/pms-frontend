@@ -293,6 +293,18 @@ class ApiService {
     return _processResponse(res);
   }
 
+  // ─── Global Search ───
+  Future<Map<String, dynamic>> globalSearch(String query, {String scope = 'All', int limit = 5, int offset = 0}) async {
+    final uri = Uri.parse('${AppConfig.apiBaseUrl}/search').replace(queryParameters: {
+      'q': query,
+      'scope': scope.toLowerCase(),
+      'limit': limit.toString(),
+      'offset': offset.toString(),
+    });
+    final res = await http.get(uri, headers: _headers);
+    return _processResponse(res);
+  }
+
   // ─── Helper: extract list from any response shape ───
   static List<dynamic> extractList(Map<String, dynamic> response) {
     if (response.containsKey('data') && response['data'] is List) return response['data'];

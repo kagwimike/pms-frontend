@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../widgets/dashboard_sidebar.dart';
+import '../ui/widgets/top_nav_bar.dart';
 import 'properties_screen.dart';
 import 'units_screen.dart';
 import 'leases_screen.dart';
@@ -177,63 +178,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
   }
 
   Widget _buildTopBar({required bool isMobile}) {
-    final now = DateTime.now();
-    final months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    final days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    final dateStr = '${days[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}, ${now.year}';
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2)),
-        ],
-      ),
-      child: Row(
-        children: [
-          if (isMobile)
-            Builder(
-              builder: (ctx) => IconButton(
-                icon: const Icon(Icons.menu, color: AppTheme.navy),
-                onPressed: () => Scaffold.of(ctx).openDrawer(),
-              ),
-            ),
-          if (isMobile) const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _selectedNav[0].toUpperCase() + _selectedNav.substring(1),
-                style: GoogleFonts.bricolageGrotesque(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.navy,
-                ),
-              ),
-            ],
-          ),
-          const Spacer(),
-          Text(
-            dateStr,
-            style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText),
-          ),
-          const SizedBox(width: 16),
-          InkWell(
-            onTap: () => setState(() => _selectedNav = 'notifications'),
-            borderRadius: BorderRadius.circular(10),
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppTheme.bgGreyGreen,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.notifications_outlined, size: 20, color: AppTheme.navy),
-            ),
-          ),
-        ],
-      ),
-    );
+    return TopNavBar(isCompact: isMobile);
   }
 
   Widget _buildContent() {

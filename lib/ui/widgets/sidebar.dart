@@ -194,23 +194,10 @@ class Sidebar extends StatelessWidget {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
-            child: _item(
-              context,
-              Icons.logout_rounded,
-              auth.isAuthenticated ? 'Sign out' : 'Sign in',
-              '/login',
-              onTap: () async {
-                if (auth.isAuthenticated) {
-                  await auth.logout();
-                  if (context.mounted) context.go('/login');
-                } else {
-                  context.go('/login');
-                }
-              },
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
+          //   child: _item( ... )
+          // ),
         ],
       ),
     );

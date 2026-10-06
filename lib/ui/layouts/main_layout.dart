@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/sidebar.dart';
+import '../widgets/top_nav_bar.dart';
 
 class MainLayout extends StatelessWidget {
   final Widget child;
@@ -15,26 +16,23 @@ class MainLayout extends StatelessWidget {
         return Scaffold(
           drawer: compact ? const Drawer(child: Sidebar()) : null,
           body: compact
-              ? Stack(
+              ? Column(
                   children: [
-                    child,
-                    Positioned(
-                      top: 8,
-                      left: 8,
-                      child: Builder(
-                        builder: (context) => IconButton.filledTonal(
-                          tooltip: 'Open navigation',
-                          onPressed: () => Scaffold.of(context).openDrawer(),
-                          icon: const Icon(Icons.menu_rounded),
-                        ),
-                      ),
-                    ),
+                    const TopNavBar(isCompact: true),
+                    Expanded(child: child),
                   ],
                 )
               : Row(
                   children: [
                     const Sidebar(),
-                    Expanded(child: child),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          const TopNavBar(isCompact: false),
+                          Expanded(child: child),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
         );
