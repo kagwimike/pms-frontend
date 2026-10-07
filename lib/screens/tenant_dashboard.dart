@@ -14,6 +14,7 @@ import 'notifications_screen.dart';
 import 'payments_screen.dart';
 import 'inspections_screen.dart';
 import 'documents_screen.dart';
+import 'communication/communication_inbox_screen.dart';
 
 class TenantDashboard extends StatefulWidget {
   const TenantDashboard({super.key});
@@ -45,6 +46,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
     SidebarItem(icon: Icons.build_outlined, label: 'Maintenance', key: 'maintenance'),
     SidebarItem(icon: Icons.fact_check_outlined, label: 'Inspections', key: 'inspections'),
     SidebarItem(icon: Icons.folder_outlined, label: 'Documents', key: 'documents'),
+    SidebarItem(icon: Icons.chat_bubble_outline, label: 'Messages', key: 'messages'),
     SidebarItem(icon: Icons.settings_outlined, label: 'Settings', key: 'settings'),
   ];
 
@@ -173,7 +175,10 @@ class _TenantDashboardState extends State<TenantDashboard> {
   }
 
   Widget _buildTopBar({required bool isMobile}) {
-    return TopNavBar(isCompact: isMobile);
+    return TopNavBar(
+      isCompact: isMobile,
+      onNotificationTapped: () => setState(() => _selectedNav = 'notifications'),
+    );
   }
 
   Widget _buildContent() {
@@ -196,6 +201,8 @@ class _TenantDashboardState extends State<TenantDashboard> {
         return const DocumentsScreen(isOwner: false);
       case 'notifications':
         return NotificationsScreen(isOwner: false);
+      case 'messages':
+        return const CommunicationInboxScreen();
       case 'settings':
         return _buildPlaceholder('Settings', Icons.settings_outlined, 'Manage your account and preferences');
       default:
@@ -751,7 +758,9 @@ class _StatCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text(label, style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText, fontWeight: FontWeight.w500)),
+            Expanded(
+              child: Text(label, style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
+            ),
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(10)),

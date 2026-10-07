@@ -17,6 +17,7 @@ import 'notifications_screen.dart';
 import 'payments_screen.dart';
 import 'inspections_screen.dart';
 import 'documents_screen.dart';
+import 'communication/communication_inbox_screen.dart';
 
 class OwnerDashboard extends StatefulWidget {
   const OwnerDashboard({super.key});
@@ -117,6 +118,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
     SidebarItem(icon: Icons.engineering_outlined, label: 'Vendors', key: 'vendors'),
     SidebarItem(icon: Icons.checklist_outlined, label: 'Inspections', key: 'inspections'),
     SidebarItem(icon: Icons.folder_outlined, label: 'Documents', key: 'documents'),
+    SidebarItem(icon: Icons.chat_bubble_outline, label: 'Messages', key: 'messages'),
     SidebarItem(icon: Icons.settings_outlined, label: 'Settings', key: 'settings'),
   ];
 
@@ -178,7 +180,10 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
   }
 
   Widget _buildTopBar({required bool isMobile}) {
-    return TopNavBar(isCompact: isMobile);
+    return TopNavBar(
+      isCompact: isMobile,
+      onNotificationTapped: () => setState(() => _selectedNav = 'notifications'),
+    );
   }
 
   Widget _buildContent() {
@@ -207,6 +212,8 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
         return const DocumentsScreen(isOwner: true);
       case 'notifications':
         return const NotificationsScreen(isOwner: true);
+      case 'messages':
+        return const CommunicationInboxScreen();
       case 'settings':
         return _buildPlaceholder('Settings', Icons.settings_outlined, 'Manage your account and preferences');
       default:
@@ -612,9 +619,12 @@ class _StatCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                label,
-                style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText, fontWeight: FontWeight.w500),
+              Expanded(
+                child: Text(
+                  label,
+                  style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText, fontWeight: FontWeight.w500),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               Container(
                 padding: const EdgeInsets.all(8),

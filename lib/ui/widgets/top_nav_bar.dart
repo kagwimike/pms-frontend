@@ -1,27 +1,61 @@
 import 'package:flutter/material.dart';
-
 import '../../services/auth_service.dart';
+import '../../services/api_service.dart';
 import 'search_panel.dart';
 
-class TopNavBar extends StatelessWidget {
+class TopNavBar extends StatefulWidget {
   final bool isCompact;
+  final VoidCallback? onNotificationTapped;
 
-  const TopNavBar({super.key, this.isCompact = false});
+  const TopNavBar({super.key, this.isCompact = false, this.onNotificationTapped});
+
+  @override
+  State<TopNavBar> createState() => _TopNavBarState();
+}
+
+class _TopNavBarState extends State<TopNavBar> {
+  final AuthService _auth = AuthService();
+  final ApiService _apiService = ApiService();
+  int _unreadCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUnreadCount();
+  }
+
+  Future<void> _loadUnreadCount() async {
+    try {
+      final res = await _apiService.getNotifications(limit: 50);
+      final notifications = res['data'] ?? [];
+      int unread = 0;
+      for (var n in notifications) {
+        if (n['read'] == false || n['read'] == 0) {
+          unread++;
+        }
+      }
+      if (mounted) {
+        setState(() {
+          _unreadCount = unread;
+        });
+      }
+    } catch (e) {
+      // Ignore error for notifications badge
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final auth = AuthService();
-
     return Container(
       height: 64,
-      padding: EdgeInsets.symmetric(horizontal: isCompact ? 16 : 24),
+      padding: EdgeInsets.symmetric(horizontal: widget.isCompact ? 16 : 24),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
       ),
       child: Row(
         children: [
-          if (isCompact) ...[
+          if (widget.isCompact) ...[
             IconButton(
               tooltip: 'Open navigation',
               onPressed: () => Scaffold.of(context).openDrawer(),
@@ -66,7 +100,7 @@ class TopNavBar extends StatelessWidget {
                             ),
                           ),
                         ),
-                        if (!isCompact)
+                        if (!widget.isCompact)
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
@@ -96,11 +130,18 @@ class TopNavBar extends StatelessWidget {
           // Notifications
           IconButton(
             onPressed: () {
-              Navigator.of(context).pushNamed('/notifications');
+              if (widget.onNotificationTapped != null) {
+                widget.onNotificationTapped!();
+                _loadUnreadCount();
+              } else {
+                Navigator.of(context).pushNamed('/notifications').then((_) => _loadUnreadCount());
+              }
             },
-            icon: const Badge(
-              backgroundColor: Color(0xFFEF4444),
-              child: Icon(Icons.notifications_none_rounded, color: Color(0xFF475569)),
+            icon: Badge(
+              isLabelVisible: _unreadCount > 0,
+              label: Text(_unreadCount > 99 ? '99+' : _unreadCount.toString()),
+              backgroundColor: const Color(0xFFEF4444),
+              child: const Icon(Icons.notifications_none_rounded, color: Color(0xFF475569)),
             ),
           ),
           
@@ -112,7 +153,7 @@ class TopNavBar extends StatelessWidget {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             onSelected: (value) async {
               if (value == 'logout') {
-                await auth.logout();
+                await _auth.logout();
                 if (context.mounted) {
                   Navigator.of(context).pushReplacementNamed('/login');
                 }
@@ -134,7 +175,7 @@ class TopNavBar extends StatelessWidget {
               radius: 18,
               backgroundColor: const Color(0xFFD7EBDD),
               child: Builder(builder: (context) {
-                final displayName = auth.user?.username ?? 'O';
+                final displayName = _auth.user?.username ?? 'O';
                 final initials = displayName.isNotEmpty ? displayName.substring(0, 1).toUpperCase() : 'O';
                 return Text(
                   initials,
@@ -152,3 +193,4 @@ class TopNavBar extends StatelessWidget {
     );
   }
 }
+

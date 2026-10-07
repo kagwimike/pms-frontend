@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/ticket_chat_widget.dart';
 
 class MaintenanceScreen extends StatefulWidget {
   /// If true, shows owner view with all requests + status updates.
@@ -278,11 +279,37 @@ class _RequestCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton.icon(
-                    onPressed: onStatusUpdate,
-                    icon: const Icon(Icons.edit_outlined, size: 16),
-                    label: const Text('Update Status'),
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (_) => DraggableScrollableSheet(
+                          initialChildSize: 0.8,
+                          minChildSize: 0.5,
+                          maxChildSize: 0.95,
+                          builder: (_, controller) => Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                            ),
+                            child: TicketChatWidget(maintenanceId: request['id']),
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.forum_outlined, size: 16),
+                    label: const Text('Ticket Chat'),
                     style: TextButton.styleFrom(foregroundColor: AppTheme.navy),
                   ),
+                  const SizedBox(width: 8),
+                  if (isOwner && onStatusUpdate != null)
+                    TextButton.icon(
+                      onPressed: onStatusUpdate,
+                      icon: const Icon(Icons.edit_outlined, size: 16),
+                      label: const Text('Update Status'),
+                      style: TextButton.styleFrom(foregroundColor: AppTheme.teal),
+                    ),
                 ],
               ),
             ],
@@ -426,6 +453,7 @@ class _UpdateStatusDialog extends StatefulWidget {
 
 class _UpdateStatusDialogState extends State<_UpdateStatusDialog> {
   late String _status;
+  late String _priority;
   final _notesCtrl = TextEditingController();
   String? _assignedVendorId;
   List<dynamic> _vendors = [];
@@ -437,6 +465,7 @@ class _UpdateStatusDialogState extends State<_UpdateStatusDialog> {
   void initState() {
     super.initState();
     _status = widget.request['status'] ?? 'PENDING';
+    _priority = widget.request['priority'] ?? 'MEDIUM';
     _notesCtrl.text = widget.request['vendor_notes'] ?? '';
     if (widget.request['assigned_vendor_id'] != null) {
       _assignedVendorId = widget.request['assigned_vendor_id'].toString();
@@ -471,6 +500,7 @@ class _UpdateStatusDialogState extends State<_UpdateStatusDialog> {
         widget.request['id'],
         {
           'status': _status,
+          'priority': _priority,
           'vendor_notes': _notesCtrl.text,
           'assigned_vendor_id': _assignedVendorId != null ? int.tryParse(_assignedVendorId!) : null,
         },
@@ -509,6 +539,22 @@ class _UpdateStatusDialogState extends State<_UpdateStatusDialog> {
                 decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                 child: Text(_error!, style: TextStyle(color: Colors.red.shade700)),
               ),
+            DropdownButtonFormField<String>(
+              initialValue: _priority,
+              decoration: InputDecoration(
+                labelText: 'Priority',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                filled: true, fillColor: Colors.grey.shade50,
+              ),
+              items: const [
+                DropdownMenuItem(value: 'LOW', child: Text('Low')),
+                DropdownMenuItem(value: 'MEDIUM', child: Text('Medium')),
+                DropdownMenuItem(value: 'HIGH', child: Text('High')),
+                DropdownMenuItem(value: 'URGENT', child: Text('Urgent')),
+              ],
+              onChanged: (v) => setState(() => _priority = v!),
+            ),
+            const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               initialValue: _status,
               decoration: InputDecoration(

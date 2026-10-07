@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import 'property_details_screen.dart';
 import 'unit_details_screen.dart';
 import 'lease_details_screen.dart';
@@ -41,13 +42,22 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     'Maintenance',
     'Vendors',
     'Documents',
-    'Inspections'
+    'Inspections',
+    'Notices'
   ];
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController(text: widget.initialQuery);
+    
+    // Filter categories based on role
+    final role = AuthService().user?.role;
+    if (role == 'TENANT') {
+      _categories.remove('Tenants');
+      _categories.remove('Vendors');
+    }
+
     if (widget.initialQuery.isNotEmpty) {
       _performSearch(reset: true);
     }
@@ -342,6 +352,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
       case 'VENDOR': return Icons.handyman_rounded;
       case 'DOCUMENT': return Icons.description_rounded;
       case 'INSPECTION': return Icons.fact_check_rounded;
+      case 'NOTICE': return Icons.notifications_rounded;
       default: return Icons.insert_drive_file_rounded;
     }
   }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/api_service.dart';
+import '../../services/auth_service.dart';
 import '../../screens/property_details_screen.dart';
 import '../../screens/unit_details_screen.dart';
 import '../../screens/lease_details_screen.dart';
@@ -193,14 +194,15 @@ class _SearchPanelDialogState extends State<SearchPanelDialog> {
             _buildFilterChip('All'),
             _buildFilterChip('Properties'),
             _buildFilterChip('Units'),
-            _buildFilterChip('Tenants'),
+            if (AuthService().user?.role != 'TENANT') _buildFilterChip('Tenants'),
             _buildFilterChip('Leases'),
             _buildFilterChip('Invoices'),
             _buildFilterChip('Payments'),
             _buildFilterChip('Maintenance'),
-            _buildFilterChip('Vendors'),
+            if (AuthService().user?.role != 'TENANT') _buildFilterChip('Vendors'),
             _buildFilterChip('Documents'),
             _buildFilterChip('Inspections'),
+            _buildFilterChip('Notices'),
           ],
         ),
         const SizedBox(height: 32),
@@ -315,6 +317,8 @@ class _SearchPanelDialogState extends State<SearchPanelDialog> {
         return Icons.description_rounded;
       case 'INSPECTION':
         return Icons.fact_check_rounded;
+      case 'NOTICE':
+        return Icons.notifications_rounded;
       default:
         return Icons.insert_drive_file_rounded;
     }

@@ -44,6 +44,10 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.of(context).pushReplacementNamed('/owner-dashboard');
       } else if (role == 'TENANT') {
         Navigator.of(context).pushReplacementNamed('/tenant-dashboard');
+      } else if (role == 'CARETAKER') {
+        Navigator.of(context).pushReplacementNamed('/caretaker-dashboard');
+      } else if (role == 'VENDOR') {
+        Navigator.of(context).pushReplacementNamed('/vendor-dashboard');
       } else {
         Navigator.of(context).pushReplacementNamed('/owner-dashboard');
       }

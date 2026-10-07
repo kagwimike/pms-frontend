@@ -259,6 +259,51 @@ class ApiService {
     return _processResponse(res);
   }
 
+  // ─── Incidents ───
+  Future<Map<String, dynamic>> getIncidents({int limit = 10, String? cursor, String? status}) async {
+    var url = '${AppConfig.apiBaseUrl}/incidents?limit=$limit';
+    if (cursor != null) url += '&cursor=$cursor';
+    if (status != null) url += '&status=$status';
+    final res = await http.get(Uri.parse(url), headers: _headers);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> createIncident(Map<String, dynamic> data) async {
+    final res = await http.post(Uri.parse('${AppConfig.apiBaseUrl}/incidents'), headers: _headers, body: jsonEncode(data));
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> updateIncidentStatus(int id, String status) async {
+    final res = await http.patch(Uri.parse('${AppConfig.apiBaseUrl}/incidents/$id/status'), headers: _headers, body: jsonEncode({'status': status}));
+    return _processResponse(res);
+  }
+  
+  // ─── Communication ───
+  Future<Map<String, dynamic>> getSessionByMaintenance(int maintenanceId) async {
+    final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/communication/sessions/maintenance/$maintenanceId'), headers: _headers);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> getMessages(int sessionId) async {
+    // API returns List directly, so we need to wrap it if _processResponse expects Map, but let's see _processResponse.
+    // _processResponse returns dynamic which is cast to Map usually, but it can return List. Wait, ApiService returns `Future<Map<String, dynamic>>`.
+    // Let's change it to dynamic to support List.
+    final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/communication/sessions/$sessionId/messages'), headers: _headers);
+    final data = _processResponse(res);
+    if (data is List) {
+      return {'data': data};
+    }
+    return data;
+  }
+
+  Future<Map<String, dynamic>> sendMessage(int sessionId, String message, {String messageType = 'TEXT'}) async {
+    final res = await http.post(
+      Uri.parse('${AppConfig.apiBaseUrl}/communication/sessions/$sessionId/messages'), 
+      headers: _headers, 
+      body: jsonEncode({'message': message, 'message_type': messageType})
+    );
+    return _processResponse(res);
+  }
 
   // ─── Notifications ───
   Future<Map<String, dynamic>> getNotifications({int limit = 10, String? cursor}) async {
@@ -302,6 +347,22 @@ class ApiService {
       'offset': offset.toString(),
     });
     final res = await http.get(uri, headers: _headers);
+    return _processResponse(res);
+  }
+
+  // ─── Dashboards & Reports ───
+  Future<Map<String, dynamic>> getCaretakerDashboard() async {
+    final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/dashboard/caretaker'), headers: _headers);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> getVendorDashboard() async {
+    final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/dashboard/vendor'), headers: _headers);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> getCaretakerReports() async {
+    final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/dashboard/caretaker/reports'), headers: _headers);
     return _processResponse(res);
   }
 
