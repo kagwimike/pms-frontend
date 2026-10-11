@@ -8,6 +8,8 @@ import '../../widgets/dashboard_sidebar.dart';
 import 'vendor_jobs_screen.dart';
 import '../../ui/widgets/top_nav_bar.dart';
 import '../../screens/notifications_screen.dart';
+import '../../screens/communication/communication_inbox_screen.dart';
+
 class VendorDashboardScreen extends StatefulWidget {
   const VendorDashboardScreen({super.key});
 
@@ -96,7 +98,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
       case 'jobs':
         return const VendorJobsScreen();
       case 'messages':
-        return const Center(child: Text('Messages Placeholder'));
+        return const CommunicationInboxScreen();
       case 'notifications':
         return const NotificationsScreen(isOwner: false);
       default:

@@ -445,11 +445,16 @@ class _AddLeaseDialogState extends State<AddLeaseDialog> {
       await _apiService.createLease(data);
       if (mounted) {
         Navigator.of(context).pop(true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Lease created successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          )
+        );
       }
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-      });
+      if (mounted) setState(() => _error = 'Failed to create lease: Please check your connection and try again.');
     } finally {
       if (mounted) {
         setState(() {
@@ -492,7 +497,7 @@ class _AddLeaseDialogState extends State<AddLeaseDialog> {
                           style: GoogleFonts.bricolageGrotesque(fontSize: isSmall ? 18 : 22, fontWeight: FontWeight.w700, color: AppTheme.navy),
                         ),
                       ),
-                      IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.of(context).pop()),
+                      IconButton(icon: const Icon(Icons.close), onPressed: _isSubmitting ? null : () => Navigator.of(context).pop()),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -513,7 +518,7 @@ class _AddLeaseDialogState extends State<AddLeaseDialog> {
                         decoration: _inputDecoration('Select Unit (Vacant)'),
                         isExpanded: true,
                         items: _units.map((u) => DropdownMenuItem<int>(value: u['id'], child: Text('Unit ${u['unit_number']}', overflow: TextOverflow.ellipsis))).toList(),
-                        onChanged: (v) => setState(() => _selectedUnitId = v),
+                        onChanged: _isSubmitting ? null : (v) => setState(() => _selectedUnitId = v),
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<int>(
@@ -521,7 +526,7 @@ class _AddLeaseDialogState extends State<AddLeaseDialog> {
                         decoration: _inputDecoration('Select Tenant'),
                         isExpanded: true,
                         items: _tenants.map((t) => DropdownMenuItem<int>(value: t['id'], child: Text(t['username'] ?? t['email'] ?? 'Unknown', overflow: TextOverflow.ellipsis))).toList(),
-                        onChanged: (v) => setState(() => _selectedTenantId = v),
+                        onChanged: _isSubmitting ? null : (v) => setState(() => _selectedTenantId = v),
                       ),
                     ] else
                       Row(
@@ -532,7 +537,7 @@ class _AddLeaseDialogState extends State<AddLeaseDialog> {
                               decoration: _inputDecoration('Select Unit (Vacant)'),
                               isExpanded: true,
                               items: _units.map((u) => DropdownMenuItem<int>(value: u['id'], child: Text('Unit ${u['unit_number']}'))).toList(),
-                              onChanged: (v) => setState(() => _selectedUnitId = v),
+                              onChanged: _isSubmitting ? null : (v) => setState(() => _selectedUnitId = v),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -542,7 +547,7 @@ class _AddLeaseDialogState extends State<AddLeaseDialog> {
                               decoration: _inputDecoration('Select Tenant'),
                               isExpanded: true,
                               items: _tenants.map((t) => DropdownMenuItem<int>(value: t['id'], child: Text(t['username'] ?? t['email'] ?? 'Unknown', overflow: TextOverflow.ellipsis))).toList(),
-                              onChanged: (v) => setState(() => _selectedTenantId = v),
+                              onChanged: _isSubmitting ? null : (v) => setState(() => _selectedTenantId = v),
                             ),
                           ),
                         ],
@@ -554,19 +559,21 @@ class _AddLeaseDialogState extends State<AddLeaseDialog> {
                         controller: _startDateController,
                         decoration: _inputDecoration('Start Date (YYYY-MM-DD)'),
                         validator: (v) => v!.isEmpty ? 'Required' : null,
+                        enabled: !_isSubmitting,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: _endDateController,
                         decoration: _inputDecoration('End Date (YYYY-MM-DD)'),
                         validator: (v) => v!.isEmpty ? 'Required' : null,
+                        enabled: !_isSubmitting,
                       ),
                     ] else
                       Row(
                         children: [
-                          Expanded(child: TextFormField(controller: _startDateController, decoration: _inputDecoration('Start Date (YYYY-MM-DD)'), validator: (v) => v!.isEmpty ? 'Required' : null)),
+                          Expanded(child: TextFormField(controller: _startDateController, decoration: _inputDecoration('Start Date (YYYY-MM-DD)'), validator: (v) => v!.isEmpty ? 'Required' : null, enabled: !_isSubmitting)),
                           const SizedBox(width: 12),
-                          Expanded(child: TextFormField(controller: _endDateController, decoration: _inputDecoration('End Date (YYYY-MM-DD)'), validator: (v) => v!.isEmpty ? 'Required' : null)),
+                          Expanded(child: TextFormField(controller: _endDateController, decoration: _inputDecoration('End Date (YYYY-MM-DD)'), validator: (v) => v!.isEmpty ? 'Required' : null, enabled: !_isSubmitting)),
                         ],
                       ),
                     const SizedBox(height: 12),
@@ -577,6 +584,7 @@ class _AddLeaseDialogState extends State<AddLeaseDialog> {
                         decoration: _inputDecoration('Monthly Rent (KSh)'),
                         keyboardType: TextInputType.number,
                         validator: (v) => v!.isEmpty ? 'Required' : null,
+                        enabled: !_isSubmitting,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
@@ -584,17 +592,18 @@ class _AddLeaseDialogState extends State<AddLeaseDialog> {
                         decoration: _inputDecoration('Deposit (KSh)'),
                         keyboardType: TextInputType.number,
                         validator: (v) => v!.isEmpty ? 'Required' : null,
+                        enabled: !_isSubmitting,
                       ),
                     ] else
                       Row(
                         children: [
-                          Expanded(child: TextFormField(controller: _rentController, decoration: _inputDecoration('Monthly Rent (KSh)'), keyboardType: TextInputType.number, validator: (v) => v!.isEmpty ? 'Required' : null)),
+                          Expanded(child: TextFormField(controller: _rentController, decoration: _inputDecoration('Monthly Rent (KSh)'), keyboardType: TextInputType.number, validator: (v) => v!.isEmpty ? 'Required' : null, enabled: !_isSubmitting)),
                           const SizedBox(width: 12),
-                          Expanded(child: TextFormField(controller: _depositController, decoration: _inputDecoration('Deposit (KSh)'), keyboardType: TextInputType.number, validator: (v) => v!.isEmpty ? 'Required' : null)),
+                          Expanded(child: TextFormField(controller: _depositController, decoration: _inputDecoration('Deposit (KSh)'), keyboardType: TextInputType.number, validator: (v) => v!.isEmpty ? 'Required' : null, enabled: !_isSubmitting)),
                         ],
                       ),
                     const SizedBox(height: 12),
-                    TextFormField(controller: _notesController, decoration: _inputDecoration('Notes (Optional)'), maxLines: 2),
+                    TextFormField(controller: _notesController, decoration: _inputDecoration('Notes (Optional)'), maxLines: 2, enabled: !_isSubmitting),
                     const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,

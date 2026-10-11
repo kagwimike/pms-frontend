@@ -298,9 +298,18 @@ class _AddInvoiceDialogState extends State<AddInvoiceDialog> {
         'type': _invoiceType,
         'description': _descriptionController.text,
       });
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted) {
+        Navigator.of(context).pop(true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invoice created successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          )
+        );
+      }
     } catch (e) {
-      setState(() => _error = e.toString());
+      if (mounted) setState(() => _error = 'Failed to create invoice: Please check your connection and try again.');
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -332,7 +341,7 @@ class _AddInvoiceDialogState extends State<AddInvoiceDialog> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Flexible(child: Text('Create Invoice', style: GoogleFonts.bricolageGrotesque(fontSize: isSmall ? 18 : 22, fontWeight: FontWeight.w700, color: AppTheme.navy))),
-                      IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.of(context).pop()),
+                      IconButton(icon: const Icon(Icons.close), onPressed: _isSubmitting ? null : () => Navigator.of(context).pop()),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -354,7 +363,7 @@ class _AddInvoiceDialogState extends State<AddInvoiceDialog> {
                         final tenant = l['tenant'] ?? {};
                         return DropdownMenuItem<int>(value: l['id'], child: Text('Unit ${unit['unit_number']} - ${tenant['username']}', overflow: TextOverflow.ellipsis));
                       }).toList(),
-                      onChanged: (v) => setState(() => _selectedLeaseId = v),
+                      onChanged: _isSubmitting ? null : (v) => setState(() => _selectedLeaseId = v),
                     ),
                     const SizedBox(height: 12),
                     if (isSmall) ...[
@@ -368,10 +377,10 @@ class _AddInvoiceDialogState extends State<AddInvoiceDialog> {
                           DropdownMenuItem(value: 'MAINTENANCE', child: Text('Maintenance Fee')),
                           DropdownMenuItem(value: 'LATE_FEE', child: Text('Late Fee')),
                         ],
-                        onChanged: (v) => setState(() => _invoiceType = v!),
+                        onChanged: _isSubmitting ? null : (v) => setState(() => _invoiceType = v!),
                       ),
                       const SizedBox(height: 12),
-                      TextFormField(controller: _amountController, decoration: _inputDecoration('Amount (KSh)'), keyboardType: TextInputType.number, validator: (v) => v!.isEmpty ? 'Required' : null),
+                      TextFormField(controller: _amountController, decoration: _inputDecoration('Amount (KSh)'), keyboardType: TextInputType.number, validator: (v) => v!.isEmpty ? 'Required' : null, enabled: !_isSubmitting),
                     ] else
                       Row(children: [
                         Expanded(child: DropdownButtonFormField<String>(
@@ -384,15 +393,15 @@ class _AddInvoiceDialogState extends State<AddInvoiceDialog> {
                             DropdownMenuItem(value: 'MAINTENANCE', child: Text('Maintenance Fee')),
                             DropdownMenuItem(value: 'LATE_FEE', child: Text('Late Fee')),
                           ],
-                          onChanged: (v) => setState(() => _invoiceType = v!),
+                          onChanged: _isSubmitting ? null : (v) => setState(() => _invoiceType = v!),
                         )),
                         const SizedBox(width: 12),
-                        Expanded(child: TextFormField(controller: _amountController, decoration: _inputDecoration('Amount (KSh)'), keyboardType: TextInputType.number, validator: (v) => v!.isEmpty ? 'Required' : null)),
+                        Expanded(child: TextFormField(controller: _amountController, decoration: _inputDecoration('Amount (KSh)'), keyboardType: TextInputType.number, validator: (v) => v!.isEmpty ? 'Required' : null, enabled: !_isSubmitting)),
                       ]),
                     const SizedBox(height: 12),
-                    TextFormField(controller: _dueDateController, decoration: _inputDecoration('Due Date (YYYY-MM-DD)'), validator: (v) => v!.isEmpty ? 'Required' : null),
+                    TextFormField(controller: _dueDateController, decoration: _inputDecoration('Due Date (YYYY-MM-DD)'), validator: (v) => v!.isEmpty ? 'Required' : null, enabled: !_isSubmitting),
                     const SizedBox(height: 12),
-                    TextFormField(controller: _descriptionController, decoration: _inputDecoration('Description'), maxLines: 2),
+                    TextFormField(controller: _descriptionController, decoration: _inputDecoration('Description'), maxLines: 2, enabled: !_isSubmitting),
                     const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,

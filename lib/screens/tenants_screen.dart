@@ -316,9 +316,18 @@ class _AddTenantDialogState extends State<AddTenantDialog> {
       };
 
       await ApiService().createTenant(data);
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted) {
+        Navigator.of(context).pop(true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Tenant added successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          )
+        );
+      }
     } catch (e) {
-      setState(() => _error = e.toString());
+      if (mounted) setState(() => _error = 'Failed to add tenant: Please check your connection and try again.');
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -347,7 +356,7 @@ class _AddTenantDialogState extends State<AddTenantDialog> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('Add Tenant', style: GoogleFonts.bricolageGrotesque(fontSize: 22, fontWeight: FontWeight.w700, color: AppTheme.navy)),
-                      IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.of(context).pop()),
+                      IconButton(icon: const Icon(Icons.close), onPressed: _isSubmitting ? null : () => Navigator.of(context).pop()),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -360,21 +369,21 @@ class _AddTenantDialogState extends State<AddTenantDialog> {
                     ),
                   Row(
                     children: [
-                      Expanded(child: TextFormField(controller: _firstNameController, decoration: _inputDecoration('First Name'), validator: (v) => v!.isEmpty ? 'Required' : null)),
+                      Expanded(child: TextFormField(controller: _firstNameController, decoration: _inputDecoration('First Name'), validator: (v) => v!.isEmpty ? 'Required' : null, enabled: !_isSubmitting)),
                       const SizedBox(width: 12),
-                      Expanded(child: TextFormField(controller: _lastNameController, decoration: _inputDecoration('Last Name'), validator: (v) => v!.isEmpty ? 'Required' : null)),
+                      Expanded(child: TextFormField(controller: _lastNameController, decoration: _inputDecoration('Last Name'), validator: (v) => v!.isEmpty ? 'Required' : null, enabled: !_isSubmitting)),
                     ],
                   ),
                   const SizedBox(height: 12),
-                  TextFormField(controller: _idPassportController, decoration: _inputDecoration('Tenant ID or Passport'), validator: (v) => v!.isEmpty ? 'Required' : null),
+                  TextFormField(controller: _idPassportController, decoration: _inputDecoration('Tenant ID or Passport'), validator: (v) => v!.isEmpty ? 'Required' : null, enabled: !_isSubmitting),
                   const SizedBox(height: 12),
-                  TextFormField(controller: _emailController, decoration: _inputDecoration('Email Address'), keyboardType: TextInputType.emailAddress, validator: (v) => !v!.contains('@') ? 'Invalid email' : null),
+                  TextFormField(controller: _emailController, decoration: _inputDecoration('Email Address'), keyboardType: TextInputType.emailAddress, validator: (v) => !v!.contains('@') ? 'Invalid email' : null, enabled: !_isSubmitting),
                   const SizedBox(height: 12),
-                  TextFormField(controller: _phoneController, decoration: _inputDecoration('Phone Number'), keyboardType: TextInputType.phone, validator: (v) => v!.isEmpty ? 'Required' : null),
+                  TextFormField(controller: _phoneController, decoration: _inputDecoration('Phone Number'), keyboardType: TextInputType.phone, validator: (v) => v!.isEmpty ? 'Required' : null, enabled: !_isSubmitting),
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Expanded(child: TextFormField(controller: _citizenshipController, decoration: _inputDecoration('Citizenship'), validator: (v) => v!.isEmpty ? 'Required' : null)),
+                      Expanded(child: TextFormField(controller: _citizenshipController, decoration: _inputDecoration('Citizenship'), validator: (v) => v!.isEmpty ? 'Required' : null, enabled: !_isSubmitting)),
                       const SizedBox(width: 12),
                       Expanded(
                         child: DropdownButtonFormField<String>(
@@ -386,7 +395,7 @@ class _AddTenantDialogState extends State<AddTenantDialog> {
                             DropdownMenuItem(value: 'OTHER', child: Text('Other')),
                             DropdownMenuItem(value: 'PREFER_NOT_TO_SAY', child: Text('Prefer not to say')),
                           ],
-                          onChanged: (v) => setState(() => _gender = v!),
+                          onChanged: _isSubmitting ? null : (v) => setState(() => _gender = v!),
                         ),
                       ),
                     ],

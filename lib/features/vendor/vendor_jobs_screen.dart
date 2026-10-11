@@ -236,9 +236,21 @@ class _VendorJobUpdateDialogState extends State<_VendorJobUpdateDialog> {
           'vendor_notes': _notesCtrl.text,
         },
       );
-      if (mounted) Navigator.pop(context, true);
+      if (mounted) {
+        Navigator.pop(context, true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Job updated successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          )
+        );
+      }
     } catch (e) {
-      setState(() { _error = e.toString(); _isSubmitting = false; });
+      setState(() { 
+        _error = 'Failed to update job: Please check your connection and try again.'; 
+        _isSubmitting = false; 
+      });
     }
   }
 

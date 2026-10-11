@@ -18,6 +18,7 @@ import 'payments_screen.dart';
 import 'inspections_screen.dart';
 import 'documents_screen.dart';
 import 'communication/communication_inbox_screen.dart';
+import 'communication/announcements_screen.dart';
 
 class OwnerDashboard extends StatefulWidget {
   const OwnerDashboard({super.key});
@@ -119,6 +120,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
     SidebarItem(icon: Icons.checklist_outlined, label: 'Inspections', key: 'inspections'),
     SidebarItem(icon: Icons.folder_outlined, label: 'Documents', key: 'documents'),
     SidebarItem(icon: Icons.chat_bubble_outline, label: 'Messages', key: 'messages'),
+    SidebarItem(icon: Icons.campaign_outlined, label: 'Broadcasts', key: 'broadcasts'),
     SidebarItem(icon: Icons.settings_outlined, label: 'Settings', key: 'settings'),
   ];
 
@@ -214,6 +216,8 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
         return const NotificationsScreen(isOwner: true);
       case 'messages':
         return const CommunicationInboxScreen();
+      case 'broadcasts':
+        return const AnnouncementsScreen();
       case 'settings':
         return _buildPlaceholder('Settings', Icons.settings_outlined, 'Manage your account and preferences');
       default:

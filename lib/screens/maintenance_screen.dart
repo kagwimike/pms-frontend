@@ -352,9 +352,20 @@ class _CreateMaintenanceDialogState extends State<_CreateMaintenanceDialog> {
         'description': _descCtrl.text,
         'priority': _priority,
       });
-      if (mounted) Navigator.pop(context, true);
+      if (mounted) {
+        Navigator.pop(context, true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Maintenance request submitted successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          )
+        );
+      }
     } catch (e) {
-      setState(() { _error = e.toString(); _isSubmitting = false; });
+      if (mounted) setState(() { _error = 'Failed to submit request. Please check your connection.'; _isSubmitting = false; });
+    } finally {
+      if (mounted && _isSubmitting) setState(() => _isSubmitting = false);
     }
   }
 
@@ -377,7 +388,7 @@ class _CreateMaintenanceDialogState extends State<_CreateMaintenanceDialog> {
             children: [
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 Flexible(child: Text('Report Maintenance Issue', style: GoogleFonts.bricolageGrotesque(fontSize: isSmall ? 18 : 22, fontWeight: FontWeight.w700, color: AppTheme.navy))),
-                IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                IconButton(icon: const Icon(Icons.close), onPressed: _isSubmitting ? null : () => Navigator.pop(context)),
               ]),
               const SizedBox(height: 24),
               if (_error != null)
@@ -390,6 +401,7 @@ class _CreateMaintenanceDialogState extends State<_CreateMaintenanceDialog> {
                 controller: _titleCtrl,
                 decoration: _inputDeco('Issue Title'),
                 validator: (v) => v!.isEmpty ? 'Required' : null,
+                enabled: !_isSubmitting,
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
@@ -401,7 +413,7 @@ class _CreateMaintenanceDialogState extends State<_CreateMaintenanceDialog> {
                   DropdownMenuItem(value: 'HIGH', child: Text('High')),
                   DropdownMenuItem(value: 'URGENT', child: Text('Urgent')),
                 ],
-                onChanged: (v) => setState(() => _priority = v!),
+                onChanged: _isSubmitting ? null : (v) => setState(() => _priority = v!),
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -409,6 +421,7 @@ class _CreateMaintenanceDialogState extends State<_CreateMaintenanceDialog> {
                 decoration: _inputDeco('Description'),
                 maxLines: 4,
                 validator: (v) => v!.isEmpty ? 'Required' : null,
+                enabled: !_isSubmitting,
               ),
               const SizedBox(height: 32),
               SizedBox(
@@ -505,9 +518,20 @@ class _UpdateStatusDialogState extends State<_UpdateStatusDialog> {
           'assigned_vendor_id': _assignedVendorId != null ? int.tryParse(_assignedVendorId!) : null,
         },
       );
-      if (mounted) Navigator.pop(context, true);
+      if (mounted) {
+        Navigator.pop(context, true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Status updated successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          )
+        );
+      }
     } catch (e) {
-      setState(() { _error = e.toString(); _isSubmitting = false; });
+      if (mounted) setState(() { _error = 'Failed to update status. Please check your connection.'; _isSubmitting = false; });
+    } finally {
+      if (mounted && _isSubmitting) setState(() => _isSubmitting = false);
     }
   }
 
@@ -528,7 +552,7 @@ class _UpdateStatusDialogState extends State<_UpdateStatusDialog> {
           children: [
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               Flexible(child: Text('Update Status', style: GoogleFonts.bricolageGrotesque(fontSize: isSmall ? 18 : 22, fontWeight: FontWeight.w700, color: AppTheme.navy))),
-              IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+              IconButton(icon: const Icon(Icons.close), onPressed: _isSubmitting ? null : () => Navigator.pop(context)),
             ]),
             const SizedBox(height: 8),
             Text(widget.request['title'] ?? '', style: GoogleFonts.dmSans(fontSize: 14, color: AppTheme.mutedText)),
@@ -552,7 +576,7 @@ class _UpdateStatusDialogState extends State<_UpdateStatusDialog> {
                 DropdownMenuItem(value: 'HIGH', child: Text('High')),
                 DropdownMenuItem(value: 'URGENT', child: Text('Urgent')),
               ],
-              onChanged: (v) => setState(() => _priority = v!),
+              onChanged: _isSubmitting ? null : (v) => setState(() => _priority = v!),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
@@ -570,7 +594,7 @@ class _UpdateStatusDialogState extends State<_UpdateStatusDialog> {
                 DropdownMenuItem(value: 'VERIFIED', child: Text('Verified')),
                 DropdownMenuItem(value: 'CANCELLED', child: Text('Cancelled')),
               ],
-              onChanged: (v) => setState(() => _status = v!),
+              onChanged: _isSubmitting ? null : (v) => setState(() => _status = v!),
             ),
             const SizedBox(height: 16),
             if (!_isLoadingVendors)
@@ -588,7 +612,7 @@ class _UpdateStatusDialogState extends State<_UpdateStatusDialog> {
                         child: Text(v['name']),
                       )),
                 ],
-                onChanged: (v) => setState(() => _assignedVendorId = v),
+                onChanged: _isSubmitting ? null : (v) => setState(() => _assignedVendorId = v),
               ),
             if (!_isLoadingVendors) const SizedBox(height: 16),
             TextFormField(
@@ -599,6 +623,7 @@ class _UpdateStatusDialogState extends State<_UpdateStatusDialog> {
                 filled: true, fillColor: Colors.grey.shade50,
               ),
               maxLines: 3,
+              enabled: !_isSubmitting,
             ),
             const SizedBox(height: 32),
             SizedBox(

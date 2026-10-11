@@ -272,7 +272,13 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
           double.parse(_amountCtrl.text)
         );
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('STK Push sent to your phone.')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('STK Push sent to your phone!'),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+            )
+          );
           Navigator.pop(context, true);
         }
       } else {
@@ -282,10 +288,27 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
           'transaction_reference': _refCtrl.text,
           if (_selectedInvoiceId != null) 'invoice_id': int.parse(_selectedInvoiceId!),
         });
-        if (mounted) Navigator.pop(context, true);
+        if (mounted) {
+          Navigator.pop(context, true);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Payment added successfully!'),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+            )
+          );
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to submit payment. Please check your connection.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          )
+        );
+      }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -318,7 +341,7 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
                             child: Text('Inv #${inv['id']} - KSh ${inv['amount']}'),
                           ))
                     ],
-                    onChanged: (v) => setState(() => _selectedInvoiceId = v),
+                    onChanged: _isSubmitting ? null : (v) => setState(() => _selectedInvoiceId = v),
                   ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
@@ -333,7 +356,7 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
                     DropdownMenuItem(value: 'CARD', child: Text('Card')),
                     DropdownMenuItem(value: 'CASH', child: Text('Cash')),
                   ],
-                  onChanged: (v) => setState(() => _paymentMethod = v!),
+                  onChanged: _isSubmitting ? null : (v) => setState(() => _paymentMethod = v!),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -344,6 +367,7 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
                   ),
                   keyboardType: TextInputType.number,
                   validator: (v) => v!.isEmpty ? 'Required' : null,
+                  enabled: !_isSubmitting,
                 ),
                 if (_paymentMethod != 'MPESA') ...[
                   const SizedBox(height: 16),
@@ -354,6 +378,7 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                     validator: (v) => v!.isEmpty ? 'Required' : null,
+                    enabled: !_isSubmitting,
                   ),
                 ],
                 if (_paymentMethod == 'MPESA') ...[
@@ -366,6 +391,7 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
                     ),
                     keyboardType: TextInputType.phone,
                     validator: (v) => v!.isEmpty ? 'Required' : null,
+                    enabled: !_isSubmitting,
                   ),
                 ],
               ],
@@ -374,7 +400,7 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(onPressed: _isSubmitting ? null : () => Navigator.pop(context), child: const Text('Cancel')),
         ElevatedButton(
           onPressed: _isSubmitting ? null : _submit,
           style: ElevatedButton.styleFrom(backgroundColor: AppTheme.teal, foregroundColor: Colors.white),

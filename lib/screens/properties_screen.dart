@@ -517,10 +517,17 @@ class _AddPropertyDialogState extends State<AddPropertyDialog> {
       await ApiService().createProperty(data, images: multipartImages);
       if (mounted) {
         Navigator.of(context).pop(true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Property added successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          )
+        );
       }
     } catch (e) {
       setState(() {
-        _error = e.toString();
+        _error = 'Failed to create property: Please check your connection and try again.';
       });
     } finally {
       if (mounted) {
@@ -566,7 +573,7 @@ class _AddPropertyDialogState extends State<AddPropertyDialog> {
                       ),
                       IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
                       ),
                     ],
                   ),
@@ -585,6 +592,7 @@ class _AddPropertyDialogState extends State<AddPropertyDialog> {
                     controller: _nameController,
                     decoration: _inputDecoration('Property Name'),
                     validator: (v) => v!.isEmpty ? 'Required' : null,
+                    enabled: !_isLoading,
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
@@ -595,13 +603,14 @@ class _AddPropertyDialogState extends State<AddPropertyDialog> {
                       DropdownMenuItem(value: 'HOTEL', child: Text('Hotel')),
                       DropdownMenuItem(value: 'AIRBNB', child: Text('Airbnb')),
                     ],
-                    onChanged: (v) => setState(() => _propertyType = v!),
+                    onChanged: _isLoading ? null : (v) => setState(() => _propertyType = v!),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _addressController,
                     decoration: _inputDecoration('Address'),
                     validator: (v) => v!.isEmpty ? 'Required' : null,
+                    enabled: !_isLoading,
                   ),
                   const SizedBox(height: 12),
                   if (isSmall) ...[
@@ -609,12 +618,14 @@ class _AddPropertyDialogState extends State<AddPropertyDialog> {
                       controller: _cityController,
                       decoration: _inputDecoration('City'),
                       validator: (v) => v!.isEmpty ? 'Required' : null,
+                      enabled: !_isLoading,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _countryController,
                       decoration: _inputDecoration('Country'),
                       validator: (v) => v!.isEmpty ? 'Required' : null,
+                      enabled: !_isLoading,
                     ),
                   ] else
                     Row(
@@ -624,6 +635,7 @@ class _AddPropertyDialogState extends State<AddPropertyDialog> {
                             controller: _cityController,
                             decoration: _inputDecoration('City'),
                             validator: (v) => v!.isEmpty ? 'Required' : null,
+                            enabled: !_isLoading,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -632,6 +644,7 @@ class _AddPropertyDialogState extends State<AddPropertyDialog> {
                             controller: _countryController,
                             decoration: _inputDecoration('Country'),
                             validator: (v) => v!.isEmpty ? 'Required' : null,
+                            enabled: !_isLoading,
                           ),
                         ),
                       ],
@@ -641,17 +654,20 @@ class _AddPropertyDialogState extends State<AddPropertyDialog> {
                     controller: _totalUnitsController,
                     decoration: _inputDecoration('Total Units (Optional)'),
                     keyboardType: TextInputType.number,
+                    enabled: !_isLoading,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _amenitiesController,
                     decoration: _inputDecoration('Amenities (comma separated)'),
+                    enabled: !_isLoading,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _descriptionController,
                     decoration: _inputDecoration('Description (Optional)'),
                     maxLines: 2,
+                    enabled: !_isLoading,
                   ),
                   const SizedBox(height: 12),
                   Text(
@@ -665,12 +681,12 @@ class _AddPropertyDialogState extends State<AddPropertyDialog> {
                     children: [
                       ..._selectedImages.map((file) => Chip(
                             label: Text(file.name, style: const TextStyle(fontSize: 11), overflow: TextOverflow.ellipsis),
-                            onDeleted: () => setState(() => _selectedImages.remove(file)),
+                            onDeleted: _isLoading ? null : () => setState(() => _selectedImages.remove(file)),
                           )),
                       ActionChip(
                         label: const Text('Add Images'),
                         avatar: const Icon(Icons.add_photo_alternate_outlined, size: 16),
-                        onPressed: _pickImages,
+                        onPressed: _isLoading ? null : _pickImages,
                       ),
                     ],
                   ),
@@ -798,9 +814,20 @@ class _EditPropertyDialogState extends State<EditPropertyDialog> {
       };
 
       await ApiService().updateProperty(widget.property['id'], data);
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted) {
+        Navigator.of(context).pop(true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Property updated successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          )
+        );
+      }
     } catch (e) {
-      setState(() => _error = e.toString());
+      if (mounted) {
+        setState(() => _error = 'Failed to update property: Please check your connection and try again.');
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -836,7 +863,7 @@ class _EditPropertyDialogState extends State<EditPropertyDialog> {
                           ),
                         ),
                       ),
-                      IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.of(context).pop()),
+                      IconButton(icon: const Icon(Icons.close), onPressed: _isLoading ? null : () => Navigator.of(context).pop()),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -847,7 +874,7 @@ class _EditPropertyDialogState extends State<EditPropertyDialog> {
                       decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                       child: Text(_error!, style: TextStyle(color: Colors.red.shade700, fontSize: 13)),
                     ),
-                  TextFormField(controller: _nameController, decoration: _inputDecoration('Property Name'), validator: (v) => v!.isEmpty ? 'Required' : null),
+                  TextFormField(controller: _nameController, decoration: _inputDecoration('Property Name'), validator: (v) => v!.isEmpty ? 'Required' : null, enabled: !_isLoading),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     value: _propertyType,
@@ -857,28 +884,28 @@ class _EditPropertyDialogState extends State<EditPropertyDialog> {
                       DropdownMenuItem(value: 'HOTEL', child: Text('Hotel')),
                       DropdownMenuItem(value: 'AIRBNB', child: Text('Airbnb')),
                     ],
-                    onChanged: (v) => setState(() => _propertyType = v!),
+                    onChanged: _isLoading ? null : (v) => setState(() => _propertyType = v!),
                   ),
                   const SizedBox(height: 12),
-                  TextFormField(controller: _addressController, decoration: _inputDecoration('Address'), validator: (v) => v!.isEmpty ? 'Required' : null),
+                  TextFormField(controller: _addressController, decoration: _inputDecoration('Address'), validator: (v) => v!.isEmpty ? 'Required' : null, enabled: !_isLoading),
                   const SizedBox(height: 12),
                   if (isSmall) ...[
-                    TextFormField(controller: _cityController, decoration: _inputDecoration('City'), validator: (v) => v!.isEmpty ? 'Required' : null),
+                    TextFormField(controller: _cityController, decoration: _inputDecoration('City'), validator: (v) => v!.isEmpty ? 'Required' : null, enabled: !_isLoading),
                     const SizedBox(height: 12),
-                    TextFormField(controller: _countryController, decoration: _inputDecoration('Country'), validator: (v) => v!.isEmpty ? 'Required' : null),
+                    TextFormField(controller: _countryController, decoration: _inputDecoration('Country'), validator: (v) => v!.isEmpty ? 'Required' : null, enabled: !_isLoading),
                   ] else Row(
                     children: [
-                      Expanded(child: TextFormField(controller: _cityController, decoration: _inputDecoration('City'), validator: (v) => v!.isEmpty ? 'Required' : null)),
+                      Expanded(child: TextFormField(controller: _cityController, decoration: _inputDecoration('City'), validator: (v) => v!.isEmpty ? 'Required' : null, enabled: !_isLoading)),
                       const SizedBox(width: 12),
-                      Expanded(child: TextFormField(controller: _countryController, decoration: _inputDecoration('Country'), validator: (v) => v!.isEmpty ? 'Required' : null)),
+                      Expanded(child: TextFormField(controller: _countryController, decoration: _inputDecoration('Country'), validator: (v) => v!.isEmpty ? 'Required' : null, enabled: !_isLoading)),
                     ],
                   ),
                   const SizedBox(height: 12),
-                  TextFormField(controller: _totalUnitsController, decoration: _inputDecoration('Total Units (Optional)'), keyboardType: TextInputType.number),
+                  TextFormField(controller: _totalUnitsController, decoration: _inputDecoration('Total Units (Optional)'), keyboardType: TextInputType.number, enabled: !_isLoading),
                   const SizedBox(height: 12),
-                  TextFormField(controller: _amenitiesController, decoration: _inputDecoration('Amenities (comma separated)')),
+                  TextFormField(controller: _amenitiesController, decoration: _inputDecoration('Amenities (comma separated)'), enabled: !_isLoading),
                   const SizedBox(height: 12),
-                  TextFormField(controller: _descriptionController, decoration: _inputDecoration('Description (Optional)'), maxLines: 2),
+                  TextFormField(controller: _descriptionController, decoration: _inputDecoration('Description (Optional)'), maxLines: 2, enabled: !_isLoading),
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,

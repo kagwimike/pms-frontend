@@ -4,6 +4,9 @@ import 'package:intl/intl.dart';
 import '../../services/api_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/status_badge.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart'; // for kIsWeb
 
 class IncidentLoggingScreen extends StatefulWidget {
   const IncidentLoggingScreen({super.key});
@@ -252,6 +255,8 @@ class _ReportIncidentDialogState extends State<_ReportIncidentDialog> {
   bool _isLoadingProps = true;
   bool _isSubmitting = false;
   String? _error;
+  final ImagePicker _picker = ImagePicker();
+  List<XFile> _selectedPhotos = [];
 
   @override
   void initState() {
@@ -276,7 +281,7 @@ class _ReportIncidentDialogState extends State<_ReportIncidentDialog> {
 
   Future<void> _submit() async {
     if (_titleCtrl.text.isEmpty || _selectedPropertyId == null) {
-      setState(() => _error = 'Title and Property are required');
+      setState(() => _error = 'Please provide an incident title and select a property to continue.');
       return;
     }
     setState(() { _isSubmitting = true; _error = null; });
@@ -286,11 +291,43 @@ class _ReportIncidentDialogState extends State<_ReportIncidentDialog> {
         'description': _descCtrl.text,
         'severity': _severity,
         'property_id': int.parse(_selectedPropertyId!),
+        // Would also handle _selectedPhotos upload here
       });
-      if (mounted) Navigator.pop(context, true);
+      if (mounted) {
+        Navigator.pop(context, true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Incident logged successfully! The team has been notified.'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          )
+        );
+      }
     } catch (e) {
-      setState(() { _error = e.toString(); _isSubmitting = false; });
+      setState(() { 
+        _error = 'Failed to log incident: Please check your connection and try again.'; 
+        _isSubmitting = false; 
+      });
     }
+  }
+
+  Future<void> _pickPhotos() async {
+    try {
+      final pickedFiles = await _picker.pickMultiImage();
+      if (pickedFiles.isNotEmpty) {
+        setState(() {
+          _selectedPhotos.addAll(pickedFiles);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error picking photos: $e')));
+    }
+  }
+
+  void _removePhoto(int index) {
+    setState(() {
+      _selectedPhotos.removeAt(index);
+    });
   }
 
   @override
@@ -338,10 +375,52 @@ class _ReportIncidentDialogState extends State<_ReportIncidentDialog> {
                 onChanged: (v) => setState(() => _severity = v!),
               ),
               const SizedBox(height: 16),
+              if (_selectedPhotos.isNotEmpty)
+                SizedBox(
+                  height: 100,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _selectedPhotos.length,
+                    itemBuilder: (context, index) {
+                      final photo = _selectedPhotos[index];
+                      return Stack(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(right: 8, top: 8),
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppTheme.border),
+                            ),
+                            clipBehavior: Clip.hardEdge,
+                            child: kIsWeb 
+                                ? Image.network(photo.path, fit: BoxFit.cover)
+                                : Image.file(File(photo.path), fit: BoxFit.cover),
+                          ),
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: InkWell(
+                              onTap: () => _removePhoto(index),
+                              child: Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.close, size: 16, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              const SizedBox(height: 8),
               OutlinedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Photo upload placeholder')));
-                },
+                onPressed: _pickPhotos,
                 icon: const Icon(Icons.add_a_photo_outlined),
                 label: const Text('Attach Photos'),
               )

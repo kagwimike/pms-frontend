@@ -160,9 +160,26 @@ class _AddDocumentDialogState extends State<AddDocumentDialog> {
         'document_type': _docType,
       }, file: multipartFile);
       
-      if (mounted) Navigator.pop(context, true);
+      if (mounted) {
+        Navigator.pop(context, true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Document uploaded successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          )
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to upload document. Please check your connection.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          )
+        );
+      }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -187,6 +204,7 @@ class _AddDocumentDialogState extends State<AddDocumentDialog> {
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   validator: (v) => v!.isEmpty ? 'Required' : null,
+                  enabled: !_isSubmitting,
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
@@ -201,11 +219,11 @@ class _AddDocumentDialogState extends State<AddDocumentDialog> {
                     DropdownMenuItem(value: 'INSPECTION_REPORT', child: Text('Inspection Report')),
                     DropdownMenuItem(value: 'OTHER', child: Text('Other')),
                   ],
-                  onChanged: (v) => setState(() => _docType = v!),
+                  onChanged: _isSubmitting ? null : (v) => setState(() => _docType = v!),
                 ),
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
-                  onPressed: _pickFile,
+                  onPressed: _isSubmitting ? null : _pickFile,
                   icon: const Icon(Icons.attach_file),
                   label: Text(_selectedFile == null ? 'Select File' : _selectedFile!.name),
                 ),
@@ -215,7 +233,7 @@ class _AddDocumentDialogState extends State<AddDocumentDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(onPressed: _isSubmitting ? null : () => Navigator.pop(context), child: const Text('Cancel')),
         ElevatedButton(
           onPressed: _isSubmitting ? null : _submit,
           style: ElevatedButton.styleFrom(backgroundColor: AppTheme.teal, foregroundColor: Colors.white),

@@ -91,6 +91,10 @@ class ApiService {
     final res = await http.get(Uri.parse(url), headers: _headers);
     return _processResponse(res);
   }
+  Future<Map<String, dynamic>> getUnit(int id) async {
+    final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/units/$id'), headers: _headers);
+    return _processResponse(res);
+  }
 
   Future<Map<String, dynamic>> createUnit(Map<String, dynamic> data) async {
     final res = await http.post(Uri.parse('${AppConfig.apiBaseUrl}/units/'), headers: _headers, body: jsonEncode(data));
@@ -112,6 +116,10 @@ class ApiService {
     final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/users/?limit=$limit${cursor != null ? '&cursor=$cursor' : ''}'), headers: _headers);
     return _processResponse(res);
   }
+  Future<Map<String, dynamic>> getUser(int id) async {
+    final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/users/$id'), headers: _headers);
+    return _processResponse(res);
+  }
 
   Future<Map<String, dynamic>> createTenant(Map<String, dynamic> data) async {
     // Send to auth register endpoint to create a user account for the tenant
@@ -126,6 +134,10 @@ class ApiService {
     if (cursor != null) url += '&cursor=$cursor';
     if (status != null) url += '&status=$status';
     final res = await http.get(Uri.parse(url), headers: _headers);
+    return _processResponse(res);
+  }
+  Future<Map<String, dynamic>> getLease(int id) async {
+    final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/leases/$id'), headers: _headers);
     return _processResponse(res);
   }
 
@@ -210,6 +222,11 @@ class ApiService {
     if (cursor != null) url += '&cursor=$cursor';
     if (status != null) url += '&status=$status';
     final res = await http.get(Uri.parse(url), headers: _headers);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> getMaintenanceRequest(int id) async {
+    final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/maintenance/requests/$id'), headers: _headers);
     return _processResponse(res);
   }
 
@@ -339,13 +356,15 @@ class ApiService {
   }
 
   // ─── Global Search ───
-  Future<Map<String, dynamic>> globalSearch(String query, {String scope = 'All', int limit = 5, int offset = 0}) async {
-    final uri = Uri.parse('${AppConfig.apiBaseUrl}/search').replace(queryParameters: {
+  Future<Map<String, dynamic>> globalSearch(String query, {String? type, String? cursor, int limit = 5}) async {
+    final queryParams = {
       'q': query,
-      'scope': scope.toLowerCase(),
       'limit': limit.toString(),
-      'offset': offset.toString(),
-    });
+    };
+    if (type != null) queryParams['type'] = type.toLowerCase();
+    if (cursor != null) queryParams['cursor'] = cursor;
+
+    final uri = Uri.parse('${AppConfig.apiBaseUrl}/search').replace(queryParameters: queryParams);
     final res = await http.get(uri, headers: _headers);
     return _processResponse(res);
   }

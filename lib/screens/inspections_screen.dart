@@ -188,9 +188,26 @@ class _AddInspectionDialogState extends State<AddInspectionDialog> {
         'inspection_date': _selectedDate!.toIso8601String(),
         'status': 'SCHEDULED',
       });
-      if (mounted) Navigator.pop(context, true);
+      if (mounted) {
+        Navigator.pop(context, true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Inspection scheduled successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          )
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to schedule inspection. Please check your connection.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          )
+        );
+      }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -219,7 +236,7 @@ class _AddInspectionDialogState extends State<AddInspectionDialog> {
                         value: l['id'].toString(),
                         child: Text('Lease #${l['id']} - Unit ${l['unit']?['unit_number'] ?? ''}'),
                       )).toList(),
-                  onChanged: (v) => setState(() => _selectedLeaseId = v),
+                  onChanged: _isSubmitting ? null : (v) => setState(() => _selectedLeaseId = v),
                 ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
@@ -233,14 +250,14 @@ class _AddInspectionDialogState extends State<AddInspectionDialog> {
                   DropdownMenuItem(value: 'MOVE_IN', child: Text('Move-In')),
                   DropdownMenuItem(value: 'MOVE_OUT', child: Text('Move-Out')),
                 ],
-                onChanged: (v) => setState(() => _type = v!),
+                onChanged: _isSubmitting ? null : (v) => setState(() => _type = v!),
               ),
               const SizedBox(height: 16),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text(_selectedDate == null ? 'Select Date' : DateFormat('MMM d, yyyy').format(_selectedDate!)),
                 trailing: const Icon(Icons.calendar_today),
-                onTap: _selectDate,
+                onTap: _isSubmitting ? null : _selectDate,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                   side: const BorderSide(color: Colors.grey),
@@ -251,7 +268,7 @@ class _AddInspectionDialogState extends State<AddInspectionDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(onPressed: _isSubmitting ? null : () => Navigator.pop(context), child: const Text('Cancel')),
         ElevatedButton(
           onPressed: _isSubmitting ? null : _submit,
           style: ElevatedButton.styleFrom(backgroundColor: AppTheme.teal, foregroundColor: Colors.white),

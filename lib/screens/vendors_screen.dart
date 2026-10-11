@@ -272,9 +272,20 @@ class _VendorDialogState extends State<_VendorDialog> {
       } else {
         await ApiService().updateVendor(widget.vendor!['id'], data);
       }
-      if (mounted) Navigator.pop(context, true);
+      if (mounted) {
+        Navigator.pop(context, true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(widget.vendor == null ? 'Vendor added successfully!' : 'Vendor updated successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          )
+        );
+      }
     } catch (e) {
-      setState(() { _error = e.toString(); _isSubmitting = false; });
+      if (mounted) setState(() { _error = 'Failed to save vendor. Please check your connection.'; _isSubmitting = false; });
+    } finally {
+      if (mounted && _isSubmitting) setState(() => _isSubmitting = false);
     }
   }
 
@@ -299,7 +310,7 @@ class _VendorDialogState extends State<_VendorDialog> {
                 children: [
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                     Flexible(child: Text(isEdit ? 'Edit Vendor' : 'Add Vendor', style: GoogleFonts.bricolageGrotesque(fontSize: 22, fontWeight: FontWeight.w700, color: AppTheme.navy))),
-                    IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                    IconButton(icon: const Icon(Icons.close), onPressed: _isSubmitting ? null : () => Navigator.pop(context)),
                   ]),
                   const SizedBox(height: 24),
                   if (_error != null)
@@ -312,6 +323,7 @@ class _VendorDialogState extends State<_VendorDialog> {
                     controller: _nameCtrl,
                     decoration: _inputDeco('Company / Contractor Name'),
                     validator: (v) => v!.isEmpty ? 'Required' : null,
+                    enabled: !_isSubmitting,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -319,12 +331,14 @@ class _VendorDialogState extends State<_VendorDialog> {
                     decoration: _inputDeco('Email Address'),
                     keyboardType: TextInputType.emailAddress,
                     validator: (v) => v!.isEmpty || !v.contains('@') ? 'Valid email required' : null,
+                    enabled: !_isSubmitting,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _phoneCtrl,
                     decoration: _inputDeco('Phone Number'),
                     keyboardType: TextInputType.phone,
+                    enabled: !_isSubmitting,
                   ),
                   const SizedBox(height: 32),
                   SizedBox(

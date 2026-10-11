@@ -11,6 +11,7 @@ import 'features/vendor/vendor_dashboard_screen.dart';
 
 import 'package:provider/provider.dart';
 import 'providers/chat_provider.dart';
+import 'providers/search_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +26,7 @@ class PmsProApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ChatProvider()),
+        ChangeNotifierProvider(create: (_) => SearchProvider()),
       ],
       child: MaterialApp(
         title: 'PMS Pro - Property Management',

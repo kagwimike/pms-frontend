@@ -474,10 +474,17 @@ class _AddUnitDialogState extends State<AddUnitDialog> {
       await _apiService.createUnit(data);
       if (mounted) {
         Navigator.of(context).pop(true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Unit added successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          )
+        );
       }
     } catch (e) {
       setState(() {
-        _error = e.toString();
+        _error = 'Failed to create unit: Please check your connection and try again.';
       });
     } finally {
       if (mounted) {
@@ -527,7 +534,7 @@ class _AddUnitDialogState extends State<AddUnitDialog> {
                       ),
                       IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
                       ),
                     ],
                   ),
@@ -553,13 +560,14 @@ class _AddUnitDialogState extends State<AddUnitDialog> {
                       value: p['id'], 
                       child: Text(p['name'] ?? 'Unknown', overflow: TextOverflow.ellipsis),
                     )).toList(),
-                    onChanged: (v) => setState(() => _selectedPropertyId = v),
+                    onChanged: _isSubmitting ? null : (v) => setState(() => _selectedPropertyId = v),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _unitNumberController,
                     decoration: _inputDecoration('Unit Number (e.g. A-101)'),
                     validator: (v) => v!.isEmpty ? 'Required' : null,
+                    enabled: !_isSubmitting,
                   ),
                   const SizedBox(height: 12),
                   if (isSmall) ...[
@@ -568,6 +576,7 @@ class _AddUnitDialogState extends State<AddUnitDialog> {
                       decoration: _inputDecoration('Floor'),
                       keyboardType: TextInputType.number,
                       validator: (v) => v!.isEmpty ? 'Required' : null,
+                      enabled: !_isSubmitting,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -575,6 +584,7 @@ class _AddUnitDialogState extends State<AddUnitDialog> {
                       decoration: _inputDecoration('Bedrooms'),
                       keyboardType: TextInputType.number,
                       validator: (v) => v!.isEmpty ? 'Required' : null,
+                      enabled: !_isSubmitting,
                     ),
                   ] else
                     Row(
@@ -585,6 +595,7 @@ class _AddUnitDialogState extends State<AddUnitDialog> {
                             decoration: _inputDecoration('Floor'),
                             keyboardType: TextInputType.number,
                             validator: (v) => v!.isEmpty ? 'Required' : null,
+                            enabled: !_isSubmitting,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -594,6 +605,7 @@ class _AddUnitDialogState extends State<AddUnitDialog> {
                             decoration: _inputDecoration('Bedrooms'),
                             keyboardType: TextInputType.number,
                             validator: (v) => v!.isEmpty ? 'Required' : null,
+                            enabled: !_isSubmitting,
                           ),
                         ),
                       ],
@@ -604,6 +616,7 @@ class _AddUnitDialogState extends State<AddUnitDialog> {
                     decoration: _inputDecoration('Monthly Rent (KSh)'),
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     validator: (v) => v!.isEmpty ? 'Required' : null,
+                    enabled: !_isSubmitting,
                   ),
                   const SizedBox(height: 24),
                   SizedBox(
@@ -715,10 +728,17 @@ class _EditUnitDialogState extends State<EditUnitDialog> {
       await _apiService.updateUnit(widget.unit['id'], data);
       if (mounted) {
         Navigator.of(context).pop(true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Unit updated successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          )
+        );
       }
     } catch (e) {
       setState(() {
-        _error = e.toString();
+        _error = 'Failed to update unit: Please check your connection and try again.';
       });
     } finally {
       if (mounted) {
@@ -764,7 +784,7 @@ class _EditUnitDialogState extends State<EditUnitDialog> {
                       ),
                       IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
                       ),
                     ],
                   ),
@@ -788,13 +808,14 @@ class _EditUnitDialogState extends State<EditUnitDialog> {
                       DropdownMenuItem(value: 'OCCUPIED', child: Text('Occupied')),
                       DropdownMenuItem(value: 'MAINTENANCE', child: Text('Maintenance')),
                     ],
-                    onChanged: (v) => setState(() => _status = v!),
+                    onChanged: _isSubmitting ? null : (v) => setState(() => _status = v!),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _unitNumberController,
                     decoration: _inputDecoration('Unit Number (e.g. A-101)'),
                     validator: (v) => v!.isEmpty ? 'Required' : null,
+                    enabled: !_isSubmitting,
                   ),
                   const SizedBox(height: 12),
                   if (isSmall) ...[
@@ -803,6 +824,7 @@ class _EditUnitDialogState extends State<EditUnitDialog> {
                       decoration: _inputDecoration('Floor'),
                       keyboardType: TextInputType.number,
                       validator: (v) => v!.isEmpty ? 'Required' : null,
+                      enabled: !_isSubmitting,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -810,6 +832,7 @@ class _EditUnitDialogState extends State<EditUnitDialog> {
                       decoration: _inputDecoration('Bedrooms'),
                       keyboardType: TextInputType.number,
                       validator: (v) => v!.isEmpty ? 'Required' : null,
+                      enabled: !_isSubmitting,
                     ),
                   ] else
                     Row(
@@ -820,6 +843,7 @@ class _EditUnitDialogState extends State<EditUnitDialog> {
                             decoration: _inputDecoration('Floor'),
                             keyboardType: TextInputType.number,
                             validator: (v) => v!.isEmpty ? 'Required' : null,
+                            enabled: !_isSubmitting,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -829,6 +853,7 @@ class _EditUnitDialogState extends State<EditUnitDialog> {
                             decoration: _inputDecoration('Bedrooms'),
                             keyboardType: TextInputType.number,
                             validator: (v) => v!.isEmpty ? 'Required' : null,
+                            enabled: !_isSubmitting,
                           ),
                         ),
                       ],
@@ -839,6 +864,7 @@ class _EditUnitDialogState extends State<EditUnitDialog> {
                     decoration: _inputDecoration('Monthly Rent (KSh)'),
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     validator: (v) => v!.isEmpty ? 'Required' : null,
+                    enabled: !_isSubmitting,
                   ),
                   const SizedBox(height: 24),
                   SizedBox(
