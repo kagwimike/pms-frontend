@@ -6,6 +6,7 @@ import 'package:http_parser/http_parser.dart';
 import '../services/api_service.dart';
 import '../config.dart';
 import '../theme/app_theme.dart';
+import '../ui/widgets/responsive_helper.dart';
 import 'property_details_screen.dart';
 
 class PropertiesScreen extends StatefulWidget {
@@ -56,7 +57,7 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
   }
 
   void _showAddPropertyDialog() {
-    showDialog(
+    ResponsiveHelper.showResponsiveDialog(
       context: context,
       builder: (context) => const AddPropertyDialog(),
     ).then((result) {
@@ -231,7 +232,7 @@ class _PropertyCard extends StatelessWidget {
   }
 
   void _edit(BuildContext context) {
-    showDialog(
+    ResponsiveHelper.showResponsiveDialog(
       context: context,
       builder: (context) => EditPropertyDialog(property: property),
     ).then((result) {
@@ -544,14 +545,14 @@ class _AddPropertyDialogState extends State<AddPropertyDialog> {
     final isSmall = screenWidth < 400;
     final dialogPad = isSmall ? 16.0 : 28.0;
 
-    return Dialog(
-      insetPadding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 40, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 500),
-        child: Padding(
-          padding: EdgeInsets.all(dialogPad),
-          child: SingleChildScrollView(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: isSmall ? const BorderRadius.vertical(top: Radius.circular(20)) : BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(dialogPad),
+        child: SingleChildScrollView(
             child: Form(
               key: _formKey,
               child: Column(
@@ -711,8 +712,7 @@ class _AddPropertyDialogState extends State<AddPropertyDialog> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 
   InputDecoration _inputDecoration(String label) {
@@ -836,14 +836,14 @@ class _EditPropertyDialogState extends State<EditPropertyDialog> {
   @override
   Widget build(BuildContext context) {
     final isSmall = MediaQuery.of(context).size.width < 400;
-    return Dialog(
-      insetPadding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 40, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 500),
-        child: Padding(
-          padding: EdgeInsets.all(isSmall ? 16.0 : 28.0),
-          child: SingleChildScrollView(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: isSmall ? const BorderRadius.vertical(top: Radius.circular(20)) : BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(isSmall ? 16.0 : 28.0),
+        child: SingleChildScrollView(
             child: Form(
               key: _formKey,
               child: Column(
@@ -927,8 +927,7 @@ class _EditPropertyDialogState extends State<EditPropertyDialog> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 
   InputDecoration _inputDecoration(String label) {

@@ -19,6 +19,9 @@ import 'inspections_screen.dart';
 import 'documents_screen.dart';
 import 'communication/communication_inbox_screen.dart';
 import 'communication/announcements_screen.dart';
+import 'settings_screen.dart';
+import 'package:provider/provider.dart';
+import '../providers/chat_provider.dart';
 
 class OwnerDashboard extends StatefulWidget {
   const OwnerDashboard({super.key});
@@ -49,6 +52,9 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
   void initState() {
     super.initState();
     _loadStats();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ChatProvider>().initialize();
+    });
   }
 
   Future<void> _loadStats() async {
@@ -219,7 +225,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
       case 'broadcasts':
         return const AnnouncementsScreen();
       case 'settings':
-        return _buildPlaceholder('Settings', Icons.settings_outlined, 'Manage your account and preferences');
+        return const SettingsScreen(isOwner: true);
       default:
         return _buildDashboardHome();
     }

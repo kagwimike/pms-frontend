@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
+import '../ui/widgets/responsive_helper.dart';
 import 'lease_details_screen.dart';
 
 class LeasesScreen extends StatefulWidget {
@@ -55,7 +56,7 @@ class _LeasesScreenState extends State<LeasesScreen> {
   }
 
   void _showAddLeaseDialog() {
-    showDialog(
+    ResponsiveHelper.showResponsiveDialog(
       context: context,
       builder: (context) => const AddLeaseDialog(),
     ).then((result) {
@@ -471,17 +472,21 @@ class _AddLeaseDialogState extends State<AddLeaseDialog> {
     final dialogPad = isSmall ? 16.0 : 28.0;
 
     if (_isLoading) {
-       return const Dialog(child: SizedBox(width: 100, height: 100, child: Center(child: CircularProgressIndicator())));
+       return Container(
+         padding: EdgeInsets.all(24),
+         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+         child: const SizedBox(width: 100, height: 100, child: Center(child: CircularProgressIndicator())),
+       );
     }
 
-    return Dialog(
-      insetPadding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 40, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 600),
-        child: Padding(
-          padding: EdgeInsets.all(dialogPad),
-          child: SingleChildScrollView(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: isSmall ? const BorderRadius.vertical(top: Radius.circular(20)) : BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(dialogPad),
+        child: SingleChildScrollView(
             child: Form(
               key: _formKey,
               child: Column(
@@ -625,8 +630,7 @@ class _AddLeaseDialogState extends State<AddLeaseDialog> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 
   InputDecoration _inputDecoration(String label) {

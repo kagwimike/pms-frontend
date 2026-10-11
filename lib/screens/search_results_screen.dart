@@ -25,6 +25,8 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
   late SearchProvider _provider;
   final ScrollController _scrollCtrl = ScrollController();
   String? _statusFilter;
+  String? _propertyFilter;
+  String? _dateRangeFilter;
 
   @override
   void initState() {
@@ -103,7 +105,11 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                         selectedColor: AppTheme.teal,
                         onSelected: (sel) {
                           if (sel) {
-                            setState(() => _statusFilter = null);
+                            setState(() {
+                              _statusFilter = null;
+                              _propertyFilter = null;
+                              _dateRangeFilter = null;
+                            });
                             provider.selectCategory(cat == 'All' ? null : cat);
                           }
                         },
@@ -162,8 +168,39 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
   Widget _buildCategorySection(String category, List<SearchResult> items) {
     var filteredItems = items;
     if (_statusFilter != null) {
-      filteredItems = items.where((item) => item.status?.toUpperCase() == _statusFilter?.toUpperCase()).toList();
+      filteredItems = filteredItems.where((item) => item.status?.toUpperCase() == _statusFilter?.toUpperCase()).toList();
     }
+    
+    if (_propertyFilter != null) {
+      filteredItems = filteredItems.where((item) {
+        if (item.rawData.containsKey('propertyName') && item.rawData['propertyName'] != null) {
+          return item.rawData['propertyName'].toString() == _propertyFilter;
+        }
+        return false;
+      }).toList();
+    }
+
+    if (_dateRangeFilter != null) {
+      final now = DateTime.now();
+      DateTime threshold;
+      switch (_dateRangeFilter) {
+        case '7_DAYS': threshold = now.subtract(const Duration(days: 7)); break;
+        case '30_DAYS': threshold = now.subtract(const Duration(days: 30)); break;
+        case '6_MONTHS': threshold = now.subtract(const Duration(days: 180)); break;
+        default: threshold = DateTime.fromMillisecondsSinceEpoch(0);
+      }
+      
+      filteredItems = filteredItems.where((item) {
+        if (item.rawData.containsKey('date') && item.rawData['date'] != null) {
+          final itemDate = DateTime.tryParse(item.rawData['date'].toString());
+          if (itemDate != null) {
+            return itemDate.isAfter(threshold);
+          }
+        }
+        return true; // Keep items with no date instead of hiding them aggressively, or hide them? Better to keep them if they can't be filtered, or hide them? Let's hide them if user explicitly wants recent things.
+      }).toList();
+    }
+
     if (filteredItems.isEmpty) return const SizedBox();
     
     return Card(
@@ -192,34 +229,79 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
   Widget _buildDynamicFiltersRow(List<SearchResult> items) {
     // Extract unique statuses
     final statuses = items.map((e) => e.status?.toUpperCase()).where((e) => e != null).toSet().cast<String>().toList();
-    if (statuses.isEmpty) return const SizedBox.shrink();
+    
+    // Extract unique properties
+    final properties = items.map((e) {
+      if (e.rawData.containsKey('propertyName') && e.rawData['propertyName'] != null) {
+        return e.rawData['propertyName'].toString();
+      }
+      return null;
+    }).where((e) => e != null).toSet().cast<String>().toList();
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       color: Colors.grey.shade50,
       width: double.infinity,
-      child: Row(
-        children: [
-          const Icon(Icons.filter_list, size: 16, color: Colors.grey),
-          const SizedBox(width: 8),
-          Text('Filter by Status: ', style: GoogleFonts.dmSans(color: Colors.grey.shade700, fontSize: 12)),
-          const SizedBox(width: 8),
-          DropdownButton<String>(
-            value: _statusFilter,
-            hint: Text('All', style: GoogleFonts.dmSans(fontSize: 12)),
-            isDense: true,
-            underline: const SizedBox(),
-            items: [
-              DropdownMenuItem(value: null, child: Text('All', style: GoogleFonts.dmSans(fontSize: 12))),
-              ...statuses.map((s) => DropdownMenuItem(value: s, child: Text(s, style: GoogleFonts.dmSans(fontSize: 12)))),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            const Icon(Icons.filter_list, size: 16, color: Colors.grey),
+            const SizedBox(width: 8),
+            Text('Filters: ', style: GoogleFonts.dmSans(color: Colors.grey.shade700, fontSize: 12)),
+            const SizedBox(width: 16),
+            
+            if (statuses.isNotEmpty) ...[
+              DropdownButton<String>(
+                value: _statusFilter,
+                hint: Text('Status (All)', style: GoogleFonts.dmSans(fontSize: 12)),
+                isDense: true,
+                underline: const SizedBox(),
+                items: [
+                  DropdownMenuItem(value: null, child: Text('Status (All)', style: GoogleFonts.dmSans(fontSize: 12))),
+                  ...statuses.map((s) => DropdownMenuItem(value: s, child: Text(s, style: GoogleFonts.dmSans(fontSize: 12)))),
+                ],
+                onChanged: (val) {
+                  setState(() => _statusFilter = val);
+                },
+              ),
+              const SizedBox(width: 16),
             ],
-            onChanged: (val) {
-              setState(() {
-                _statusFilter = val;
-              });
-            },
-          ),
-        ],
+
+            if (properties.isNotEmpty) ...[
+              DropdownButton<String>(
+                value: _propertyFilter,
+                hint: Text('Property (All)', style: GoogleFonts.dmSans(fontSize: 12)),
+                isDense: true,
+                underline: const SizedBox(),
+                items: [
+                  DropdownMenuItem(value: null, child: Text('Property (All)', style: GoogleFonts.dmSans(fontSize: 12))),
+                  ...properties.map((p) => DropdownMenuItem(value: p, child: Text(p, style: GoogleFonts.dmSans(fontSize: 12)))),
+                ],
+                onChanged: (val) {
+                  setState(() => _propertyFilter = val);
+                },
+              ),
+              const SizedBox(width: 16),
+            ],
+            
+            DropdownButton<String>(
+              value: _dateRangeFilter,
+              hint: Text('Date (All Time)', style: GoogleFonts.dmSans(fontSize: 12)),
+              isDense: true,
+              underline: const SizedBox(),
+              items: [
+                DropdownMenuItem(value: null, child: Text('Date (All Time)', style: GoogleFonts.dmSans(fontSize: 12))),
+                DropdownMenuItem(value: '7_DAYS', child: Text('Last 7 Days', style: GoogleFonts.dmSans(fontSize: 12))),
+                DropdownMenuItem(value: '30_DAYS', child: Text('Last 30 Days', style: GoogleFonts.dmSans(fontSize: 12))),
+                DropdownMenuItem(value: '6_MONTHS', child: Text('Last 6 Months', style: GoogleFonts.dmSans(fontSize: 12))),
+              ],
+              onChanged: (val) {
+                setState(() => _dateRangeFilter = val);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -256,6 +338,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
   }
 
   Future<void> _navigateToDetail(SearchResult item) async {
+    context.read<SearchProvider>().saveRecentRecord(item);
     final api = ApiService();
     try {
       showDialog(

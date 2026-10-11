@@ -15,6 +15,9 @@ import 'payments_screen.dart';
 import 'inspections_screen.dart';
 import 'documents_screen.dart';
 import 'communication/communication_inbox_screen.dart';
+import 'settings_screen.dart';
+import 'package:provider/provider.dart';
+import '../providers/chat_provider.dart';
 
 class TenantDashboard extends StatefulWidget {
   const TenantDashboard({super.key});
@@ -54,6 +57,9 @@ class _TenantDashboardState extends State<TenantDashboard> {
   void initState() {
     super.initState();
     _loadTenantData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ChatProvider>().initialize();
+    });
   }
 
   Future<void> _loadTenantData() async {
@@ -204,7 +210,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
       case 'messages':
         return const CommunicationInboxScreen();
       case 'settings':
-        return _buildPlaceholder('Settings', Icons.settings_outlined, 'Manage your account and preferences');
+        return const SettingsScreen(isOwner: false);
       default:
         return _buildDashboardHome();
     }

@@ -63,7 +63,16 @@ class NavBar extends StatelessWidget {
                     child: const Text('Log In', style: TextStyle(fontWeight: FontWeight.w600)),
                   ),
                   const SizedBox(width: 12),
-                  const WhatsappButton(),
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(context).pushNamed('/login'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.teal,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                    ),
+                    child: const Text('Get Started', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
                 ],
               ),
             ],

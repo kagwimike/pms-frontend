@@ -27,14 +27,23 @@ class FaqSection extends StatelessWidget {
                   color: AppTheme.bgGreyGreen,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Column(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Have more questions?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                    SizedBox(height: 12),
-                    Text('Our team is ready to help you out.', style: TextStyle(color: AppTheme.mutedText)),
-                    SizedBox(height: 24),
-                    WhatsappButton(),
+                    const Text('Have more questions?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                    const SizedBox(height: 12),
+                    const Text('Our team is ready to help you out.', style: TextStyle(color: AppTheme.mutedText)),
+                    const SizedBox(height: 24),
+                    OutlinedButton.icon(
+                      onPressed: () => Navigator.of(context).pushNamed('/login'),
+                      icon: const Icon(Icons.email, color: AppTheme.navy),
+                      label: const Text('Contact Support', style: TextStyle(color: AppTheme.navy, fontWeight: FontWeight.bold)),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: AppTheme.navy),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
                   ],
                 ),
               ),

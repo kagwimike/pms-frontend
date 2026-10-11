@@ -6,6 +6,7 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../config.dart';
 import '../theme/app_theme.dart';
+import '../ui/widgets/responsive_helper.dart';
 
 class TenantsScreen extends StatefulWidget {
   const TenantsScreen({super.key});
@@ -46,7 +47,7 @@ class _TenantsScreenState extends State<TenantsScreen> {
   }
 
   void _showAddTenantDialog() {
-    showDialog(
+    ResponsiveHelper.showResponsiveDialog(
       context: context,
       builder: (context) => const AddTenantDialog(),
     ).then((result) {
@@ -338,14 +339,14 @@ class _AddTenantDialogState extends State<AddTenantDialog> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmall = screenWidth < 400;
 
-    return Dialog(
-      insetPadding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 40, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 500),
-        child: Padding(
-          padding: const EdgeInsets.all(28.0),
-          child: SingleChildScrollView(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: isSmall ? const BorderRadius.vertical(top: Radius.circular(20)) : BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(28.0),
+        child: SingleChildScrollView(
             child: Form(
               key: _formKey,
               child: Column(
@@ -420,8 +421,7 @@ class _AddTenantDialogState extends State<AddTenantDialog> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 
   InputDecoration _inputDecoration(String label) {

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../services/api_service.dart';
 import '../../widgets/search_overlay.dart';
+import '../../widgets/quick_create_modal.dart';
+import 'package:provider/provider.dart';
+import '../../providers/theme_provider.dart';
 
 class TopNavBar extends StatefulWidget {
   final bool isCompact;
@@ -46,12 +49,21 @@ class _TopNavBarState extends State<TopNavBar> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final bgColor = isDark ? const Color(0xFF18181B) : Colors.white;
+    final borderColor = isDark ? const Color(0xFF27272A) : const Color(0xFFE2E8F0);
+    final searchBgColor = isDark ? const Color(0xFF27272A) : const Color(0xFFF1F5F9);
+    final iconColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569);
+    final textMuted = isDark ? const Color(0xFF94A3B8) : const Color(0xFF94A3B8);
+
     return Container(
       height: 64,
       padding: EdgeInsets.symmetric(horizontal: widget.isCompact ? 16 : 24),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+      decoration: BoxDecoration(
+        color: bgColor,
+        border: Border(bottom: BorderSide(color: borderColor)),
       ),
       child: Row(
         children: [
@@ -59,7 +71,7 @@ class _TopNavBarState extends State<TopNavBar> {
             IconButton(
               tooltip: 'Open navigation',
               onPressed: () => Scaffold.of(context).openDrawer(),
-              icon: const Icon(Icons.menu_rounded, color: Color(0xFF475569)),
+              icon: Icon(Icons.menu_rounded, color: iconColor),
             ),
             const SizedBox(width: 8),
           ],
@@ -83,20 +95,20 @@ class _TopNavBarState extends State<TopNavBar> {
                     height: 40,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF1F5F9),
+                      color: searchBgColor,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      border: Border.all(color: borderColor),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.search_rounded, size: 20, color: Color(0xFF64748B)),
+                        Icon(Icons.search_rounded, size: 20, color: iconColor),
                         const SizedBox(width: 12),
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'Search PMS Pro...',
                             style: TextStyle(
-                              color: Color(0xFF94A3B8),
                               fontSize: 14,
+                              color: textMuted,
                             ),
                           ),
                         ),
@@ -104,14 +116,14 @@ class _TopNavBarState extends State<TopNavBar> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                               borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: const Color(0xFFCBD5E1)),
+                              border: Border.all(color: borderColor),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Ctrl K',
                               style: TextStyle(
-                                color: Color(0xFF64748B),
+                                color: textMuted,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -125,7 +137,111 @@ class _TopNavBarState extends State<TopNavBar> {
             ),
           ),
           
+          const SizedBox(width: 24),
+          
+          // + New Button
+          ElevatedButton.icon(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => const QuickCreateModal(),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF27624D), // AppTheme.teal
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+              minimumSize: const Size(0, 36),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              elevation: 0,
+            ),
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text('New', style: TextStyle(fontWeight: FontWeight.w600)),
+          ),
+          
+          const SizedBox(width: 12),
+          
+          // Upgrade Button
+          if (!widget.isCompact)
+            TextButton.icon(
+              onPressed: () {},
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFF27624D).withValues(alpha: 0.1),
+                foregroundColor: const Color(0xFF27624D),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                minimumSize: const Size(0, 36),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              ),
+              icon: const Icon(Icons.rocket_launch_outlined, size: 16),
+              label: const Text('Upgrade', style: TextStyle(fontWeight: FontWeight.w600)),
+            ),
+          
           const SizedBox(width: 16),
+          
+          // Theme toggle (Dynamic icon depending on current mode)
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, _) {
+              IconData currentIcon;
+              String tooltipText;
+              switch (themeProvider.themeMode) {
+                case ThemeMode.light:
+                  currentIcon = Icons.light_mode_outlined;
+                  tooltipText = 'Theme: Light';
+                  break;
+                case ThemeMode.dark:
+                  currentIcon = Icons.dark_mode_outlined;
+                  tooltipText = 'Theme: Dark';
+                  break;
+                case ThemeMode.system:
+                  currentIcon = Icons.brightness_auto_outlined;
+                  tooltipText = 'Theme: System';
+                  break;
+              }
+
+              return PopupMenuButton<ThemeMode>(
+                tooltip: tooltipText,
+                icon: Icon(currentIcon, color: iconColor),
+                offset: const Offset(0, 40),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                initialValue: themeProvider.themeMode,
+                onSelected: (mode) => themeProvider.setThemeMode(mode),
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: ThemeMode.system,
+                    child: Row(
+                      children: [
+                        Icon(Icons.brightness_auto_outlined, size: 20, color: themeProvider.themeMode == ThemeMode.system ? Theme.of(context).primaryColor : null),
+                        const SizedBox(width: 12),
+                        const Text('System Default'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: ThemeMode.light,
+                    child: Row(
+                      children: [
+                        Icon(Icons.light_mode_outlined, size: 20, color: themeProvider.themeMode == ThemeMode.light ? Theme.of(context).primaryColor : null),
+                        const SizedBox(width: 12),
+                        const Text('Light Mode'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: ThemeMode.dark,
+                    child: Row(
+                      children: [
+                        Icon(Icons.dark_mode_outlined, size: 20, color: themeProvider.themeMode == ThemeMode.dark ? Theme.of(context).primaryColor : null),
+                        const SizedBox(width: 12),
+                        const Text('Dark Mode'),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+            
+          const SizedBox(width: 8),
           
           // Notifications
           IconButton(
@@ -141,7 +257,7 @@ class _TopNavBarState extends State<TopNavBar> {
               isLabelVisible: _unreadCount > 0,
               label: Text(_unreadCount > 99 ? '99+' : _unreadCount.toString()),
               backgroundColor: const Color(0xFFEF4444),
-              child: const Icon(Icons.notifications_none_rounded, color: Color(0xFF475569)),
+              child: Icon(Icons.notifications_none_rounded, color: iconColor),
             ),
           ),
           

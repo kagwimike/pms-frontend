@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
+import '../ui/widgets/responsive_helper.dart';
 import '../widgets/ticket_chat_widget.dart';
 
 class MaintenanceScreen extends StatefulWidget {
@@ -43,12 +44,12 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   }
 
   void _showCreateDialog() {
-    showDialog(context: context, builder: (ctx) => _CreateMaintenanceDialog(isOwner: widget.isOwner))
+    ResponsiveHelper.showResponsiveDialog(context: context, builder: (ctx) => CreateMaintenanceDialog(isOwner: widget.isOwner))
       .then((result) { if (result == true) _load(); });
   }
 
   void _showUpdateStatusDialog(Map<String, dynamic> request) {
-    showDialog(context: context, builder: (ctx) => _UpdateStatusDialog(request: request))
+    ResponsiveHelper.showResponsiveDialog(context: context, builder: (ctx) => _UpdateStatusDialog(request: request))
       .then((result) { if (result == true) _load(); });
   }
 
@@ -320,15 +321,15 @@ class _RequestCard extends StatelessWidget {
   }
 }
 
-class _CreateMaintenanceDialog extends StatefulWidget {
+class CreateMaintenanceDialog extends StatefulWidget {
   final bool isOwner;
-  const _CreateMaintenanceDialog({required this.isOwner});
+  const CreateMaintenanceDialog({super.key, required this.isOwner});
 
   @override
-  State<_CreateMaintenanceDialog> createState() => _CreateMaintenanceDialogState();
+  State<CreateMaintenanceDialog> createState() => _CreateMaintenanceDialogState();
 }
 
-class _CreateMaintenanceDialogState extends State<_CreateMaintenanceDialog> {
+class _CreateMaintenanceDialogState extends State<CreateMaintenanceDialog> {
   final _formKey = GlobalKey<FormState>();
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
@@ -372,12 +373,12 @@ class _CreateMaintenanceDialogState extends State<_CreateMaintenanceDialog> {
   @override
   Widget build(BuildContext context) {
     final isSmall = MediaQuery.of(context).size.width < 400;
-    return Dialog(
-      insetPadding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 40, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 500),
-        child: Padding(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: isSmall ? const BorderRadius.vertical(top: Radius.circular(20)) : BorderRadius.circular(16),
+      ),
+      child: Padding(
         padding: EdgeInsets.all(isSmall ? 16.0 : 28.0),
         child: SingleChildScrollView(
           child: Form(
@@ -440,9 +441,8 @@ class _CreateMaintenanceDialogState extends State<_CreateMaintenanceDialog> {
               ),
             ],
           ),
+          ),
         ),
-        ),
-      ),
       ),
     );
   }
@@ -538,12 +538,12 @@ class _UpdateStatusDialogState extends State<_UpdateStatusDialog> {
   @override
   Widget build(BuildContext context) {
     final isSmall = MediaQuery.of(context).size.width < 400;
-    return Dialog(
-      insetPadding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 40, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480),
-        child: Padding(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: isSmall ? const BorderRadius.vertical(top: Radius.circular(20)) : BorderRadius.circular(16),
+      ),
+      child: Padding(
         padding: EdgeInsets.all(isSmall ? 16.0 : 28.0),
         child: SingleChildScrollView(
           child: Column(
@@ -641,9 +641,8 @@ class _UpdateStatusDialogState extends State<_UpdateStatusDialog> {
               ),
             ),
           ],
+          ),
         ),
-        ),
-      ),
       ),
     );
   }

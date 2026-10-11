@@ -148,6 +148,23 @@ class AuthService extends ChangeNotifier {
 
   /// Logout
   Future<void> logout() async {
+    if (_accessToken != null) {
+      try {
+        await http.post(
+          Uri.parse('${AppConfig.apiBaseUrl}/auth/logout'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $_accessToken',
+          },
+          body: jsonEncode({
+            if (_refreshToken != null) 'refresh': _refreshToken,
+          }),
+        );
+      } catch (e) {
+        debugPrint('Error notifying backend of logout: $e');
+      }
+    }
+
     _user = null;
     _accessToken = null;
     _refreshToken = null;

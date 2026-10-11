@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/search_provider.dart';
@@ -21,6 +22,9 @@ class SearchOverlay extends StatefulWidget {
 
 class _SearchOverlayState extends State<SearchOverlay> {
   final TextEditingController _searchCtrl = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  int _selectedIndex = -1;
+  final List<SearchResult> _flatResults = [];
 
   @override
   void initState() {
@@ -30,12 +34,49 @@ class _SearchOverlayState extends State<SearchOverlay> {
     });
     _searchCtrl.addListener(() {
       context.read<SearchProvider>().setQuery(_searchCtrl.text);
+      if (mounted) {
+        setState(() {
+          _selectedIndex = -1;
+        });
+      }
     });
+
+    _searchFocusNode.onKeyEvent = (node, event) {
+      if (event is KeyDownEvent) {
+        if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+          setState(() {
+            if (_selectedIndex < _flatResults.length - 1) {
+              _selectedIndex++;
+            }
+          });
+          return KeyEventResult.handled;
+        } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+          setState(() {
+            if (_selectedIndex > 0) {
+              _selectedIndex--;
+            }
+          });
+          return KeyEventResult.handled;
+        } else if (event.logicalKey == LogicalKeyboardKey.enter) {
+          if (_selectedIndex >= 0 && _selectedIndex < _flatResults.length) {
+            Navigator.pop(context);
+            _navigateToDetail(_flatResults[_selectedIndex]);
+            return KeyEventResult.handled;
+          } else if (_searchCtrl.text.isNotEmpty) {
+            Navigator.pop(context);
+            Navigator.push(context, MaterialPageRoute(builder: (_) => SearchResultsScreen(query: _searchCtrl.text)));
+            return KeyEventResult.handled;
+          }
+        }
+      }
+      return KeyEventResult.ignored;
+    };
   }
 
   @override
   void dispose() {
     _searchCtrl.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -76,6 +117,7 @@ class _SearchOverlayState extends State<SearchOverlay> {
                     Expanded(
                       child: TextField(
                         controller: _searchCtrl,
+                        focusNode: _searchFocusNode,
                         autofocus: true,
                         decoration: InputDecoration(
                           hintText: selectedCat != null ? 'Search ${selectedCat.toUpperCase()}...' : 'Search tenants, units, maintenance...',
@@ -146,6 +188,14 @@ class _SearchOverlayState extends State<SearchOverlay> {
                       return _buildEmptyState();
                     }
 
+                    _flatResults.clear();
+                    for (var entry in provider.results.entries) {
+                      _flatResults.addAll(entry.value.take(3));
+                    }
+                    if (_selectedIndex >= _flatResults.length && _flatResults.isNotEmpty) {
+                      _selectedIndex = _flatResults.length - 1;
+                    }
+
                     return _buildResultsState(provider);
                   },
                 ),
@@ -190,6 +240,12 @@ class _SearchOverlayState extends State<SearchOverlay> {
         padding: const EdgeInsets.all(16.0),
         shrinkWrap: true,
         children: [
+          if (provider.recentRecords.isNotEmpty) ...[
+            Text('Recently Viewed', style: GoogleFonts.bricolageGrotesque(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.navy)),
+            const SizedBox(height: 8),
+            ...provider.recentRecords.map((item) => _buildResultItem(item, false)),
+            const SizedBox(height: 24),
+          ],
           if ((provider.recentSearches as dynamic) != null && (provider.recentSearches as dynamic).length > 0) ...[
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -253,31 +309,41 @@ class _SearchOverlayState extends State<SearchOverlay> {
   }
 
   Widget _buildResultsState(SearchProvider provider) {
+    int currentIndex = 0;
     return ListView(
       padding: const EdgeInsets.all(16),
       shrinkWrap: true,
       children: [
         ...provider.results.entries.map((entry) {
           final category = entry.key;
-          final items = entry.value;
+          final items = entry.value.take(3).toList();
           
+          final categoryWidgets = <Widget>[
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8, top: 16),
+              child: Text(category.toUpperCase(), style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey.shade500)),
+            ),
+          ];
+
+          for (var item in items) {
+            final isSelected = currentIndex == _selectedIndex;
+            categoryWidgets.add(_buildResultItem(item, isSelected));
+            currentIndex++;
+          }
+
+          if (entry.value.length > 3) {
+            categoryWidgets.add(TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close overlay
+                Navigator.push(context, MaterialPageRoute(builder: (_) => SearchResultsScreen(query: _searchCtrl.text, initialCategory: category)));
+              },
+              child: Text('View all $category results →'),
+            ));
+          }
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8, top: 16),
-                child: Text(category.toUpperCase(), style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey.shade500)),
-              ),
-              ...items.take(3).map((item) => _buildResultItem(item)),
-              if (items.length > 3)
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context); // Close overlay
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => SearchResultsScreen(query: _searchCtrl.text, initialCategory: category)));
-                  },
-                  child: Text('View all $category results →'),
-                )
-            ],
+            children: categoryWidgets,
           );
         }),
         const Divider(height: 32),
@@ -294,7 +360,7 @@ class _SearchOverlayState extends State<SearchOverlay> {
     );
   }
 
-  Widget _buildResultItem(SearchResult item) {
+  Widget _buildResultItem(SearchResult item, bool isSelected) {
     IconData icon = Icons.circle;
     switch(item.icon) {
       case 'person_rounded': icon = Icons.person_rounded; break;
@@ -310,22 +376,29 @@ class _SearchOverlayState extends State<SearchOverlay> {
       case 'forum_rounded': icon = Icons.forum_rounded; break;
     }
 
-    return ListTile(
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: AppTheme.teal.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-        child: Icon(icon, color: AppTheme.teal, size: 20),
+    return Container(
+      decoration: BoxDecoration(
+        color: isSelected ? Colors.grey.shade100 : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
       ),
-      title: Text(item.title, style: GoogleFonts.dmSans(fontWeight: FontWeight.w600)),
-      subtitle: item.subtitle != null ? Text(item.subtitle!, maxLines: 1, overflow: TextOverflow.ellipsis) : null,
-      onTap: () {
-        Navigator.pop(context);
-        _navigateToDetail(item);
-      },
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(color: AppTheme.teal.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+          child: Icon(icon, color: AppTheme.teal, size: 20),
+        ),
+        title: Text(item.title, style: GoogleFonts.dmSans(fontWeight: FontWeight.w600)),
+        subtitle: item.subtitle != null ? Text(item.subtitle!, maxLines: 1, overflow: TextOverflow.ellipsis) : null,
+        onTap: () {
+          Navigator.pop(context);
+          _navigateToDetail(item);
+        },
+      ),
     );
   }
 
   Future<void> _navigateToDetail(SearchResult item) async {
+    context.read<SearchProvider>().saveRecentRecord(item);
     final api = ApiService();
     try {
       showDialog(

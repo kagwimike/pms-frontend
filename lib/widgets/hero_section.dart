@@ -36,13 +36,23 @@ class HeroSection extends StatelessWidget {
               Row(
                 mainAxisAlignment: isMobile ? MainAxisAlignment.center : MainAxisAlignment.start,
                 children: [
-                  const WhatsappButton().animate().fadeIn(duration: 600.ms, delay: 400.ms),
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(context).pushNamed('/login'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.navy,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
+                    child: const Text('Get Started Free', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  ).animate().fadeIn(duration: 600.ms, delay: 400.ms),
                 ],
               ),
               const SizedBox(height: 16),
               const Text(
-                '⚡ We reply the same day',
-                style: const TextStyle(color: AppTheme.teal, fontWeight: FontWeight.w600),
+                '⚡ No credit card required to start',
+                style: TextStyle(color: AppTheme.teal, fontWeight: FontWeight.w600),
               ).animate().fadeIn(duration: 600.ms, delay: 600.ms),
             ],
           );

@@ -10,6 +10,8 @@ import 'incident_logging_screen.dart';
 import 'caretaker_reports_screen.dart';
 import '../../ui/widgets/top_nav_bar.dart';
 import '../../screens/notifications_screen.dart';
+import 'package:provider/provider.dart';
+import '../../providers/chat_provider.dart';
 
 class CaretakerDashboardScreen extends StatefulWidget {
   const CaretakerDashboardScreen({super.key});
@@ -31,6 +33,14 @@ class _CaretakerDashboardScreenState extends State<CaretakerDashboardScreen> {
     const SidebarItem(key: 'notifications', label: 'Alerts', icon: Icons.notifications_none),
     const SidebarItem(key: 'settings', label: 'Settings', icon: Icons.settings_outlined),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ChatProvider>().initialize();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

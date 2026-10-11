@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/search_result.dart';
@@ -40,12 +41,40 @@ class SearchProvider extends ChangeNotifier {
   List<String> _recentSearches = [];
   List<String> get recentSearches => _recentSearches;
 
+  List<SearchResult> _recentRecords = [];
+  List<SearchResult> get recentRecords => _recentRecords;
+
   static const String _recentSearchesKey = 'recent_searches_key';
+  static const String _recentRecordsKey = 'recent_records_key';
 
   Future<void> _loadRecentSearches() async {
     final prefs = await SharedPreferences.getInstance();
     final list = prefs.getStringList(_recentSearchesKey) ?? [];
     _recentSearches = list.where((e) => e != null && e.toString().trim().length > 0).cast<String>().toList();
+    
+    final recordsList = prefs.getStringList(_recentRecordsKey) ?? [];
+    try {
+      _recentRecords = recordsList.map((e) => SearchResult.fromJson(jsonDecode(e))).toList();
+    } catch (e) {
+      _recentRecords = [];
+    }
+    
+    notifyListeners();
+  }
+
+  Future<void> saveRecentRecord(SearchResult record) async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    // Remove if already exists to put it at the top
+    _recentRecords.removeWhere((e) => e.id == record.id && e.type == record.type);
+    
+    _recentRecords.insert(0, record);
+    if (_recentRecords.length > 5) {
+      _recentRecords = _recentRecords.sublist(0, 5);
+    }
+    
+    final encodedList = _recentRecords.map((e) => jsonEncode(e.toJson())).toList();
+    await prefs.setStringList(_recentRecordsKey, encodedList);
     notifyListeners();
   }
 

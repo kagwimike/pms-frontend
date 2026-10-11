@@ -12,6 +12,7 @@ import 'features/vendor/vendor_dashboard_screen.dart';
 import 'package:provider/provider.dart';
 import 'providers/chat_provider.dart';
 import 'providers/search_provider.dart';
+import 'providers/theme_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,20 +28,27 @@ class PmsProApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => ChatProvider()),
         ChangeNotifierProvider(create: (_) => SearchProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
-      child: MaterialApp(
-        title: 'PMS Pro - Property Management',
-        theme: AppTheme.theme,
-        debugShowCheckedModeBanner: false,
-        home: const LandingPage(),
-        routes: {
-          '/login': (_) => const LoginScreen(),
-          '/register': (_) => const RegisterScreen(),
-          '/owner-dashboard': (_) => const OwnerDashboard(),
-          '/tenant-dashboard': (_) => const TenantDashboard(),
-          '/caretaker-dashboard': (_) => const CaretakerDashboardScreen(),
-          '/vendor-dashboard': (_) => const VendorDashboardScreen(),
-          '/communication-inbox': (_) => const CommunicationInboxScreen(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            title: 'PMS Pro - Property Management',
+            theme: AppTheme.theme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeProvider.themeMode,
+            debugShowCheckedModeBanner: false,
+            home: const LandingPage(),
+            routes: {
+              '/login': (_) => const LoginScreen(),
+              '/register': (_) => const RegisterScreen(),
+              '/owner-dashboard': (_) => const OwnerDashboard(),
+              '/tenant-dashboard': (_) => const TenantDashboard(),
+              '/caretaker-dashboard': (_) => const CaretakerDashboardScreen(),
+              '/vendor-dashboard': (_) => const VendorDashboardScreen(),
+              '/communication-inbox': (_) => const CommunicationInboxScreen(),
+            },
+          );
         },
       ),
     );

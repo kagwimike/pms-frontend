@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
+import '../ui/widgets/responsive_helper.dart';
 
 class VendorsScreen extends StatefulWidget {
   const VendorsScreen({super.key});
@@ -36,12 +37,12 @@ class _VendorsScreenState extends State<VendorsScreen> {
   }
 
   void _showAddDialog() {
-    showDialog(context: context, builder: (ctx) => const _VendorDialog())
+    ResponsiveHelper.showResponsiveDialog(context: context, builder: (ctx) => const _VendorDialog())
         .then((res) { if (res == true) _load(); });
   }
 
   void _showEditDialog(Map<String, dynamic> vendor) {
-    showDialog(context: context, builder: (ctx) => _VendorDialog(vendor: vendor))
+    ResponsiveHelper.showResponsiveDialog(context: context, builder: (ctx) => _VendorDialog(vendor: vendor))
         .then((res) { if (res == true) _load(); });
   }
 
@@ -294,13 +295,13 @@ class _VendorDialogState extends State<_VendorDialog> {
     final isEdit = widget.vendor != null;
     final isSmall = MediaQuery.of(context).size.width < 400;
     
-    return Dialog(
-      insetPadding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 40, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400),
-        child: Padding(
-          padding: EdgeInsets.all(isSmall ? 16.0 : 28.0),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: isSmall ? const BorderRadius.vertical(top: Radius.circular(20)) : BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(isSmall ? 16.0 : 28.0),
           child: SingleChildScrollView(
             child: Form(
               key: _formKey,
@@ -358,7 +359,6 @@ class _VendorDialogState extends State<_VendorDialog> {
                 ],
               ),
             ),
-          ),
         ),
       ),
     );

@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
+import '../ui/widgets/responsive_helper.dart';
 
 class DocumentsScreen extends StatefulWidget {
   final bool isOwner;
@@ -42,7 +43,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   }
 
   void _showAddDocumentDialog() {
-    showDialog(
+    ResponsiveHelper.showResponsiveDialog(
       context: context,
       builder: (context) => const AddDocumentDialog(),
     ).then((val) {
@@ -187,59 +188,88 @@ class _AddDocumentDialogState extends State<AddDocumentDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Upload Document'),
-      content: SizedBox(
-        width: 400,
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: _nameCtrl,
-                  decoration: InputDecoration(
-                    labelText: 'Document Name',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  validator: (v) => v!.isEmpty ? 'Required' : null,
-                  enabled: !_isSubmitting,
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  value: _docType,
-                  decoration: InputDecoration(
-                    labelText: 'Document Type',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 'LEASE_AGREEMENT', child: Text('Lease Agreement')),
-                    DropdownMenuItem(value: 'ID_COPY', child: Text('ID Copy')),
-                    DropdownMenuItem(value: 'INSPECTION_REPORT', child: Text('Inspection Report')),
-                    DropdownMenuItem(value: 'OTHER', child: Text('Other')),
+    final isSmall = MediaQuery.of(context).size.width < 400;
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: isSmall ? const BorderRadius.vertical(top: Radius.circular(20)) : BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(isSmall ? 16.0 : 28.0),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Flexible(child: Text('Upload Document', style: GoogleFonts.bricolageGrotesque(fontSize: isSmall ? 18 : 22, fontWeight: FontWeight.w700, color: AppTheme.navy))),
+                IconButton(icon: const Icon(Icons.close), onPressed: _isSubmitting ? null : () => Navigator.pop(context)),
+              ]),
+              const SizedBox(height: 24),
+              Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      controller: _nameCtrl,
+                      decoration: InputDecoration(
+                        labelText: 'Document Name',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      validator: (v) => v!.isEmpty ? 'Required' : null,
+                      enabled: !_isSubmitting,
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: _docType,
+                      decoration: InputDecoration(
+                        labelText: 'Document Type',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'LEASE_AGREEMENT', child: Text('Lease Agreement')),
+                        DropdownMenuItem(value: 'ID_COPY', child: Text('ID Copy')),
+                        DropdownMenuItem(value: 'INSPECTION_REPORT', child: Text('Inspection Report')),
+                        DropdownMenuItem(value: 'OTHER', child: Text('Other')),
+                      ],
+                      onChanged: _isSubmitting ? null : (v) => setState(() => _docType = v!),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _isSubmitting ? null : _pickFile,
+                        icon: const Icon(Icons.attach_file),
+                        label: Text(_selectedFile == null ? 'Select File' : _selectedFile!.name),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                    ),
                   ],
-                  onChanged: _isSubmitting ? null : (v) => setState(() => _docType = v!),
                 ),
-                const SizedBox(height: 16),
-                OutlinedButton.icon(
-                  onPressed: _isSubmitting ? null : _pickFile,
-                  icon: const Icon(Icons.attach_file),
-                  label: Text(_selectedFile == null ? 'Select File' : _selectedFile!.name),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isSubmitting ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.teal, foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : const Text('UPLOAD DOCUMENT', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
-      actions: [
-        TextButton(onPressed: _isSubmitting ? null : () => Navigator.pop(context), child: const Text('Cancel')),
-        ElevatedButton(
-          onPressed: _isSubmitting ? null : _submit,
-          style: ElevatedButton.styleFrom(backgroundColor: AppTheme.teal, foregroundColor: Colors.white),
-          child: _isSubmitting ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Upload'),
-        )
-      ],
     );
   }
 }

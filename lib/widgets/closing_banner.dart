@@ -72,64 +72,30 @@ class _ClosingBannerState extends State<ClosingBanner> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(24),
             ),
-            child: _submitted 
-              ? const Column(
-                  children: [
-                    Icon(Icons.check_circle, color: AppTheme.whatsappGreen, size: 64),
-                    SizedBox(height: 16),
-                    Text('Thanks! We will reply on WhatsApp shortly.', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                  ],
-                )
-              : Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text('Request a callback or setup', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                  const SizedBox(height: 24),
-                  TextFormField(
-                    decoration: const InputDecoration(labelText: 'Name', border: OutlineInputBorder()),
-                    validator: (val) => val == null || val.isEmpty ? 'Required' : null,
-                    onSaved: (val) => _name = val!,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('Get started in minutes', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: AppTheme.navy), textAlign: TextAlign.center),
+                const SizedBox(height: 16),
+                const Text('Create your account and start managing your properties effectively.', style: TextStyle(color: AppTheme.mutedText, fontSize: 16), textAlign: TextAlign.center),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pushNamed('/login'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.teal,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    decoration: const InputDecoration(labelText: 'Phone (e.g. 0700000000)', border: OutlineInputBorder()),
-                    keyboardType: TextInputType.phone,
-                    validator: (val) {
-                      if (val == null || val.isEmpty) return 'Required';
-                      if (!RegExp(r'^[0-9+]{9,15}$').hasMatch(val)) return 'Invalid phone';
-                      return null;
-                    },
-                    onSaved: (val) => _phone = val!,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    decoration: const InputDecoration(labelText: 'Number of Units', border: OutlineInputBorder()),
-                    keyboardType: TextInputType.number,
-                    validator: (val) {
-                      if (val == null || val.isEmpty) return 'Required';
-                      if (int.tryParse(val) == null || int.parse(val) <= 0) return 'Must be a positive number';
-                      return null;
-                    },
-                    onSaved: (val) => _units = val!,
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: _submit,
-                    style: ElevatedButton.styleFrom(backgroundColor: AppTheme.navy),
-                    child: const Text('Send details via WhatsApp'),
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () async {
-                      final url = Uri.parse('https://wa.me/${AppConfig.whatsappNumber.replaceAll('+', '')}');
-                      launchUrl(url);
-                    },
-                    child: const Text('Or just chat with us now'),
-                  ),
-                ],
-              ),
+                  child: const Text('Create Free Account', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pushNamed('/login'),
+                  child: const Text('Already have an account? Log in', style: TextStyle(color: AppTheme.navy)),
+                ),
+              ],
             ),
           );
 

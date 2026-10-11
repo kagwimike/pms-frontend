@@ -7,6 +7,7 @@ class SearchResult {
   final String? icon;
   final Map<String, dynamic>? context;
   final Map<String, dynamic>? payload;
+  final Map<String, dynamic> rawData;
 
   SearchResult({
     required this.id,
@@ -17,6 +18,7 @@ class SearchResult {
     this.icon,
     this.context,
     this.payload,
+    required this.rawData,
   });
 
   factory SearchResult.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,11 @@ class SearchResult {
       icon: json['icon'],
       context: json['context'] as Map<String, dynamic>?,
       payload: json['payload'] as Map<String, dynamic>?,
+      rawData: json,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return rawData;
   }
 }

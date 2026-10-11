@@ -9,6 +9,8 @@ import 'vendor_jobs_screen.dart';
 import '../../ui/widgets/top_nav_bar.dart';
 import '../../screens/notifications_screen.dart';
 import '../../screens/communication/communication_inbox_screen.dart';
+import 'package:provider/provider.dart';
+import '../../providers/chat_provider.dart';
 
 class VendorDashboardScreen extends StatefulWidget {
   const VendorDashboardScreen({super.key});
@@ -28,6 +30,14 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
     const SidebarItem(key: 'notifications', label: 'Alerts', icon: Icons.notifications_none),
     const SidebarItem(key: 'settings', label: 'Settings', icon: Icons.settings_outlined),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ChatProvider>().initialize();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

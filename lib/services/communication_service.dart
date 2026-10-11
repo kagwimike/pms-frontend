@@ -7,6 +7,7 @@ import '../models/communication/chat_message.dart';
 import '../config.dart';
 import 'api_service.dart';
 import 'auth_service.dart';
+import 'sound_service.dart';
 
 class CommunicationService {
   final ApiService _apiService = ApiService();
@@ -46,7 +47,16 @@ class CommunicationService {
       if (data != null) {
         final message = ChatMessage.fromJson(data);
         _messageStreamController.add(message);
+        // Play sound for incoming message
+        if (message.senderId != _authService.user?.id) {
+          SoundService().playNotificationSound();
+        }
       }
+    });
+
+    _socket?.on('new_notification', (data) {
+      // Play sound for generic app notifications
+      SoundService().playNotificationSound();
     });
 
     _socket?.on('user_typing', (data) {
