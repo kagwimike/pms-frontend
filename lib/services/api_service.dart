@@ -437,6 +437,66 @@ class ApiService {
     return _processResponse(res);
   }
 
+  // ─── Settings Module API ───
+  Future<Map<String, dynamic>> getSettings(String category, {int? propertyId}) async {
+    final query = propertyId != null ? '?property_id=$propertyId' : '';
+    final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/settings/$category$query'), headers: _headers);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> updateSettings(String category, Map<String, dynamic> data) async {
+    final res = await http.put(
+      Uri.parse('${AppConfig.apiBaseUrl}/settings/$category'),
+      headers: _headers,
+      body: jsonEncode(data),
+    );
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> getProfilePreferences() async {
+    final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/settings/profile'), headers: _headers);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> updateProfile(Map<String, dynamic> data) async {
+    final res = await http.put(
+      Uri.parse('${AppConfig.apiBaseUrl}/settings/profile'),
+      headers: _headers,
+      body: jsonEncode(data),
+    );
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> updatePreferences(Map<String, dynamic> data) async {
+    final res = await http.put(
+      Uri.parse('${AppConfig.apiBaseUrl}/settings/preferences'),
+      headers: _headers,
+      body: jsonEncode(data),
+    );
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> changePassword(String currentPassword, String newPassword) async {
+    final res = await http.post(
+      Uri.parse('${AppConfig.apiBaseUrl}/settings/change-password'),
+      headers: _headers,
+      body: jsonEncode({
+        'current_password': currentPassword,
+        'new_password': newPassword,
+      }),
+    );
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> getAuditLogs({int limit = 15, String? cursor, String? entityType}) async {
+    final queryParams = <String, String>{'limit': limit.toString()};
+    if (cursor != null) queryParams['cursor'] = cursor;
+    if (entityType != null) queryParams['entity_type'] = entityType;
+    final uri = Uri.parse('${AppConfig.apiBaseUrl}/auditlogs/').replace(queryParameters: queryParams);
+    final res = await http.get(uri, headers: _headers);
+    return _processResponse(res);
+  }
+
   // ─── Helper: extract list from any response shape ───
   static List<dynamic> extractList(Map<String, dynamic> response) {
     if (response.containsKey('data') && response['data'] is List) return response['data'];

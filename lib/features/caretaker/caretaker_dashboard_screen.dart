@@ -13,6 +13,7 @@ import '../../screens/notifications_screen.dart';
 import 'package:provider/provider.dart';
 import '../../providers/chat_provider.dart';
 import '../../screens/communication/communication_inbox_screen.dart';
+import '../../screens/settings_screen.dart';
 
 class CaretakerDashboardScreen extends StatefulWidget {
   const CaretakerDashboardScreen({super.key});
@@ -31,7 +32,6 @@ class _CaretakerDashboardScreenState extends State<CaretakerDashboardScreen> {
     const SidebarItem(key: 'reports', label: 'Reports & SLAs', icon: Icons.bar_chart_outlined),
     const SidebarItem(key: 'messages', label: 'Messages', icon: Icons.chat_bubble_outline),
     const SidebarItem(key: 'notifications', label: 'Alerts', icon: Icons.notifications_none),
-    const SidebarItem(key: 'settings', label: 'Settings', icon: Icons.settings_outlined),
   ];
 
   @override
@@ -101,6 +101,7 @@ class _CaretakerDashboardScreenState extends State<CaretakerDashboardScreen> {
     return TopNavBar(
       isCompact: isMobile,
       onNotificationTapped: () => setState(() => _selectedNav = 'notifications'),
+      onSettingsTapped: () => setState(() => _selectedNav = 'settings'),
     );
   }
 
@@ -119,6 +120,8 @@ class _CaretakerDashboardScreenState extends State<CaretakerDashboardScreen> {
         return const CommunicationInboxScreen();
       case 'notifications':
         return const NotificationsScreen(isOwner: false);
+      case 'settings':
+        return const SettingsScreen(isOwner: false);
       default:
         return const Center(child: Text('Coming Soon'));
     }

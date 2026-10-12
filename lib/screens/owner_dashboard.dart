@@ -127,7 +127,6 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
     SidebarItem(icon: Icons.folder_outlined, label: 'Documents', key: 'documents'),
     SidebarItem(icon: Icons.chat_bubble_outline, label: 'Messages', key: 'messages'),
     SidebarItem(icon: Icons.campaign_outlined, label: 'Broadcasts', key: 'broadcasts'),
-    SidebarItem(icon: Icons.settings_outlined, label: 'Settings', key: 'settings'),
   ];
 
   @override
@@ -191,6 +190,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
     return TopNavBar(
       isCompact: isMobile,
       onNotificationTapped: () => setState(() => _selectedNav = 'notifications'),
+      onSettingsTapped: () => setState(() => _selectedNav = 'settings'),
     );
   }
 

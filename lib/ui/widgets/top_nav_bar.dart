@@ -5,12 +5,19 @@ import '../../widgets/search_overlay.dart';
 import '../../widgets/quick_create_modal.dart';
 import 'package:provider/provider.dart';
 import '../../providers/theme_provider.dart';
+import '../../screens/settings_screen.dart';
 
 class TopNavBar extends StatefulWidget {
   final bool isCompact;
   final VoidCallback? onNotificationTapped;
+  final VoidCallback? onSettingsTapped;
 
-  const TopNavBar({super.key, this.isCompact = false, this.onNotificationTapped});
+  const TopNavBar({
+    super.key,
+    this.isCompact = false,
+    this.onNotificationTapped,
+    this.onSettingsTapped,
+  });
 
   @override
   State<TopNavBar> createState() => _TopNavBarState();
@@ -263,30 +270,63 @@ class _TopNavBarState extends State<TopNavBar> {
           
           const SizedBox(width: 8),
           
-          // User Dropdown (Sign out)
+          // User Dropdown (Settings & Sign out)
           PopupMenuButton<String>(
             offset: const Offset(0, 48),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             onSelected: (value) async {
-              if (value == 'logout') {
+              if (value == 'settings') {
+                if (widget.onSettingsTapped != null) {
+                  widget.onSettingsTapped!();
+                } else {
+                  final isOwner = _auth.user?.role == 'OWNER' || _auth.user?.role == 'ADMIN';
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => Scaffold(
+                        appBar: AppBar(
+                          title: const Text('Settings'),
+                          elevation: 0.5,
+                        ),
+                        body: SettingsScreen(isOwner: isOwner),
+                      ),
+                    ),
+                  );
+                }
+              } else if (value == 'logout') {
                 await _auth.logout();
                 if (context.mounted) {
                   Navigator.of(context).pushReplacementNamed('/login');
                 }
               }
             },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'logout',
-                child: Row(
-                  children: [
-                    Icon(Icons.logout_rounded, size: 20, color: Color(0xFFEF4444)),
-                    SizedBox(width: 12),
-                    Text('Sign out', style: TextStyle(color: Color(0xFFEF4444))),
-                  ],
+            itemBuilder: (context) {
+              final isDark = Theme.of(context).brightness == Brightness.dark;
+              final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
+
+              return [
+                PopupMenuItem(
+                  value: 'settings',
+                  child: Row(
+                    children: [
+                      Icon(Icons.settings_outlined, size: 20, color: textColor),
+                      const SizedBox(width: 12),
+                      Text('Settings', style: TextStyle(color: textColor, fontWeight: FontWeight.w500)),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                const PopupMenuDivider(),
+                const PopupMenuItem(
+                  value: 'logout',
+                  child: Row(
+                    children: [
+                      Icon(Icons.logout_rounded, size: 20, color: Color(0xFFEF4444)),
+                      SizedBox(width: 12),
+                      Text('Sign out', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ),
+              ];
+            },
             child: CircleAvatar(
               radius: 18,
               backgroundColor: const Color(0xFFD7EBDD),

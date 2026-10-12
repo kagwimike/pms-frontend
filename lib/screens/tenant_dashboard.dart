@@ -50,7 +50,6 @@ class _TenantDashboardState extends State<TenantDashboard> {
     SidebarItem(icon: Icons.fact_check_outlined, label: 'Inspections', key: 'inspections'),
     SidebarItem(icon: Icons.folder_outlined, label: 'Documents', key: 'documents'),
     SidebarItem(icon: Icons.chat_bubble_outline, label: 'Messages', key: 'messages'),
-    SidebarItem(icon: Icons.settings_outlined, label: 'Settings', key: 'settings'),
   ];
 
   @override
@@ -184,6 +183,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
     return TopNavBar(
       isCompact: isMobile,
       onNotificationTapped: () => setState(() => _selectedNav = 'notifications'),
+      onSettingsTapped: () => setState(() => _selectedNav = 'settings'),
     );
   }
 
