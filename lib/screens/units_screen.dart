@@ -106,12 +106,7 @@ class _UnitsScreenState extends State<UnitsScreen> {
                 onPressed: _showAddUnitDialog,
                 icon: const Icon(Icons.add, size: 18),
                 label: Text(isSmall ? 'Add' : 'Add Unit'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.teal,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 20, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
+                style: AppTheme.actionButtonStyle,
               ),
             ],
           ),

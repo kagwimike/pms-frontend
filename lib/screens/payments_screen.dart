@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
+import '../ui/widgets/responsive_data_table.dart';
 import 'package:intl/intl.dart';
 
 class PaymentsScreen extends StatefulWidget {
@@ -132,72 +133,154 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                     ? Center(child: Text('Error: $_error', style: const TextStyle(color: Colors.red)))
                     : _payments.isEmpty
                         ? const Center(child: Text('No payments found.'))
-                        : ListView.builder(
+                        : SingleChildScrollView(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            itemCount: _payments.length,
-                            itemBuilder: (context, index) {
-                              final p = _payments[index];
-                              final status = p['status'] ?? 'PENDING';
-                              return Card(
-                                elevation: 0,
-                                margin: const EdgeInsets.only(bottom: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  side: BorderSide(color: Colors.grey.shade200),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(_fmtKsh(p['amount']), style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 18)),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                            decoration: BoxDecoration(
-                                              color: _statusColor(status).withOpacity(0.1),
-                                              borderRadius: BorderRadius.circular(8),
-                                            ),
-                                            child: Text(
-                                              status,
-                                              style: TextStyle(color: _statusColor(status), fontSize: 12, fontWeight: FontWeight.bold),
-                                            ),
-                                          )
-                                        ],
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text('Ref: ${p['transaction_reference'] ?? 'N/A'}', style: TextStyle(color: Colors.grey.shade700)),
-                                      Text('Method: ${p['payment_method'] ?? 'UNKNOWN'}', style: TextStyle(color: Colors.grey.shade700)),
-                                      const SizedBox(height: 8),
-                                      if (p['invoice'] != null)
-                                        Text('Invoice #${p['invoice']['id']} - ${p['invoice']['title'] ?? 'N/A'}', style: const TextStyle(fontWeight: FontWeight.w500)),
-                                      if (p['tenant'] != null && widget.isOwner)
-                                        Text('Tenant: ${p['tenant']['username'] ?? 'N/A'}', style: const TextStyle(fontStyle: FontStyle.italic)),
-                                      if (widget.isOwner) ...[
-                                        const Divider(height: 24),
+                            child: ResponsiveDataTable<dynamic>(
+                              columns: [
+                                const ResponsiveColumn(label: 'REFERENCE / TENANT', flex: 3),
+                                const ResponsiveColumn(label: 'METHOD', flex: 2),
+                                const ResponsiveColumn(label: 'INVOICE', flex: 2),
+                                const ResponsiveColumn(label: 'AMOUNT', flex: 2, alignment: TextAlign.end),
+                                const ResponsiveColumn(label: 'STATUS', flex: 2, alignment: TextAlign.center),
+                                if (widget.isOwner)
+                                  const ResponsiveColumn(label: 'ACTIONS', flex: 2, alignment: TextAlign.end),
+                              ],
+                              items: _payments,
+                              buildMobileCard: (context, p) {
+                                final status = p['status'] ?? 'PENDING';
+                                return Card(
+                                  elevation: 0,
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    side: BorderSide(color: Colors.grey.shade200),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
                                         Row(
-                                          mainAxisAlignment: MainAxisAlignment.end,
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            if (status == 'PENDING' || status == 'UNMATCHED')
-                                              TextButton(
-                                                onPressed: () => _updatePaymentStatus(p['id'], 'CONFIRMED'),
-                                                child: const Text('Confirm', style: TextStyle(color: AppTheme.teal)),
+                                            Text(_fmtKsh(p['amount']), style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 18)),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                              decoration: BoxDecoration(
+                                                color: _statusColor(status).withOpacity(0.1),
+                                                borderRadius: BorderRadius.circular(8),
                                               ),
-                                            if (status == 'PENDING')
-                                              TextButton(
-                                                onPressed: () => _updatePaymentStatus(p['id'], 'FAILED'),
-                                                child: const Text('Mark Failed', style: TextStyle(color: Colors.red)),
+                                              child: Text(
+                                                status,
+                                                style: TextStyle(color: _statusColor(status), fontSize: 12, fontWeight: FontWeight.bold),
                                               ),
+                                            )
                                           ],
-                                        )
-                                      ]
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text('Ref: ${p['transaction_reference'] ?? 'N/A'}', style: TextStyle(color: Colors.grey.shade700)),
+                                        Text('Method: ${p['payment_method'] ?? 'UNKNOWN'}', style: TextStyle(color: Colors.grey.shade700)),
+                                        const SizedBox(height: 8),
+                                        if (p['invoice'] != null)
+                                          Text('Invoice #${p['invoice']['id']} - ${p['invoice']['title'] ?? 'N/A'}', style: const TextStyle(fontWeight: FontWeight.w500)),
+                                        if (p['tenant'] != null && widget.isOwner)
+                                          Text('Tenant: ${p['tenant']['username'] ?? 'N/A'}', style: const TextStyle(fontStyle: FontStyle.italic)),
+                                        if (widget.isOwner) ...[
+                                          const Divider(height: 24),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.end,
+                                            children: [
+                                              if (status == 'PENDING' || status == 'UNMATCHED')
+                                                TextButton(
+                                                  onPressed: () => _updatePaymentStatus(p['id'], 'CONFIRMED'),
+                                                  child: const Text('Confirm', style: TextStyle(color: AppTheme.teal)),
+                                                ),
+                                              if (status == 'PENDING')
+                                                TextButton(
+                                                  onPressed: () => _updatePaymentStatus(p['id'], 'FAILED'),
+                                                  child: const Text('Mark Failed', style: TextStyle(color: Colors.red)),
+                                                ),
+                                            ],
+                                          )
+                                        ]
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                              buildCells: (context, p) {
+                                final status = p['status'] ?? 'PENDING';
+                                return [
+                                  // Reference / Tenant
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        p['transaction_reference'] ?? 'Ref N/A',
+                                        style: GoogleFonts.dmSans(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.navy),
+                                      ),
+                                      if (p['tenant'] != null && widget.isOwner)
+                                        Text(
+                                          p['tenant']['username'] ?? '',
+                                          style: GoogleFonts.dmSans(fontSize: 12, color: AppTheme.mutedText),
+                                        ),
                                     ],
                                   ),
-                                ),
-                              );
-                            },
+                                  // Method
+                                  Text(
+                                    p['payment_method'] ?? 'UNKNOWN',
+                                    style: GoogleFonts.dmSans(fontWeight: FontWeight.w500, fontSize: 13),
+                                  ),
+                                  // Invoice
+                                  Text(
+                                    p['invoice'] != null ? 'Invoice #${p['invoice']['id']}' : 'No Invoice',
+                                    style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText),
+                                  ),
+                                  // Amount
+                                  Text(
+                                    _fmtKsh(p['amount']),
+                                    style: GoogleFonts.bricolageGrotesque(fontWeight: FontWeight.w700, fontSize: 15, color: AppTheme.navy),
+                                  ),
+                                  // Status
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: _statusColor(status).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      status,
+                                      style: GoogleFonts.dmSans(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: _statusColor(status),
+                                      ),
+                                    ),
+                                  ),
+                                  // Actions
+                                  if (widget.isOwner)
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        if (status == 'PENDING' || status == 'UNMATCHED')
+                                          IconButton(
+                                            icon: const Icon(Icons.check_circle_outline, color: AppTheme.teal, size: 20),
+                                            tooltip: 'Confirm',
+                                            onPressed: () => _updatePaymentStatus(p['id'], 'CONFIRMED'),
+                                          ),
+                                        if (status == 'PENDING')
+                                          IconButton(
+                                            icon: const Icon(Icons.cancel_outlined, color: Colors.red, size: 20),
+                                            tooltip: 'Mark Failed',
+                                            onPressed: () => _updatePaymentStatus(p['id'], 'FAILED'),
+                                          ),
+                                      ],
+                                    ),
+                                ];
+                              },
+                            ),
                           ),
           ),
         ],

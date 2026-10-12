@@ -7,6 +7,7 @@ import '../services/auth_service.dart';
 import '../config.dart';
 import '../theme/app_theme.dart';
 import '../ui/widgets/responsive_helper.dart';
+import '../ui/widgets/responsive_data_table.dart';
 
 class TenantsScreen extends StatefulWidget {
   const TenantsScreen({super.key});
@@ -76,12 +77,7 @@ class _TenantsScreenState extends State<TenantsScreen> {
                 onPressed: _showAddTenantDialog,
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Add Tenant'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.teal,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
+                style: AppTheme.actionButtonStyle,
               ),
             ],
           ),
@@ -113,11 +109,84 @@ class _TenantsScreenState extends State<TenantsScreen> {
                             const SizedBox(height: 8),
                             Text('Tenants register via the app and appear here once assigned.', style: GoogleFonts.dmSans(color: AppTheme.mutedText)),
                           ]))
-                        : ListView.builder(
-                            itemCount: _tenants.length,
-                            itemBuilder: (ctx, i) => _TenantRow(
-                              tenant: _tenants[i],
-                              onArchive: () => _archiveTenant(_tenants[i]),
+                        : SingleChildScrollView(
+                            child: ResponsiveDataTable<dynamic>(
+                              columns: const [
+                                ResponsiveColumn(label: 'TENANT', flex: 3),
+                                ResponsiveColumn(label: 'EMAIL', flex: 3),
+                                ResponsiveColumn(label: 'PHONE', flex: 2),
+                                ResponsiveColumn(label: 'STATUS', flex: 2, alignment: TextAlign.center),
+                                ResponsiveColumn(label: 'ACTIONS', flex: 1, alignment: TextAlign.end),
+                              ],
+                              items: _tenants,
+                              buildMobileCard: (context, tenant) => _TenantRow(
+                                tenant: tenant,
+                                onArchive: () => _archiveTenant(tenant),
+                              ),
+                              buildCells: (context, tenant) {
+                                final role = tenant['role'] ?? 'UNKNOWN';
+                                final isActive = role == 'TENANT';
+                                final name = '${tenant['first_name'] ?? ''} ${tenant['last_name'] ?? ''}'.trim();
+                                final displayName = name.isNotEmpty ? name : (tenant['username'] ?? 'Unknown');
+                                final initials = displayName.isNotEmpty ? displayName[0].toUpperCase() : '?';
+
+                                return [
+                                  // Tenant name & avatar
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 16,
+                                        backgroundColor: isActive ? AppTheme.teal.withValues(alpha: 0.15) : Colors.grey.withValues(alpha: 0.15),
+                                        child: Text(
+                                          initials,
+                                          style: GoogleFonts.bricolageGrotesque(fontWeight: FontWeight.w700, fontSize: 12, color: isActive ? AppTheme.teal : Colors.grey),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Text(
+                                        displayName,
+                                        style: GoogleFonts.dmSans(fontWeight: FontWeight.w600, fontSize: 14, color: AppTheme.navy),
+                                      ),
+                                    ],
+                                  ),
+                                  // Email
+                                  Text(
+                                    tenant['email'] ?? '-',
+                                    style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText),
+                                  ),
+                                  // Phone
+                                  Text(
+                                    tenant['phone'] ?? '-',
+                                    style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText),
+                                  ),
+                                  // Role / Status
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: isActive ? Colors.green.withValues(alpha: 0.1) : Colors.orange.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      role,
+                                      style: GoogleFonts.dmSans(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: isActive ? Colors.green.shade700 : Colors.orange.shade700,
+                                      ),
+                                    ),
+                                  ),
+                                  // Actions
+                                  if (isActive)
+                                    IconButton(
+                                      icon: Icon(Icons.archive_outlined, color: Colors.orange.shade700, size: 18),
+                                      tooltip: 'Archive Tenant',
+                                      onPressed: () => _archiveTenant(tenant),
+                                    )
+                                  else
+                                    const SizedBox.shrink(),
+                                ];
+                              },
                             ),
                           ),
           ),

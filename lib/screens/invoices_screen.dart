@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
+import '../ui/widgets/responsive_data_table.dart';
 
 class InvoicesScreen extends StatefulWidget {
   const InvoicesScreen({super.key});
@@ -85,11 +86,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                 onPressed: _showAddInvoiceDialog,
                 icon: const Icon(Icons.add, size: 18),
                 label: Text(isSmall ? 'Create' : 'Create Invoice'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.teal, foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 20, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
+                style: AppTheme.actionButtonStyle,
               ),
             ],
           ),
@@ -124,9 +121,88 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                             const SizedBox(height: 8),
                             Text('Try changing the filter or creating a new invoice.', style: GoogleFonts.dmSans(color: AppTheme.mutedText), textAlign: TextAlign.center),
                           ]))
-                        : ListView.builder(
-                            itemCount: _invoices.length,
-                            itemBuilder: (context, index) => _InvoiceListItem(invoice: _invoices[index]),
+                        : SingleChildScrollView(
+                            child: ResponsiveDataTable<dynamic>(
+                              columns: const [
+                                ResponsiveColumn(label: 'INVOICE & TENANT', flex: 3),
+                                ResponsiveColumn(label: 'UNIT', flex: 2),
+                                ResponsiveColumn(label: 'DUE DATE', flex: 2),
+                                ResponsiveColumn(label: 'AMOUNT', flex: 2, alignment: TextAlign.end),
+                                ResponsiveColumn(label: 'STATUS', flex: 2, alignment: TextAlign.end),
+                              ],
+                              items: _invoices,
+                              buildMobileCard: (context, invoice) => _InvoiceListItem(invoice: invoice),
+                              buildCells: (context, invoice) {
+                                final status = invoice['status'] ?? 'UNKNOWN';
+                                Color statusColor = Colors.grey;
+                                if (status == 'PAID') statusColor = Colors.green;
+                                if (status == 'UNPAID') statusColor = Colors.red;
+                                if (status == 'PARTIAL') statusColor = Colors.orange;
+
+                                final lease = invoice['lease'] ?? {};
+                                final tenant = lease['tenant'] ?? {};
+                                final unit = lease['unit'] ?? {};
+
+                                return [
+                                  // Invoice & Tenant
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: status == 'UNPAID' ? Colors.red.withValues(alpha: 0.1) : AppTheme.bgGreyGreen,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Icon(Icons.receipt_long_outlined, size: 16, color: status == 'UNPAID' ? Colors.red : AppTheme.navy),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            'INV-${invoice['id'].toString().padLeft(4, '0')}',
+                                            style: GoogleFonts.dmSans(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.navy),
+                                          ),
+                                          Text(
+                                            tenant['username'] ?? 'No tenant',
+                                            style: GoogleFonts.dmSans(fontSize: 12, color: AppTheme.mutedText),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  // Unit
+                                  Text(
+                                    'Unit ${unit['unit_number'] ?? '-'}',
+                                    style: GoogleFonts.dmSans(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.navy),
+                                  ),
+                                  // Due Date
+                                  Text(
+                                    invoice['due_date'] ?? '-',
+                                    style: GoogleFonts.dmSans(fontSize: 13, color: status == 'UNPAID' ? Colors.red : AppTheme.mutedText),
+                                  ),
+                                  // Amount
+                                  Text(
+                                    'KSh ${invoice['amount'] ?? 0}',
+                                    style: GoogleFonts.bricolageGrotesque(fontWeight: FontWeight.w700, fontSize: 15, color: AppTheme.navy),
+                                  ),
+                                  // Status
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: statusColor.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      status,
+                                      style: GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.w700, color: statusColor),
+                                    ),
+                                  ),
+                                ];
+                              },
+                            ),
                           ),
           ),
         ],

@@ -11,6 +11,21 @@ class AppTheme {
   static const Color border = Color(0xFFE5E7EB);
   static const Color whatsappGreen = Color(0xFF25D366);
   static const Color white = Colors.white;
+  static const Color primaryGreen = Color(0xFF135D43); // Emerald brand action color
+
+  /// Standard styling for top-right "+ Add ..." action buttons matching the "+ New" style
+  static ButtonStyle get actionButtonStyle => ElevatedButton.styleFrom(
+    backgroundColor: primaryGreen,
+    foregroundColor: Colors.white,
+    elevation: 0,
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    textStyle: GoogleFonts.dmSans(
+      fontSize: 14,
+      fontWeight: FontWeight.w700,
+      letterSpacing: 0.2,
+    ),
+  );
   
   // Dark mode specifics
   static const Color darkBg = Color(0xFF121212);
