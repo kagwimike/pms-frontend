@@ -457,7 +457,7 @@ class _AddTenantDialogState extends State<AddTenantDialog> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          value: _gender,
+                          initialValue: _gender,
                           decoration: _inputDecoration('Gender'),
                           items: const [
                             DropdownMenuItem(value: 'MALE', child: Text('Male')),

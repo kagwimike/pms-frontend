@@ -77,31 +77,32 @@ class _UnitsScreenState extends State<UnitsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Responsive header
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
+          // Header row with button pinned to the right
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Units',
-                    style: GoogleFonts.bricolageGrotesque(
-                      fontSize: isSmall ? 22 : 26,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.navy,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Units',
+                      style: GoogleFonts.bricolageGrotesque(
+                        fontSize: isSmall ? 22 : 26,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.navy,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Manage all units across your properties',
-                    style: GoogleFonts.dmSans(fontSize: isSmall ? 12 : 14, color: AppTheme.mutedText),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      'Manage all units across your properties',
+                      style: GoogleFonts.dmSans(fontSize: isSmall ? 12 : 14, color: AppTheme.mutedText),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 16),
               ElevatedButton.icon(
                 onPressed: _showAddUnitDialog,
                 icon: const Icon(Icons.add, size: 18),
@@ -499,7 +500,7 @@ class _AddUnitDialogState extends State<AddUnitDialog> {
 
     if (_isLoading) {
        return Container(
-         padding: EdgeInsets.all(24),
+         padding: const EdgeInsets.all(24),
          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
          child: const SizedBox(width: 100, height: 100, child: Center(child: CircularProgressIndicator())),
        );
@@ -553,7 +554,7 @@ class _AddUnitDialogState extends State<AddUnitDialog> {
                    const Text("You must create a property first before adding units.", style: TextStyle(color: Colors.red)),
                   if (_properties.isNotEmpty)
                   DropdownButtonFormField<int>(
-                    value: _selectedPropertyId,
+                    initialValue: _selectedPropertyId,
                     decoration: _inputDecoration('Select Property'),
                     isExpanded: true,
                     items: _properties.map((p) => DropdownMenuItem<int>(
@@ -800,7 +801,7 @@ class _EditUnitDialogState extends State<EditUnitDialog> {
                     ),
                   
                   DropdownButtonFormField<String>(
-                    value: _status,
+                    initialValue: _status,
                     decoration: _inputDecoration('Status'),
                     items: const [
                       DropdownMenuItem(value: 'VACANT', child: Text('Vacant')),

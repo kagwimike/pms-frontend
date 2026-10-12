@@ -206,7 +206,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
       case 'documents':
         return const DocumentsScreen(isOwner: false);
       case 'notifications':
-        return NotificationsScreen(isOwner: false);
+        return const NotificationsScreen(isOwner: false);
       case 'messages':
         return const CommunicationInboxScreen();
       case 'settings':

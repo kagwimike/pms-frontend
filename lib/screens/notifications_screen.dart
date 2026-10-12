@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 class NotificationsScreen extends StatefulWidget {
   final bool isOwner;
 
-  const NotificationsScreen({Key? key, required this.isOwner}) : super(key: key);
+  const NotificationsScreen({super.key, required this.isOwner});
 
   @override
   State<NotificationsScreen> createState() => _NotificationsScreenState();
@@ -207,15 +207,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
               side: BorderSide(
-                color: isRead ? Colors.grey.shade200 : _getColorForType(type).withOpacity(0.5),
+                color: isRead ? Colors.grey.shade200 : _getColorForType(type).withValues(alpha: 0.5),
                 width: 1,
               ),
             ),
-            color: isRead ? Colors.white : _getColorForType(type).withOpacity(0.05),
+            color: isRead ? Colors.white : _getColorForType(type).withValues(alpha: 0.05),
             child: ListTile(
               contentPadding: const EdgeInsets.all(16),
               leading: CircleAvatar(
-                backgroundColor: isRead ? Colors.grey.shade100 : _getColorForType(type).withOpacity(0.1),
+                backgroundColor: isRead ? Colors.grey.shade100 : _getColorForType(type).withValues(alpha: 0.1),
                 child: Icon(
                   _getIconForType(type),
                   color: isRead ? Colors.grey : _getColorForType(type),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../config.dart';
 import '../theme/app_theme.dart';
-import 'shared_widgets.dart';
 
 class NavBar extends StatelessWidget {
   final VoidCallback onFeaturesTap;

@@ -262,17 +262,69 @@ class ApiService {
   }
 
   // ─── Inspections ───
-  Future<Map<String, dynamic>> getInspections({int limit = 10, String? cursor, int? leaseId, String? status}) async {
+  Future<Map<String, dynamic>> getInspections({int limit = 50, String? cursor, int? leaseId, String? status, String? type}) async {
     var url = '${AppConfig.apiBaseUrl}/inspections/?limit=$limit';
     if (cursor != null) url += '&cursor=$cursor';
     if (leaseId != null) url += '&lease_id=$leaseId';
     if (status != null) url += '&status=$status';
+    if (type != null) url += '&inspection_type=$type';
     final res = await http.get(Uri.parse(url), headers: _headers);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> getInspection(int id) async {
+    final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/inspections/$id'), headers: _headers);
     return _processResponse(res);
   }
 
   Future<Map<String, dynamic>> createInspection(Map<String, dynamic> data) async {
     final res = await http.post(Uri.parse('${AppConfig.apiBaseUrl}/inspections/'), headers: _headers, body: jsonEncode(data));
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> updateInspection(int id, Map<String, dynamic> data) async {
+    final res = await http.put(Uri.parse('${AppConfig.apiBaseUrl}/inspections/$id'), headers: _headers, body: jsonEncode(data));
+    return _processResponse(res);
+  }
+
+  Future<void> deleteInspection(int id) async {
+    final res = await http.delete(Uri.parse('${AppConfig.apiBaseUrl}/inspections/$id'), headers: _headers);
+    _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> getInspectionCatalog() async {
+    final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/inspections/catalog'), headers: _headers);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> addInspectionDamage(int inspectionId, Map<String, dynamic> data) async {
+    final res = await http.post(
+      Uri.parse('${AppConfig.apiBaseUrl}/inspections/$inspectionId/damages'),
+      headers: _headers,
+      body: jsonEncode(data),
+    );
+    return _processResponse(res);
+  }
+
+  Future<void> deleteInspectionDamage(int damageId) async {
+    final res = await http.delete(Uri.parse('${AppConfig.apiBaseUrl}/inspections/damages/$damageId'), headers: _headers);
+    _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> getDepositReconciliation(int inspectionId) async {
+    final res = await http.get(
+      Uri.parse('${AppConfig.apiBaseUrl}/inspections/$inspectionId/deposit-reconciliation'),
+      headers: _headers,
+    );
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> finalizeDepositRefund(int inspectionId, Map<String, dynamic> data) async {
+    final res = await http.post(
+      Uri.parse('${AppConfig.apiBaseUrl}/inspections/$inspectionId/finalize-refund'),
+      headers: _headers,
+      body: jsonEncode(data),
+    );
     return _processResponse(res);
   }
 
@@ -393,6 +445,14 @@ class ApiService {
       if (v is List) return v;
     }
     return [];
+  }
+
+  // ─── Helper: extract map/data object from response shape ───
+  static Map<String, dynamic> extractMap(Map<String, dynamic> response) {
+    if (response.containsKey('data') && response['data'] is Map<String, dynamic>) {
+      return response['data'] as Map<String, dynamic>;
+    }
+    return response;
   }
 }
 

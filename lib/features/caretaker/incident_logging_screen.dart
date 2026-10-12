@@ -67,7 +67,7 @@ class _IncidentLoggingScreenState extends State<IncidentLoggingScreen> {
             return AlertDialog(
               title: const Text('Update Incident Status'),
               content: DropdownButtonFormField<String>(
-                value: newStatus,
+                initialValue: newStatus,
                 decoration: const InputDecoration(border: OutlineInputBorder()),
                 items: const [
                   DropdownMenuItem(value: 'OPEN', child: Text('Open')),
@@ -181,7 +181,7 @@ class _IncidentLoggingScreenState extends State<IncidentLoggingScreen> {
                             children: [
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(color: sevColor.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+                                decoration: BoxDecoration(color: sevColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
                                 child: Text(
                                   incident['severity'] ?? 'UNKNOWN',
                                   style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: sevColor),
@@ -256,7 +256,7 @@ class _ReportIncidentDialogState extends State<_ReportIncidentDialog> {
   bool _isSubmitting = false;
   String? _error;
   final ImagePicker _picker = ImagePicker();
-  List<XFile> _selectedPhotos = [];
+  final List<XFile> _selectedPhotos = [];
 
   @override
   void initState() {
@@ -357,14 +357,14 @@ class _ReportIncidentDialogState extends State<_ReportIncidentDialog> {
               const SizedBox(height: 16),
               if (_isLoadingProps) const CircularProgressIndicator()
               else DropdownButtonFormField<String>(
-                value: _selectedPropertyId,
+                initialValue: _selectedPropertyId,
                 decoration: const InputDecoration(labelText: 'Property', border: OutlineInputBorder()),
                 items: _properties.map((p) => DropdownMenuItem(value: p['id'].toString(), child: Text(p['name']))).toList(),
                 onChanged: (v) => setState(() => _selectedPropertyId = v),
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: _severity,
+                initialValue: _severity,
                 decoration: const InputDecoration(labelText: 'Severity', border: OutlineInputBorder()),
                 items: const [
                   DropdownMenuItem(value: 'LOW', child: Text('Low')),

@@ -50,7 +50,7 @@ class SearchProvider extends ChangeNotifier {
   Future<void> _loadRecentSearches() async {
     final prefs = await SharedPreferences.getInstance();
     final list = prefs.getStringList(_recentSearchesKey) ?? [];
-    _recentSearches = list.where((e) => e != null && e.toString().trim().length > 0).cast<String>().toList();
+    _recentSearches = list.where((e) => e.toString().trim().isNotEmpty).cast<String>().toList();
     
     final recordsList = prefs.getStringList(_recentRecordsKey) ?? [];
     try {
@@ -165,7 +165,7 @@ class SearchProvider extends ChangeNotifier {
       
       if (data != null) {
         data.forEach((key, value) {
-          if (value is List && (value as List).length > 0) {
+          if (value is List && (value as List).isNotEmpty) {
             _results[key] = value.map((e) => SearchResult.fromJson(e)).toList();
             totalResults += _results[key]!.length;
           }

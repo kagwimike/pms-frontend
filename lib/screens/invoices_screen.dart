@@ -65,23 +65,25 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
+          // Header row with button pinned to the right
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isSmall ? 'Rent & Invoices' : 'Rent Collection & Invoices',
-                    style: GoogleFonts.bricolageGrotesque(fontSize: isSmall ? 20 : 26, fontWeight: FontWeight.w700, color: AppTheme.navy),
-                  ),
-                  const SizedBox(height: 4),
-                  Text('Track invoices and payments', style: GoogleFonts.dmSans(fontSize: isSmall ? 12 : 14, color: AppTheme.mutedText)),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isSmall ? 'Rent & Invoices' : 'Rent Collection & Invoices',
+                      style: GoogleFonts.bricolageGrotesque(fontSize: isSmall ? 20 : 26, fontWeight: FontWeight.w700, color: AppTheme.navy),
+                    ),
+                    const SizedBox(height: 4),
+                    Text('Track invoices and payments', style: GoogleFonts.dmSans(fontSize: isSmall ? 12 : 14, color: AppTheme.mutedText)),
+                  ],
+                ),
               ),
+              const SizedBox(width: 16),
               ElevatedButton.icon(
                 onPressed: _showAddInvoiceDialog,
                 icon: const Icon(Icons.add, size: 18),
@@ -349,8 +351,9 @@ class _AddInvoiceDialogState extends State<AddInvoiceDialog> {
     try {
       final leaseRes = await _apiService.getLeases(limit: 100, status: 'ACTIVE');
       List<dynamic> l = [];
-      if (leaseRes.containsKey('data')) l = leaseRes['data'];
-      else if (leaseRes.containsKey('results')) l = leaseRes['results'];
+      if (leaseRes.containsKey('data')) {
+        l = leaseRes['data'];
+      } else if (leaseRes.containsKey('results')) l = leaseRes['results'];
       else l = leaseRes.values.firstWhere((v) => v is List, orElse: () => []);
       setState(() { _leases = l; if (_leases.isNotEmpty) _selectedLeaseId = _leases[0]['id']; _isLoading = false; });
     } catch (e) {
@@ -431,7 +434,7 @@ class _AddInvoiceDialogState extends State<AddInvoiceDialog> {
                    const Text("You need active leases to create an invoice.", style: TextStyle(color: Colors.red, fontSize: 13)),
                   if (_leases.isNotEmpty) ...[
                     DropdownButtonFormField<int>(
-                      value: _selectedLeaseId,
+                      initialValue: _selectedLeaseId,
                       decoration: _inputDecoration('Select Active Lease'),
                       isExpanded: true,
                       items: _leases.map((l) {
@@ -444,7 +447,7 @@ class _AddInvoiceDialogState extends State<AddInvoiceDialog> {
                     const SizedBox(height: 12),
                     if (isSmall) ...[
                       DropdownButtonFormField<String>(
-                        value: _invoiceType,
+                        initialValue: _invoiceType,
                         decoration: _inputDecoration('Invoice Type'),
                         isExpanded: true,
                         items: const [
@@ -460,7 +463,7 @@ class _AddInvoiceDialogState extends State<AddInvoiceDialog> {
                     ] else
                       Row(children: [
                         Expanded(child: DropdownButtonFormField<String>(
-                          value: _invoiceType,
+                          initialValue: _invoiceType,
                           decoration: _inputDecoration('Invoice Type'),
                           isExpanded: true,
                           items: const [

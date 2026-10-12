@@ -97,12 +97,9 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
               padding: const EdgeInsets.only(right: 16.0),
               child: ElevatedButton.icon(
                 onPressed: _showAddPaymentDialog,
-                icon: const Icon(Icons.payment),
+                icon: const Icon(Icons.add, size: 18),
                 label: const Text('Make Payment'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.teal,
-                  foregroundColor: Colors.white,
-                ),
+                style: AppTheme.actionButtonStyle,
               ),
             )
         ],
@@ -167,7 +164,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                               decoration: BoxDecoration(
-                                                color: _statusColor(status).withOpacity(0.1),
+                                                color: _statusColor(status).withValues(alpha: 0.1),
                                                 borderRadius: BorderRadius.circular(8),
                                               ),
                                               child: Text(
@@ -246,7 +243,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: _statusColor(status).withOpacity(0.1),
+                                      color: _statusColor(status).withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Text(
@@ -428,7 +425,7 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
                   ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: _paymentMethod,
+                  initialValue: _paymentMethod,
                   decoration: InputDecoration(
                     labelText: 'Payment Method',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),

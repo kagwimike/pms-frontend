@@ -82,11 +82,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                   onPressed: _showCreateDialog,
                   icon: const Icon(Icons.add, size: 18),
                   label: Text(isSmall ? 'Report' : 'Report Issue'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.teal, foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 20, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
+                  style: AppTheme.actionButtonStyle,
                 ),
             ],
           ),
@@ -599,7 +595,7 @@ class _UpdateStatusDialogState extends State<_UpdateStatusDialog> {
             const SizedBox(height: 16),
             if (!_isLoadingVendors)
               DropdownButtonFormField<String>(
-                value: _assignedVendorId,
+                initialValue: _assignedVendorId,
                 decoration: InputDecoration(
                   labelText: 'Assign Vendor',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),

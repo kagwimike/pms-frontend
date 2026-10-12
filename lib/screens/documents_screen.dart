@@ -64,12 +64,9 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             padding: const EdgeInsets.only(right: 16.0),
             child: ElevatedButton.icon(
               onPressed: _showAddDocumentDialog,
-              icon: const Icon(Icons.upload_file),
+              icon: const Icon(Icons.add, size: 18),
               label: const Text('Upload Document'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.teal,
-                foregroundColor: Colors.white,
-              ),
+              style: AppTheme.actionButtonStyle,
             ),
           )
         ],
@@ -94,7 +91,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                           ),
                           child: ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: AppTheme.teal.withOpacity(0.1),
+                              backgroundColor: AppTheme.teal.withValues(alpha: 0.1),
                               child: const Icon(Icons.description, color: AppTheme.teal),
                             ),
                             title: Text(doc['name'] ?? 'Document', style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -222,7 +219,7 @@ class _AddDocumentDialogState extends State<AddDocumentDialog> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      value: _docType,
+                      initialValue: _docType,
                       decoration: InputDecoration(
                         labelText: 'Document Type',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),

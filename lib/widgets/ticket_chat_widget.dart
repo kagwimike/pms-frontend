@@ -42,17 +42,25 @@ class _TicketChatWidgetState extends State<TicketChatWidget> {
       final sessionRes = await _api.getSessionByMaintenance(widget.maintenanceId);
       if (!mounted) return;
       
-      _sessionId = sessionRes['id'];
+      final session = ApiService.extractMap(sessionRes);
+      _sessionId = session['id'] is int ? session['id'] : int.tryParse(session['id']?.toString() ?? '');
       
       if (_sessionId != null) {
         final msgsRes = await _api.getMessages(_sessionId!);
         if (mounted) {
           setState(() {
-            _messages = msgsRes['data'] ?? msgsRes;
+            _messages = ApiService.extractList(msgsRes);
             _isLoading = false;
           });
           _scrollToBottom();
           _connectSocket();
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _error = 'Unable to initialize chat for this ticket.';
+            _isLoading = false;
+          });
         }
       }
     } catch (e) {

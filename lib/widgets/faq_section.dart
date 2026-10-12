@@ -51,7 +51,7 @@ class FaqSection extends StatelessWidget {
           ).animate().fadeIn().slideX();
 
           final rightCol = const Column(
-            children: const [
+            children: [
               _FaqTile(
                 question: 'Do my tenants need to download an app?',
                 answer: 'No. Tenants receive simple SMS notifications and can pay using normal M-Pesa. There is no app for them to download.',

@@ -24,7 +24,7 @@ class HowItWorksSection extends StatelessWidget {
               
               if (isMobile) {
                 return const Column(
-                  children: const [
+                  children: [
                     _StepItem(step: '1', title: 'Add Property', description: 'Upload your building and units in one go.', isLast: false, isMobile: true),
                     _StepItem(step: '2', title: 'Invite Tenants', description: 'We send a welcome SMS with their balance.', isLast: false, isMobile: true),
                     _StepItem(step: '3', title: 'Collect Rent', description: 'Payments match automatically.', isLast: false, isMobile: true),
@@ -35,11 +35,11 @@ class HowItWorksSection extends StatelessWidget {
 
               return const Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Expanded(child: const _StepItem(step: '1', title: 'Add Property', description: 'Upload your building and units in one go.', isLast: false, isMobile: false)),
-                  Expanded(child: const _StepItem(step: '2', title: 'Invite Tenants', description: 'We send a welcome SMS with their balance.', isLast: false, isMobile: false)),
-                  Expanded(child: const _StepItem(step: '3', title: 'Collect Rent', description: 'Payments match automatically.', isLast: false, isMobile: false)),
-                  Expanded(child: const _StepItem(step: '4', title: 'Report', description: 'Generate statements instantly.', isLast: true, isMobile: false)),
+                children: [
+                  Expanded(child: _StepItem(step: '1', title: 'Add Property', description: 'Upload your building and units in one go.', isLast: false, isMobile: false)),
+                  Expanded(child: _StepItem(step: '2', title: 'Invite Tenants', description: 'We send a welcome SMS with their balance.', isLast: false, isMobile: false)),
+                  Expanded(child: _StepItem(step: '3', title: 'Collect Rent', description: 'Payments match automatically.', isLast: false, isMobile: false)),
+                  Expanded(child: _StepItem(step: '4', title: 'Report', description: 'Generate statements instantly.', isLast: true, isMobile: false)),
                 ],
               );
             },

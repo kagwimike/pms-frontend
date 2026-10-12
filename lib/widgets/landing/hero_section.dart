@@ -40,10 +40,10 @@ class HeroSection extends StatelessWidget {
           // Subheadline
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 700),
-            child: Text(
+            child: const Text(
               'PMS Pro brings properties, tenants, rent, payments, maintenance, communication, and operations together in one powerful platform built for modern property managers.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 color: AppTheme.mutedText,
                 height: 1.6,

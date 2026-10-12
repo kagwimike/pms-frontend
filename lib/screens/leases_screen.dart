@@ -77,40 +77,37 @@ class _LeasesScreenState extends State<LeasesScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
+          // Header row with button pinned to the right
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Leases',
-                    style: GoogleFonts.bricolageGrotesque(
-                      fontSize: isSmall ? 22 : 26,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.navy,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Leases',
+                      style: GoogleFonts.bricolageGrotesque(
+                        fontSize: isSmall ? 22 : 26,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.navy,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Create and manage lease agreements',
-                    style: GoogleFonts.dmSans(fontSize: isSmall ? 12 : 14, color: AppTheme.mutedText),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      'Create and manage lease agreements',
+                      style: GoogleFonts.dmSans(fontSize: isSmall ? 12 : 14, color: AppTheme.mutedText),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 16),
               ElevatedButton.icon(
                 onPressed: _showAddLeaseDialog,
                 icon: const Icon(Icons.add, size: 18),
                 label: Text(isSmall ? 'Create' : 'Create Lease'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.teal,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: isSmall ? 12 : 20, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
+                style: AppTheme.actionButtonStyle,
               ),
             ],
           ),
@@ -473,7 +470,7 @@ class _AddLeaseDialogState extends State<AddLeaseDialog> {
 
     if (_isLoading) {
        return Container(
-         padding: EdgeInsets.all(24),
+         padding: const EdgeInsets.all(24),
          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
          child: const SizedBox(width: 100, height: 100, child: Center(child: CircularProgressIndicator())),
        );
@@ -519,7 +516,7 @@ class _AddLeaseDialogState extends State<AddLeaseDialog> {
                     // Unit & Tenant dropdowns - stack on small
                     if (isSmall) ...[
                       DropdownButtonFormField<int>(
-                        value: _selectedUnitId,
+                        initialValue: _selectedUnitId,
                         decoration: _inputDecoration('Select Unit (Vacant)'),
                         isExpanded: true,
                         items: _units.map((u) => DropdownMenuItem<int>(value: u['id'], child: Text('Unit ${u['unit_number']}', overflow: TextOverflow.ellipsis))).toList(),
@@ -527,7 +524,7 @@ class _AddLeaseDialogState extends State<AddLeaseDialog> {
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<int>(
-                        value: _selectedTenantId,
+                        initialValue: _selectedTenantId,
                         decoration: _inputDecoration('Select Tenant'),
                         isExpanded: true,
                         items: _tenants.map((t) => DropdownMenuItem<int>(value: t['id'], child: Text(t['username'] ?? t['email'] ?? 'Unknown', overflow: TextOverflow.ellipsis))).toList(),
@@ -538,7 +535,7 @@ class _AddLeaseDialogState extends State<AddLeaseDialog> {
                         children: [
                           Expanded(
                             child: DropdownButtonFormField<int>(
-                              value: _selectedUnitId,
+                              initialValue: _selectedUnitId,
                               decoration: _inputDecoration('Select Unit (Vacant)'),
                               isExpanded: true,
                               items: _units.map((u) => DropdownMenuItem<int>(value: u['id'], child: Text('Unit ${u['unit_number']}'))).toList(),
@@ -548,7 +545,7 @@ class _AddLeaseDialogState extends State<AddLeaseDialog> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: DropdownButtonFormField<int>(
-                              value: _selectedTenantId,
+                              initialValue: _selectedTenantId,
                               decoration: _inputDecoration('Select Tenant'),
                               isExpanded: true,
                               items: _tenants.map((t) => DropdownMenuItem<int>(value: t['id'], child: Text(t['username'] ?? t['email'] ?? 'Unknown', overflow: TextOverflow.ellipsis))).toList(),

@@ -4,6 +4,8 @@ import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import 'package:intl/intl.dart';
 
+import 'communication/inspection_detail_screen.dart';
+
 class InspectionsScreen extends StatefulWidget {
   final bool isOwner;
   const InspectionsScreen({super.key, required this.isOwner});
@@ -17,6 +19,7 @@ class _InspectionsScreenState extends State<InspectionsScreen> {
   bool _isLoading = true;
   List<dynamic> _inspections = [];
   String? _error;
+  String _selectedFilter = 'ALL';
 
   @override
   void initState() {
@@ -43,21 +46,68 @@ class _InspectionsScreenState extends State<InspectionsScreen> {
   Color _statusColor(String status) {
     switch (status) {
       case 'SCHEDULED': return Colors.orange;
+      case 'IN_PROGRESS': return Colors.blue;
       case 'COMPLETED': return AppTheme.teal;
       case 'CANCELLED': return Colors.red;
-      default: return Colors.blue;
+      default: return Colors.blueGrey;
     }
+  }
+
+  IconData _typeIcon(String? type) {
+    switch (type) {
+      case 'MOVE_IN':
+      case 'CHECKIN':
+        return Icons.login;
+      case 'MOVE_OUT':
+      case 'CHECKOUT':
+        return Icons.logout;
+      default:
+        return Icons.fact_check_outlined;
+    }
+  }
+
+  Color _typeColor(String? type) {
+    switch (type) {
+      case 'MOVE_IN':
+      case 'CHECKIN':
+        return const Color(0xFF0284C7);
+      case 'MOVE_OUT':
+      case 'CHECKOUT':
+        return const Color(0xFFE11D48);
+      default:
+        return const Color(0xFF4F46E5);
+    }
+  }
+
+  List<dynamic> get _filteredInspections {
+    if (_selectedFilter == 'ALL') return _inspections;
+    if (_selectedFilter == 'MOVE_IN') {
+      return _inspections.where((i) => i['type'] == 'MOVE_IN' || i['type'] == 'CHECKIN').toList();
+    }
+    if (_selectedFilter == 'MOVE_OUT') {
+      return _inspections.where((i) => i['type'] == 'MOVE_OUT' || i['type'] == 'CHECKOUT').toList();
+    }
+    if (_selectedFilter == 'ROUTINE') {
+      return _inspections.where((i) => i['type'] == 'ROUTINE').toList();
+    }
+    return _inspections;
   }
 
   @override
   Widget build(BuildContext context) {
+    final filtered = _filteredInspections;
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: Text('Inspections', style: GoogleFonts.inter(color: Colors.black87, fontWeight: FontWeight.bold)),
+        title: Text('Unit Inspections & Settlements', style: GoogleFonts.inter(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18)),
         backgroundColor: Colors.white,
-        elevation: 0,
+        elevation: 0.5,
         actions: [
+          IconButton(
+            tooltip: 'Refresh',
+            icon: const Icon(Icons.refresh, color: Colors.black87),
+            onPressed: _loadInspections,
+          ),
           if (widget.isOwner)
             Padding(
               padding: const EdgeInsets.only(right: 16.0),
@@ -70,58 +120,217 @@ class _InspectionsScreenState extends State<InspectionsScreen> {
                     if (val == true) _loadInspections();
                   });
                 },
-                icon: const Icon(Icons.add),
-                label: const Text('Schedule Inspection'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.teal,
-                  foregroundColor: Colors.white,
-                ),
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('New Inspection'),
+                style: AppTheme.actionButtonStyle,
               ),
             )
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Center(child: Text('Error: $_error', style: const TextStyle(color: Colors.red)))
-              : _inspections.isEmpty
-                  ? const Center(child: Text('No inspections scheduled.'))
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _inspections.length,
-                      itemBuilder: (context, index) {
-                        final insp = _inspections[index];
-                        final status = insp['status'] ?? 'SCHEDULED';
-                        final date = insp['inspection_date'] != null ? DateTime.tryParse(insp['inspection_date']) : null;
-                        
-                        return Card(
-                          elevation: 0,
-                          margin: const EdgeInsets.only(bottom: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(color: Colors.grey.shade200),
-                          ),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: _statusColor(status).withOpacity(0.1),
-                              child: Icon(Icons.fact_check, color: _statusColor(status)),
-                            ),
-                            title: Text(insp['type'] ?? 'General Inspection', style: const TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+      body: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            color: Colors.white,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildFilterChip('ALL', 'All Inspections'),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('MOVE_IN', 'Move-In (Check-In)'),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('MOVE_OUT', 'Move-Out (Settlement)'),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('ROUTINE', 'Routine Periodic'),
+                ],
+              ),
+            ),
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _error != null
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('Error: $_error', style: const TextStyle(color: Colors.red)),
+                            const SizedBox(height: 12),
+                            ElevatedButton(onPressed: _loadInspections, child: const Text('Retry')),
+                          ],
+                        ),
+                      )
+                    : filtered.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                if (date != null) Text('Date: ${DateFormat('MMM d, yyyy h:mm a').format(date)}'),
-                                Text('Status: $status', style: TextStyle(color: _statusColor(status), fontWeight: FontWeight.bold)),
+                                Icon(Icons.fact_check_outlined, size: 56, color: Colors.grey.shade400),
+                                const SizedBox(height: 12),
+                                Text(
+                                  _selectedFilter == 'ALL'
+                                      ? 'No inspections recorded yet.'
+                                      : 'No $_selectedFilter inspections found.',
+                                  style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+                                ),
+                                if (widget.isOwner) ...[
+                                  const SizedBox(height: 16),
+                                  ElevatedButton.icon(
+                                    onPressed: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => const AddInspectionDialog(),
+                                      ).then((val) {
+                                        if (val == true) _loadInspections();
+                                      });
+                                    },
+                                    icon: const Icon(Icons.add),
+                                    label: const Text('Schedule First Inspection'),
+                                    style: AppTheme.actionButtonStyle,
+                                  ),
+                                ],
                               ],
                             ),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.chevron_right),
-                                onPressed: () {},
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(16),
+                            itemCount: filtered.length,
+                            itemBuilder: (context, index) {
+                              final insp = filtered[index];
+                              final status = insp['status'] ?? 'SCHEDULED';
+                              final type = insp['type'] ?? 'ROUTINE';
+                              final date = insp['inspection_date'] != null ? DateTime.tryParse(insp['inspection_date']) : null;
+                              final lease = insp['lease'] ?? insp['Lease'];
+                              final unit = lease?['unit'] ?? lease?['Unit'];
+                              final tenant = lease?['tenant'] ?? lease?['Tenant'];
+                              final unitName = unit?['unit_number'] != null ? 'Unit ${unit['unit_number']}' : 'Unit #${insp['lease_id'] ?? ''}';
+                              final tenantName = tenant?['full_name'] ?? tenant?['username'] ?? 'Tenant';
+                              final deductions = double.tryParse(insp['total_deductions']?.toString() ?? '0') ?? 0;
+                              
+                              return Card(
+                                elevation: 0,
+                                margin: const EdgeInsets.only(bottom: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: BorderSide(color: Colors.grey.shade200),
+                                ),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(12),
+                                  onTap: () async {
+                                    final res = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => InspectionDetailScreen(
+                                          inspectionId: insp['id'],
+                                          isOwner: widget.isOwner,
+                                        ),
+                                      ),
+                                    );
+                                    if (res == true) _loadInspections();
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(14),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: _typeColor(type).withValues(alpha: 0.1),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(_typeIcon(type), color: _typeColor(type), size: 24),
+                                        ),
+                                        const SizedBox(width: 14),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    type == 'MOVE_IN' || type == 'CHECKIN'
+                                                        ? 'Move-In Inspection'
+                                                        : (type == 'MOVE_OUT' || type == 'CHECKOUT' ? 'Move-Out Inspection' : 'Routine Inspection'),
+                                                    style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 15),
+                                                  ),
+                                                  const Spacer(),
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                                    decoration: BoxDecoration(
+                                                      color: _statusColor(status).withValues(alpha: 0.12),
+                                                      borderRadius: BorderRadius.circular(8),
+                                                    ),
+                                                    child: Text(
+                                                      status,
+                                                      style: TextStyle(
+                                                        color: _statusColor(status),
+                                                        fontWeight: FontWeight.w700,
+                                                        fontSize: 11,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                '$unitName • $tenantName',
+                                                style: TextStyle(color: Colors.grey.shade800, fontSize: 13, fontWeight: FontWeight.w500),
+                                              ),
+                                              const SizedBox(height: 6),
+                                              Row(
+                                                children: [
+                                                  if (date != null) ...[
+                                                    Icon(Icons.calendar_today, size: 12, color: Colors.grey.shade600),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      DateFormat('MMM d, yyyy').format(date),
+                                                      style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                                                    ),
+                                                    const SizedBox(width: 14),
+                                                  ],
+                                                  if (deductions > 0) ...[
+                                                    Icon(Icons.money_off, size: 12, color: Colors.red.shade700),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      'Deductions: KES ${deductions.toStringAsFixed(0)}',
+                                                      style: TextStyle(color: Colors.red.shade700, fontSize: 12, fontWeight: FontWeight.bold),
+                                                    ),
+                                                  ],
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const Icon(Icons.chevron_right, color: Colors.grey),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String key, String label) {
+    final isSelected = _selectedFilter == key;
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (val) {
+        if (val) setState(() => _selectedFilter = key);
+      },
+      selectedColor: AppTheme.teal.withValues(alpha: 0.15),
+      labelStyle: TextStyle(
+        color: isSelected ? AppTheme.teal : Colors.grey.shade800,
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        fontSize: 12,
+      ),
     );
   }
 }
@@ -240,7 +449,7 @@ class _AddInspectionDialogState extends State<AddInspectionDialog> {
                 ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: _type,
+                initialValue: _type,
                 decoration: InputDecoration(
                   labelText: 'Inspection Type',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),

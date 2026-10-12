@@ -140,7 +140,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: targetAudience,
+                      initialValue: targetAudience,
                       decoration: const InputDecoration(labelText: 'Audience', border: OutlineInputBorder()),
                       items: const [
                         DropdownMenuItem(value: 'ALL', child: Text('Everyone')),

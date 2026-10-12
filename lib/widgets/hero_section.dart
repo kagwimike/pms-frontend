@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../theme/app_theme.dart';
-import 'shared_widgets.dart';
 import 'rent_board_animation.dart';
 
 class HeroSection extends StatelessWidget {

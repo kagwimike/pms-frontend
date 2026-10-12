@@ -40,9 +40,9 @@ class FooterSection extends StatelessWidget {
                       children: [
                         Text('Quick Links', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                         SizedBox(height: 16),
-                        const _FooterLink('Features'),
-                        const _FooterLink('Pricing'),
-                        const _FooterLink('FAQ'),
+                        _FooterLink('Features'),
+                        _FooterLink('Pricing'),
+                        _FooterLink('FAQ'),
                       ],
                     ),
                   ),
@@ -53,9 +53,9 @@ class FooterSection extends StatelessWidget {
                       children: [
                         Text('Contact', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                         SizedBox(height: 16),
-                        const _FooterLink(AppConfig.phone),
-                        const _FooterLink(AppConfig.email),
-                        const _FooterLink('Nairobi, Kenya'),
+                        _FooterLink(AppConfig.phone),
+                        _FooterLink(AppConfig.email),
+                        _FooterLink('Nairobi, Kenya'),
                       ],
                     ),
                   ),
@@ -70,9 +70,9 @@ class FooterSection extends StatelessWidget {
                   Text('© ${DateTime.now().year} ${AppConfig.brandName}. All rights reserved.', style: const TextStyle(color: Colors.white54, fontSize: 12)),
                   const Row(
                     children: [
-                      const _FooterLink('Privacy Policy', fontSize: 12),
+                      _FooterLink('Privacy Policy', fontSize: 12),
                       SizedBox(width: 16),
-                      const _FooterLink('Terms of Service', fontSize: 12),
+                      _FooterLink('Terms of Service', fontSize: 12),
                     ],
                   ),
                 ],

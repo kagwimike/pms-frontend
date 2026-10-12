@@ -13,9 +13,9 @@ class ClosingBanner extends StatefulWidget {
 
 class _ClosingBannerState extends State<ClosingBanner> {
   final _formKey = GlobalKey<FormState>();
-  String _name = '';
-  String _phone = '';
-  String _units = '';
+  final String _name = '';
+  final String _phone = '';
+  final String _units = '';
   bool _submitted = false;
 
   void _submit() async {

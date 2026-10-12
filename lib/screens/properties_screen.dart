@@ -78,31 +78,32 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Responsive header
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
+          // Header row with button pinned to the right
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Properties',
-                    style: GoogleFonts.bricolageGrotesque(
-                      fontSize: isSmall ? 22 : 26,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.navy,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Properties',
+                      style: GoogleFonts.bricolageGrotesque(
+                        fontSize: isSmall ? 22 : 26,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.navy,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Manage your property portfolio',
-                    style: GoogleFonts.dmSans(fontSize: isSmall ? 12 : 14, color: AppTheme.mutedText),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      'Manage your property portfolio',
+                      style: GoogleFonts.dmSans(fontSize: isSmall ? 12 : 14, color: AppTheme.mutedText),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 16),
               ElevatedButton.icon(
                 onPressed: _showAddPropertyDialog,
                 icon: const Icon(Icons.add, size: 18),
@@ -423,7 +424,7 @@ class _AddPropertyDialogState extends State<AddPropertyDialog> {
   String _propertyType = 'APARTMENT';
   bool _isLoading = false;
   String? _error;
-  List<XFile> _selectedImages = [];
+  final List<XFile> _selectedImages = [];
 
   @override
   void dispose() {
@@ -481,16 +482,18 @@ class _AddPropertyDialogState extends State<AddPropertyDialog> {
 
         if (mimeType == null || mimeType.isEmpty) {
           final ext = filename.contains('.') ? filename.split('.').last.toLowerCase() : '';
-          if (ext == 'jpg' || ext == 'jpeg') mimeType = 'image/jpeg';
-          else if (ext == 'png') mimeType = 'image/png';
+          if (ext == 'jpg' || ext == 'jpeg') {
+            mimeType = 'image/jpeg';
+          } else if (ext == 'png') mimeType = 'image/png';
           else if (ext == 'gif') mimeType = 'image/gif';
           else if (ext == 'webp') mimeType = 'image/webp';
           else mimeType = 'image/jpeg'; // Fallback
         }
 
         if (!filename.contains('.')) {
-          if (mimeType == 'image/png') filename += '.png';
-          else if (mimeType == 'image/gif') filename += '.gif';
+          if (mimeType == 'image/png') {
+            filename += '.png';
+          } else if (mimeType == 'image/gif') filename += '.gif';
           else if (mimeType == 'image/webp') filename += '.webp';
           else filename += '.jpg';
         }
@@ -592,7 +595,7 @@ class _AddPropertyDialogState extends State<AddPropertyDialog> {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: _propertyType,
+                    initialValue: _propertyType,
                     decoration: _inputDecoration('Property Type'),
                     items: const [
                       DropdownMenuItem(value: 'APARTMENT', child: Text('Apartment')),
@@ -872,7 +875,7 @@ class _EditPropertyDialogState extends State<EditPropertyDialog> {
                   TextFormField(controller: _nameController, decoration: _inputDecoration('Property Name'), validator: (v) => v!.isEmpty ? 'Required' : null, enabled: !_isLoading),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: _propertyType,
+                    initialValue: _propertyType,
                     decoration: _inputDecoration('Property Type'),
                     items: const [
                       DropdownMenuItem(value: 'APARTMENT', child: Text('Apartment')),

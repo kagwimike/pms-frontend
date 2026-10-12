@@ -12,6 +12,7 @@ import '../../ui/widgets/top_nav_bar.dart';
 import '../../screens/notifications_screen.dart';
 import 'package:provider/provider.dart';
 import '../../providers/chat_provider.dart';
+import '../../screens/communication/communication_inbox_screen.dart';
 
 class CaretakerDashboardScreen extends StatefulWidget {
   const CaretakerDashboardScreen({super.key});
@@ -22,7 +23,6 @@ class CaretakerDashboardScreen extends StatefulWidget {
 
 class _CaretakerDashboardScreenState extends State<CaretakerDashboardScreen> {
   String _selectedNav = 'dashboard';
-  final _authService = AuthService();
 
   final List<SidebarItem> _navItems = [
     const SidebarItem(key: 'dashboard', label: 'Dashboard', icon: Icons.dashboard_outlined),
@@ -116,7 +116,7 @@ class _CaretakerDashboardScreenState extends State<CaretakerDashboardScreen> {
       case 'reports':
         return const CaretakerReportsScreen();
       case 'messages':
-        return const Center(child: Text('Messages Placeholder'));
+        return const CommunicationInboxScreen();
       case 'notifications':
         return const NotificationsScreen(isOwner: false);
       default:
@@ -376,7 +376,7 @@ class _CaretakerHomeViewState extends State<_CaretakerHomeView> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: priorityColor.withOpacity(0.1),
+                        color: priorityColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(

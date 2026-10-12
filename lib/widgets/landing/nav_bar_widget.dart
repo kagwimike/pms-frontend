@@ -23,7 +23,7 @@ class NavBarWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.95),
-            border: Border(bottom: BorderSide(color: AppTheme.border)),
+            border: const Border(bottom: const BorderSide(color: AppTheme.border)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

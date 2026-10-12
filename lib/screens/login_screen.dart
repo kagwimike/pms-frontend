@@ -424,7 +424,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Divider
                 Row(
                   children: [
-                    const Expanded(child: const Divider(color: AppTheme.border)),
+                    const Expanded(child: Divider(color: AppTheme.border)),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
@@ -432,7 +432,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText),
                       ),
                     ),
-                    const Expanded(child: const Divider(color: AppTheme.border)),
+                    const Expanded(child: Divider(color: AppTheme.border)),
                   ],
                 ),
                 const SizedBox(height: 24),

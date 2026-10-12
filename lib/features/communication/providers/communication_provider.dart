@@ -10,8 +10,8 @@ class CommunicationProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
 
   List<ChatSession> _sessions = [];
-  Map<int, List<ChatMessage>> _messages = {};
-  Map<int, bool> _typingStatus = {};
+  final Map<int, List<ChatMessage>> _messages = {};
+  final Map<int, bool> _typingStatus = {};
 
   bool _isLoading = false;
   bool _isConnected = false;
@@ -33,13 +33,11 @@ class CommunicationProvider extends ChangeNotifier {
     notifyListeners();
 
     _messageSub = _service.onMessageReceived.listen((message) {
-      if (message.sessionId != null) {
-        if (!_messages.containsKey(message.sessionId)) {
-          _messages[message.sessionId!] = [];
-        }
-        _messages[message.sessionId!]!.add(message);
-        notifyListeners();
+      if (!_messages.containsKey(message.sessionId)) {
+        _messages[message.sessionId!] = [];
       }
+      _messages[message.sessionId!]!.add(message);
+      notifyListeners();
     });
 
     _typingSub = _service.onUserTyping.listen((data) {
