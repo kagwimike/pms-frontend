@@ -1,23 +1,20 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:http/http.dart' as http;
 import '../theme/app_theme.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
-import '../config.dart';
 import '../widgets/dashboard_sidebar.dart';
 import '../ui/widgets/top_nav_bar.dart';
 import 'maintenance_screen.dart';
 import 'notifications_screen.dart';
-import 'payments_screen.dart';
 import 'inspections_screen.dart';
 import 'documents_screen.dart';
 import 'communication/communication_inbox_screen.dart';
 import 'settings_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/chat_provider.dart';
+import '../widgets/tenant_payment_dialog.dart';
 
 class TenantDashboard extends StatefulWidget {
   const TenantDashboard({super.key});
@@ -198,7 +195,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
       case 'invoices':
         return _buildInvoices();
       case 'payments':
-        return const PaymentsScreen(isOwner: false);
+        return _buildPaymentHistory();
       case 'maintenance':
         return const MaintenanceScreen(isOwner: false);
       case 'inspections':
@@ -344,54 +341,11 @@ class _TenantDashboardState extends State<TenantDashboard> {
   }
 
   Future<void> _makePayment(Map<String, dynamic> invoice) async {
-    final amount = double.tryParse(invoice['amount']?.toString() ?? '0') ?? 0;
-    final paid = double.tryParse(invoice['amount_paid']?.toString() ?? '0') ?? 0;
-    final remaining = amount - paid;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Confirm Payment', style: GoogleFonts.bricolageGrotesque(fontWeight: FontWeight.w700, color: AppTheme.navy)),
-        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('Amount: KSh ${remaining.toStringAsFixed(0)}', style: GoogleFonts.dmSans(fontSize: 16)),
-          const SizedBox(height: 8),
-          Text('Method: M-PESA', style: GoogleFonts.dmSans(fontSize: 14, color: AppTheme.mutedText)),
-          const SizedBox(height: 8),
-          Text('This will record a payment against Invoice #${invoice['id']}.', style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText)),
-        ]),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.teal, foregroundColor: Colors.white),
-            child: const Text('Confirm Payment'),
-          ),
-        ],
-      ),
+    await TenantPaymentDialog.show(
+      context,
+      invoice: invoice,
+      onPaymentCompleted: () => _loadTenantData(),
     );
-
-    if (confirmed != true) return;
-
-    try {
-      await _api.initiateMpesaPayment(
-        invoice['id'],
-        '254712345678', // Hardcoded or should prompt user
-        remaining,
-      );
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Payment initiated! Check your phone for STK Push.'), backgroundColor: Colors.green),
-        );
-        _loadTenantData(); // Refresh
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Payment failed: $e'), backgroundColor: Colors.red),
-        );
-      }
-    }
   }
 
   Widget _buildQuickActionsCard() {

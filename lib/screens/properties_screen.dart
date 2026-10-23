@@ -162,7 +162,10 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
                                     final property = _properties[index];
                                     return Padding(
                                       padding: const EdgeInsets.only(bottom: 12),
-                                      child: _PropertyCard(property: property, onRefresh: _loadProperties),
+                                      child: SizedBox(
+                                        height: 295,
+                                        child: _PropertyCard(property: property, onRefresh: _loadProperties),
+                                      ),
                                     );
                                   },
                                 );
@@ -170,7 +173,7 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
                               return GridView.builder(
                                 gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                                   maxCrossAxisExtent: 400,
-                                  mainAxisExtent: 220,
+                                  mainAxisExtent: isSmall ? 285 : 295,
                                   crossAxisSpacing: isSmall ? 12 : 20,
                                   mainAxisSpacing: isSmall ? 12 : 20,
                                 ),
@@ -260,121 +263,133 @@ class _PropertyCard extends StatelessWidget {
           },
           child: Padding(
             padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Property Image Header
-                if (property['images'] != null && (property['images'] as List).isNotEmpty)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      '${AppConfig.apiBaseUrl.replaceFirst('/api', '')}/media/${property['images'][0]['image']}',
-                      height: 100,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        height: 100,
-                        width: double.infinity,
-                        decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(12)),
-                        child: const Icon(Icons.broken_image, color: Colors.grey),
-                      ),
-                    ),
-                  )
-                else
-                  Container(
-                    height: 100,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.border),
-                    ),
-                    child: Icon(Icons.home_work_outlined, size: 40, color: Colors.grey.shade300),
-                  ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final hasBounded = constraints.hasBoundedHeight;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Flexible(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: property['status'] == 'ACTIVE' 
-                              ? Colors.green.withValues(alpha: 0.1) 
-                              : Colors.orange.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          property['status'] ?? 'UNKNOWN',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: property['status'] == 'ACTIVE' ? Colors.green.shade700 : Colors.orange.shade700,
+                    // Property Image Header
+                    if (property['images'] != null && (property['images'] as List).isNotEmpty)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          '${AppConfig.apiBaseUrl.replaceFirst('/api', '')}/media/${property['images'][0]['image']}',
+                          height: 100,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            height: 100,
+                            width: double.infinity,
+                            decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(12)),
+                            child: const Icon(Icons.broken_image, color: Colors.grey),
                           ),
                         ),
+                      )
+                    else
+                      Container(
+                        height: 100,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppTheme.border),
+                        ),
+                        child: Icon(Icons.home_work_outlined, size: 40, color: Colors.grey.shade300),
                       ),
-                    ),
-                    PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_horiz, color: AppTheme.mutedText),
-                      onSelected: (value) {
-                        if (value == 'edit') _edit(context);
-                        if (value == 'delete') _delete(context);
-                      },
-                      itemBuilder: (context) => [
-                        const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                        const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: property['status'] == 'ACTIVE' 
+                                  ? Colors.green.withValues(alpha: 0.1) 
+                                  : Colors.orange.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              property['status'] ?? 'UNKNOWN',
+                              style: GoogleFonts.dmSans(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: property['status'] == 'ACTIVE' ? Colors.green.shade700 : Colors.orange.shade700,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: PopupMenuButton<String>(
+                            padding: EdgeInsets.zero,
+                            iconSize: 18,
+                            icon: const Icon(Icons.more_horiz, color: AppTheme.mutedText),
+                            onSelected: (value) {
+                              if (value == 'edit') _edit(context);
+                              if (value == 'delete') _delete(context);
+                            },
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                              const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
-                  ],
-                ),
-                const Spacer(),
-                Text(
-                  property['name'] ?? 'Unnamed Property',
-                  style: GoogleFonts.bricolageGrotesque(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.navy,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.location_on_outlined, size: 14, color: AppTheme.mutedText),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        '${property['address'] ?? ''}, ${property['city'] ?? ''}',
-                        style: GoogleFonts.dmSans(fontSize: 12, color: AppTheme.mutedText),
+                    const SizedBox(height: 8),
+                    Text(
+                      property['name'] ?? 'Unnamed Property',
+                      style: GoogleFonts.bricolageGrotesque(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.navy,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on_outlined, size: 14, color: AppTheme.mutedText),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            '${property['address'] ?? ''}, ${property['city'] ?? ''}',
+                            style: GoogleFonts.dmSans(fontSize: 12, color: AppTheme.mutedText),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (property['description'] != null && property['description'].toString().trim().isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        property['description'],
+                        style: GoogleFonts.dmSans(fontSize: 11, color: AppTheme.navy.withValues(alpha: 0.7)),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
+                    ],
+                    if (hasBounded) const Spacer() else const SizedBox(height: 10),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 6),
+                      child: Divider(height: 1),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(child: _buildMiniStat(Icons.door_sliding_outlined, '${property['total_units'] ?? 0} Units')),
+                        const SizedBox(width: 8),
+                        Flexible(child: _buildMiniStat(Icons.category_outlined, property['property_type'] ?? 'Property')),
+                      ],
                     ),
                   ],
-                ),
-                if (property['description'] != null && property['description'].toString().trim().isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    property['description'],
-                    style: GoogleFonts.dmSans(fontSize: 12, color: AppTheme.navy.withValues(alpha: 0.7)),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  child: Divider(height: 1),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(child: _buildMiniStat(Icons.door_sliding_outlined, '${property['total_units'] ?? 0} Units')),
-                    const SizedBox(width: 8),
-                    Flexible(child: _buildMiniStat(Icons.category_outlined, property['property_type'] ?? 'Property')),
-                  ],
-                ),
-              ],
+                );
+              },
             ),
           ),
         ),

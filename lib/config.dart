@@ -1,10 +1,12 @@
 class AppConfig {
   static const String apiBaseUrl = 'http://localhost:3005/api';
   static const String brandName = 'PMS Pro';
-  static const String whatsappNumber = '+254700000000';
-  static const String phone = '+254 700 000 000';
-  static const String email = 'hello@pmspro.co.ke';
-  static const String whatsappMessage = 'Hi, I want to learn more about PMS Pro.';
+  static const String googleClientId = '499613086928-mveq06t9roiv0672gv9ghpt3olnpstn8.apps.googleusercontent.com';
+  static const String whatsappNumber = '+254702263303';
+  static const String phone = '+254 702 263 303';
+  static const String displayPhone = '0702263303';
+  static const String email = 'support@pmspro.co.ke';
+  static const String whatsappMessage = 'Hi, I need assistance with my PMS Pro workspace.';
   
   static const Map<String, String> stats = {
     '10,000+': 'Units Managed',

@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../theme/app_theme.dart';
 import '../config.dart';
 import '../services/auth_service.dart';
+import '../widgets/google_auth/google_sign_in_section.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -22,10 +23,38 @@ class _LoginScreenState extends State<LoginScreen> {
   final _authService = AuthService();
 
   @override
+  void initState() {
+    super.initState();
+    _authService.addListener(_onAuthStateChanged);
+  }
+
+  @override
   void dispose() {
+    _authService.removeListener(_onAuthStateChanged);
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _onAuthStateChanged() {
+    if (_authService.isLoggedIn && mounted) {
+      _navigateToDashboard();
+    }
+  }
+
+  void _navigateToDashboard() {
+    final role = _authService.user?.role ?? 'OWNER';
+    if (role == 'OWNER' || role == 'ADMIN') {
+      Navigator.of(context).pushReplacementNamed('/owner-dashboard');
+    } else if (role == 'TENANT') {
+      Navigator.of(context).pushReplacementNamed('/tenant-dashboard');
+    } else if (role == 'CARETAKER') {
+      Navigator.of(context).pushReplacementNamed('/caretaker-dashboard');
+    } else if (role == 'VENDOR') {
+      Navigator.of(context).pushReplacementNamed('/vendor-dashboard');
+    } else {
+      Navigator.of(context).pushReplacementNamed('/owner-dashboard');
+    }
   }
 
   Future<void> _handleLogin() async {
@@ -39,18 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (success) {
-      final role = _authService.user!.role;
-      if (role == 'OWNER' || role == 'ADMIN') {
-        Navigator.of(context).pushReplacementNamed('/owner-dashboard');
-      } else if (role == 'TENANT') {
-        Navigator.of(context).pushReplacementNamed('/tenant-dashboard');
-      } else if (role == 'CARETAKER') {
-        Navigator.of(context).pushReplacementNamed('/caretaker-dashboard');
-      } else if (role == 'VENDOR') {
-        Navigator.of(context).pushReplacementNamed('/vendor-dashboard');
-      } else {
-        Navigator.of(context).pushReplacementNamed('/owner-dashboard');
-      }
+      _navigateToDashboard();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -437,25 +455,46 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Social logins
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                // Social logins arranged vertically
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildSocialButton(Icons.g_mobiledata, 'Google'),
-                    const SizedBox(width: 16),
-                    _buildSocialButton(Icons.facebook, 'Facebook'),
+                    GoogleSignInSection(
+                      onSuccess: () => _navigateToDashboard(),
+                      onError: (msg) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(msg),
+                            backgroundColor: Colors.red.shade600,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSocialButton(
+                      Icons.facebook,
+                      'Sign in with Facebook',
+                      iconColor: const Color(0xFF1877F2),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 28),
 
-                // Sign up link
-                Row(
+                // Sign up prompt (Question on top, Create Account link below)
+                Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Don't have an account? ",
-                      style: GoogleFonts.dmSans(fontSize: 14, color: AppTheme.mutedText),
+                      "Don't have an account?",
+                      style: GoogleFonts.dmSans(
+                        fontSize: 14,
+                        color: AppTheme.mutedText,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
+                    const SizedBox(height: 6),
                     MouseRegion(
                       cursor: SystemMouseCursors.click,
                       child: GestureDetector(
@@ -467,9 +506,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Text(
                           'Create Account',
                           style: GoogleFonts.dmSans(
-                            fontSize: 14,
+                            fontSize: 15,
                             color: AppTheme.teal,
                             fontWeight: FontWeight.w700,
+                            decoration: TextDecoration.underline,
                           ),
                         ),
                       ),
@@ -522,16 +562,26 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildSocialButton(IconData icon, String label) {
-    return OutlinedButton.icon(
-      onPressed: () {},
-      icon: Icon(icon, size: 22),
-      label: Text(label, style: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w500)),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: AppTheme.navy,
-        side: const BorderSide(color: AppTheme.border),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+  Widget _buildSocialButton(IconData icon, String label, {Color? iconColor, VoidCallback? onPressed}) {
+    return SizedBox(
+      height: 48,
+      child: OutlinedButton.icon(
+        onPressed: onPressed ?? () {},
+        icon: Icon(icon, size: 22, color: iconColor ?? AppTheme.navy),
+        label: Text(
+          label,
+          style: GoogleFonts.dmSans(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.navy,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: AppTheme.border),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          backgroundColor: Colors.white,
+          elevation: 0,
+        ),
       ),
     );
   }

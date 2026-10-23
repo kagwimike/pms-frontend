@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
 
@@ -230,14 +232,39 @@ class _SecurityAuditSettingsSectionState extends State<SecurityAuditSettingsSect
                     child: const Icon(Icons.history_edu_outlined, color: AppTheme.teal, size: 22),
                   ),
                   const SizedBox(width: 14),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('System Audit Trail',
-                          style: GoogleFonts.bricolageGrotesque(fontSize: 18, fontWeight: FontWeight.w700, color: textColor)),
-                      Text('Immutable log of security and configuration changes',
-                          style: GoogleFonts.dmSans(fontSize: 13, color: muted)),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('System Audit Trail',
+                            style: GoogleFonts.bricolageGrotesque(fontSize: 18, fontWeight: FontWeight.w700, color: textColor)),
+                        Text('Immutable log of security and configuration changes',
+                            style: GoogleFonts.dmSans(fontSize: 13, color: muted)),
+                      ],
+                    ),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      if (_isLoadingLogs) return;
+                      if (_recentAuditLogs.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('No logs available'),
+                            behavior: SnackBarBehavior.floating,
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                        return;
+                      }
+                      context.push('/auditlogs');
+                    },
+                    icon: const Icon(Icons.open_in_new, size: 14),
+                    label: const Text('View All Logs', style: TextStyle(fontSize: 12)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.teal,
+                      side: const BorderSide(color: AppTheme.teal),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    ),
                   ),
                 ],
               ),
@@ -248,7 +275,7 @@ class _SecurityAuditSettingsSectionState extends State<SecurityAuditSettingsSect
               if (_isLoadingLogs)
                 const Center(child: CircularProgressIndicator(color: AppTheme.teal))
               else if (_recentAuditLogs.isEmpty)
-                Text('No recent audit events recorded.', style: TextStyle(color: muted, fontSize: 13))
+                Text('No logs available', style: TextStyle(color: muted, fontSize: 13))
               else
                 ListView.separated(
                   shrinkWrap: true,
@@ -257,21 +284,91 @@ class _SecurityAuditSettingsSectionState extends State<SecurityAuditSettingsSect
                   separatorBuilder: (_, __) => const Divider(height: 1),
                   itemBuilder: (context, idx) {
                     final item = _recentAuditLogs[idx];
+                    final action = (item['action'] ?? 'ACTION').toString().toUpperCase();
+                    final isLogin = action.contains('LOGIN') || action.contains('SIGNIN');
+                    final isFailure = item['outcome'] == 'FAILURE' || action.contains('FAIL');
+
+                    final createdAtRaw = item['created_at']?.toString();
+                    final createdAt = createdAtRaw != null ? DateTime.tryParse(createdAtRaw)?.toLocal() : null;
+                    final dateStr = createdAt != null ? DateFormat('MMM d, yyyy').format(createdAt) : '';
+                    final timeStr = createdAt != null ? DateFormat('hh:mm:ss a').format(createdAt) : '';
+
+                    final IconData iconData;
+                    final Color iconColor;
+                    if (isLogin) {
+                      iconData = isFailure ? Icons.no_accounts_outlined : Icons.login_rounded;
+                      iconColor = isFailure ? Colors.red.shade700 : AppTheme.teal;
+                    } else if (isFailure) {
+                      iconData = Icons.error_outline_rounded;
+                      iconColor = Colors.red.shade700;
+                    } else if (action.contains('LOGOUT')) {
+                      iconData = Icons.logout_rounded;
+                      iconColor = Colors.orange.shade700;
+                    } else {
+                      iconData = Icons.verified_user_outlined;
+                      iconColor = AppTheme.teal;
+                    }
+
+                    final summary = item['summary']?.toString();
+                    final title = summary != null && summary.isNotEmpty
+                        ? summary
+                        : '$action • ${item['entity_type'] ?? 'SYSTEM'}';
+
+                    final actorName = item['user']?['username'] ?? 'System';
+                    final actorRole = item['actor_role'] ?? item['user']?['role'] ?? 'USER';
+                    final ip = item['ip_address'] ?? '127.0.0.1';
+
                     return ListTile(
                       contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.verified_user_outlined, color: AppTheme.teal, size: 20),
+                      onTap: () => context.push('/auditlogs'),
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: iconColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(iconData, color: iconColor, size: 20),
+                      ),
                       title: Text(
-                        '${item['action'] ?? 'ACTION'} - ${item['entity_type'] ?? ''}',
-                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                        title,
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       subtitle: Text(
-                        'Actor: ${item['user']?['username'] ?? 'System'} • IP: ${item['ip_address'] ?? '127.0.0.1'}',
+                        'By $actorName ($actorRole) • IP: $ip',
                         style: TextStyle(color: muted, fontSize: 12),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      trailing: Text(
-                        item['created_at'] != null ? item['created_at'].toString().split('T').first : '',
-                        style: TextStyle(fontSize: 11, color: muted),
-                      ),
+                      trailing: createdAt != null
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  dateStr,
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: textColor),
+                                ),
+                                const SizedBox(height: 2),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.access_time_rounded, size: 10, color: isLogin ? AppTheme.teal : muted),
+                                    const SizedBox(width: 3),
+                                    Text(
+                                      timeStr,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: isLogin ? AppTheme.teal : muted,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            )
+                          : null,
                     );
                   },
                 ),

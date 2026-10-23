@@ -20,6 +20,7 @@ import 'documents_screen.dart';
 import 'communication/communication_inbox_screen.dart';
 import 'communication/announcements_screen.dart';
 import 'settings_screen.dart';
+import 'bank_reconciliation_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/chat_provider.dart';
 
@@ -121,6 +122,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
     SidebarItem(icon: Icons.description_outlined, label: 'Leases', key: 'leases'),
     SidebarItem(icon: Icons.receipt_long_outlined, label: 'Rent Collection', key: 'invoices'),
     SidebarItem(icon: Icons.account_balance_wallet_outlined, label: 'Deposits & Charges', key: 'payments'),
+    SidebarItem(icon: Icons.account_balance_outlined, label: 'Bank Reconciliation', key: 'bank_reconciliation'),
     SidebarItem(icon: Icons.build_outlined, label: 'Maintenance', key: 'maintenance'),
     SidebarItem(icon: Icons.engineering_outlined, label: 'Vendors', key: 'vendors'),
     SidebarItem(icon: Icons.checklist_outlined, label: 'Inspections', key: 'inspections'),
@@ -210,6 +212,8 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
         return const InvoicesScreen();
       case 'payments':
         return const PaymentsScreen(isOwner: true);
+      case 'bank_reconciliation':
+        return const BankReconciliationScreen();
       case 'maintenance':
         return const MaintenanceScreen(isOwner: true);
       case 'vendors':
@@ -270,7 +274,6 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
           // ── Row 1: Primary Stats ──
           LayoutBuilder(
             builder: (context, constraints) {
-              final cardWidth = constraints.maxWidth < 600 ? constraints.maxWidth : (constraints.maxWidth - 48) / 4;
               final cards = [
                 _StatCard(
                   icon: Icons.home_work_outlined,
@@ -549,49 +552,6 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
             const Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.mutedText),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildPlaceholder(String title, IconData icon, String description) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppTheme.teal.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Icon(icon, size: 40, color: AppTheme.teal),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            title,
-            style: GoogleFonts.bricolageGrotesque(fontSize: 24, fontWeight: FontWeight.w700, color: AppTheme.navy),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            description,
-            style: GoogleFonts.dmSans(fontSize: 14, color: AppTheme.mutedText),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            decoration: BoxDecoration(
-              color: AppTheme.bgGreyGreen,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppTheme.border),
-            ),
-            child: Text(
-              'Coming soon',
-              style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText),
-            ),
-          ),
-        ],
       ),
     );
   }

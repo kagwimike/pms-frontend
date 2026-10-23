@@ -9,6 +9,8 @@ import '../ui/screens/units_screen.dart';
 import '../ui/screens/dashboard_screen.dart';
 import '../ui/screens/auth/login_screen.dart';
 import '../ui/screens/auth/register_screen.dart';
+import '../screens/documents_screen.dart';
+import '../screens/audit_logs_screen.dart';
 import '../../providers/auth_provider.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -127,8 +129,7 @@ GoRouter createAppRouter(AuthProvider authProvider) {
           ),
           GoRoute(
             path: '/documents',
-            builder: (context, state) =>
-                const PlaceholderScreen(title: 'Documents'),
+            builder: (context, state) => const DocumentsScreen(),
           ),
           GoRoute(
             path: '/notifications',
@@ -137,8 +138,7 @@ GoRouter createAppRouter(AuthProvider authProvider) {
           ),
           GoRoute(
             path: '/auditlogs',
-            builder: (context, state) =>
-                const PlaceholderScreen(title: 'Audit logs'),
+            builder: (context, state) => const AuditLogsScreen(),
           ),
           GoRoute(
             path: '/about',

@@ -128,6 +128,15 @@ class ApiService {
     return _processResponse(res);
   }
 
+  Future<Map<String, dynamic>> createTeamMember(Map<String, dynamic> data) async {
+    final res = await http.post(
+      Uri.parse('${AppConfig.apiBaseUrl}/auth/register'),
+      headers: _headers,
+      body: jsonEncode(data),
+    );
+    return _processResponse(res);
+  }
+
   // ─── Leases ───
   Future<Map<String, dynamic>> getLeases({int limit = 10, String? cursor, String? status}) async {
     var url = '${AppConfig.apiBaseUrl}/leases/?limit=$limit';
@@ -203,6 +212,207 @@ class ApiService {
         'phone': phone,
         'amount': amount,
       }),
+    );
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> getPaymentGateways({int? invoiceId, int? propertyId}) async {
+    var url = '${AppConfig.apiBaseUrl}/finance/payments/gateways';
+    final params = <String>[];
+    if (invoiceId != null) params.add('invoice_id=$invoiceId');
+    if (propertyId != null) params.add('property_id=$propertyId');
+    if (params.isNotEmpty) url += '?${params.join('&')}';
+
+    final res = await http.get(Uri.parse(url), headers: _headers);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> submitBankPaymentProof({
+    required int invoiceId,
+    required double amount,
+    required String reference,
+    int? bankAccountId,
+    String? notes,
+  }) async {
+    final res = await http.post(
+      Uri.parse('${AppConfig.apiBaseUrl}/finance/payments'),
+      headers: _headers,
+      body: jsonEncode({
+        'invoice_id': invoiceId,
+        'amount': amount,
+        'payment_method': 'BANK_TRANSFER',
+        'transaction_reference': reference,
+        if (bankAccountId != null) 'bank_account_id': bankAccountId,
+        if (notes != null) 'notes': notes,
+      }),
+    );
+    return _processResponse(res);
+  }
+
+  // ─── Unmatched Deposits Queue (Phase 3) ───
+  Future<Map<String, dynamic>> getUnmatchedPayments({
+    String? query,
+    int? bankAccountId,
+    int? uploadId,
+    double? minAmount,
+    double? maxAmount,
+    int page = 1,
+    int limit = 20,
+  }) async {
+    var url = '${AppConfig.apiBaseUrl}/finance/payments/unmatched?page=$page&limit=$limit';
+    if (query != null && query.isNotEmpty) url += '&q=${Uri.encodeComponent(query)}';
+    if (bankAccountId != null) url += '&bank_account_id=$bankAccountId';
+    if (uploadId != null) url += '&statement_upload_id=$uploadId';
+    if (minAmount != null) url += '&min_amount=$minAmount';
+    if (maxAmount != null) url += '&max_amount=$maxAmount';
+
+    final res = await http.get(Uri.parse(url), headers: _headers);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> getUnmatchedStats() async {
+    final res = await http.get(
+      Uri.parse('${AppConfig.apiBaseUrl}/finance/payments/unmatched/stats'),
+      headers: _headers,
+    );
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> assignUnmatchedPayment(
+    int paymentId,
+    int invoiceId, {
+    String? notes,
+  }) async {
+    final res = await http.post(
+      Uri.parse('${AppConfig.apiBaseUrl}/finance/payments/unmatched/$paymentId/assign'),
+      headers: _headers,
+      body: jsonEncode({
+        'invoice_id': invoiceId,
+        if (notes != null) 'notes': notes,
+      }),
+    );
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> resolveUnmatchedPayment(
+    int paymentId,
+    String resolution, {
+    String? reason,
+  }) async {
+    final res = await http.post(
+      Uri.parse('${AppConfig.apiBaseUrl}/finance/payments/unmatched/$paymentId/resolve'),
+      headers: _headers,
+      body: jsonEncode({
+        'resolution': resolution,
+        if (reason != null) 'reason': reason,
+      }),
+    );
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> getPaymentCandidates(int paymentId) async {
+    final res = await http.get(
+      Uri.parse('${AppConfig.apiBaseUrl}/finance/payments/unmatched/$paymentId/candidates'),
+      headers: _headers,
+    );
+    return _processResponse(res);
+  }
+
+  // ─── Bank Accounts Management (Phase 4) ───
+  Future<Map<String, dynamic>> getBankAccounts({int? propertyId, bool? isActive}) async {
+    var url = '${AppConfig.apiBaseUrl}/finance/payments/bank-accounts';
+    final params = <String>[];
+    if (propertyId != null) params.add('property_id=$propertyId');
+    if (isActive != null) params.add('is_active=$isActive');
+    if (params.isNotEmpty) url += '?${params.join('&')}';
+
+    final res = await http.get(Uri.parse(url), headers: _headers);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> getSupportedBanks() async {
+    final res = await http.get(
+      Uri.parse('${AppConfig.apiBaseUrl}/finance/payments/bank-accounts/banks'),
+      headers: _headers,
+    );
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> createBankAccount(Map<String, dynamic> data) async {
+    final res = await http.post(
+      Uri.parse('${AppConfig.apiBaseUrl}/finance/payments/bank-accounts'),
+      headers: _headers,
+      body: jsonEncode(data),
+    );
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> updateBankAccount(int id, Map<String, dynamic> data) async {
+    final res = await http.patch(
+      Uri.parse('${AppConfig.apiBaseUrl}/finance/payments/bank-accounts/$id'),
+      headers: _headers,
+      body: jsonEncode(data),
+    );
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> deleteBankAccount(int id) async {
+    final res = await http.delete(
+      Uri.parse('${AppConfig.apiBaseUrl}/finance/payments/bank-accounts/$id'),
+      headers: _headers,
+    );
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> setPrimaryBankAccount(int id) async {
+    final res = await http.post(
+      Uri.parse('${AppConfig.apiBaseUrl}/finance/payments/bank-accounts/$id/primary'),
+      headers: _headers,
+    );
+    return _processResponse(res);
+  }
+
+  // ─── Bank Statement Ingestion & Reconciliation (Phase 5) ───
+  Future<Map<String, dynamic>> uploadBankStatement({
+    required List<int> bytes,
+    required String filename,
+    int? bankAccountId,
+  }) async {
+    final uri = Uri.parse('${AppConfig.apiBaseUrl}/finance/payments/statements/upload');
+    final req = http.MultipartRequest('POST', uri);
+    req.headers.addAll({
+      if (_auth.accessToken != null) 'Authorization': 'Bearer ${_auth.accessToken}',
+    });
+    if (bankAccountId != null) {
+      req.fields['bank_account_id'] = bankAccountId.toString();
+    }
+    req.files.add(
+      http.MultipartFile.fromBytes(
+        'statement',
+        bytes,
+        filename: filename,
+      ),
+    );
+    final streamedResponse = await req.send();
+    final res = await http.Response.fromStream(streamedResponse);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> getStatementUploads({
+    int? bankAccountId,
+    int page = 1,
+    int limit = 20,
+  }) async {
+    var url = '${AppConfig.apiBaseUrl}/finance/payments/statements?page=$page&limit=$limit';
+    if (bankAccountId != null) url += '&bank_account_id=$bankAccountId';
+    final res = await http.get(Uri.parse(url), headers: _headers);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> getStatementUpload(int id) async {
+    final res = await http.get(
+      Uri.parse('${AppConfig.apiBaseUrl}/finance/payments/statements/$id'),
+      headers: _headers,
     );
     return _processResponse(res);
   }
@@ -385,28 +595,6 @@ class ApiService {
     return _processResponse(res);
   }
 
-  // ─── Documents ───
-  Future<Map<String, dynamic>> getDocuments({int limit = 10, String? cursor}) async {
-    final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/documents/?limit=$limit${cursor != null ? '&cursor=$cursor' : ''}'), headers: _headers);
-    return _processResponse(res);
-  }
-
-  Future<Map<String, dynamic>> createDocument(Map<String, dynamic> data, {http.MultipartFile? file}) async {
-    if (file == null) {
-      final res = await http.post(Uri.parse('${AppConfig.apiBaseUrl}/documents/'), headers: _headers, body: jsonEncode(data));
-      return _processResponse(res);
-    }
-    final req = http.MultipartRequest('POST', Uri.parse('${AppConfig.apiBaseUrl}/documents/'));
-    req.headers.addAll({if (_auth.accessToken != null) 'Authorization': 'Bearer ${_auth.accessToken}'});
-    data.forEach((key, value) {
-      if (value != null) req.fields[key] = value.toString();
-    });
-    req.files.add(file);
-    final streamedResponse = await req.send();
-    final res = await http.Response.fromStream(streamedResponse);
-    return _processResponse(res);
-  }
-
   // ─── Global Search ───
   Future<Map<String, dynamic>> globalSearch(String query, {String? type, String? cursor, int limit = 5}) async {
     final queryParams = {
@@ -488,13 +676,156 @@ class ApiService {
     return _processResponse(res);
   }
 
-  Future<Map<String, dynamic>> getAuditLogs({int limit = 15, String? cursor, String? entityType}) async {
+  // ─── Audit Logs ───
+  Future<Map<String, dynamic>> getAuditLogs({
+    int limit = 15,
+    String? cursor,
+    String? module,
+    String? outcome,
+    String? severity,
+    String? search,
+    String? entityType,
+    String? entityId,
+    String? propertyId,
+    String? startDate,
+    String? endDate,
+  }) async {
     final queryParams = <String, String>{'limit': limit.toString()};
     if (cursor != null) queryParams['cursor'] = cursor;
-    if (entityType != null) queryParams['entity_type'] = entityType;
+    if (module != null && module.isNotEmpty) queryParams['module'] = module;
+    if (outcome != null && outcome.isNotEmpty) queryParams['outcome'] = outcome;
+    if (severity != null && severity.isNotEmpty) queryParams['severity'] = severity;
+    if (search != null && search.isNotEmpty) queryParams['search'] = search;
+    if (entityType != null && entityType.isNotEmpty) queryParams['entity_type'] = entityType;
+    if (entityId != null && entityId.isNotEmpty) queryParams['entity_id'] = entityId;
+    if (propertyId != null && propertyId.isNotEmpty) queryParams['property_id'] = propertyId;
+    if (startDate != null && startDate.isNotEmpty) queryParams['start_date'] = startDate;
+    if (endDate != null && endDate.isNotEmpty) queryParams['end_date'] = endDate;
+
     final uri = Uri.parse('${AppConfig.apiBaseUrl}/auditlogs/').replace(queryParameters: queryParams);
     final res = await http.get(uri, headers: _headers);
     return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> getAuditLogById(dynamic id) async {
+    final uri = Uri.parse('${AppConfig.apiBaseUrl}/auditlogs/$id');
+    final res = await http.get(uri, headers: _headers);
+    return _processResponse(res);
+  }
+
+  String getAuditExportUrl({
+    String? module,
+    String? outcome,
+    String? severity,
+    String? startDate,
+    String? endDate,
+  }) {
+    final queryParams = <String, String>{};
+    if (module != null && module.isNotEmpty) queryParams['module'] = module;
+    if (outcome != null && outcome.isNotEmpty) queryParams['outcome'] = outcome;
+    if (severity != null && severity.isNotEmpty) queryParams['severity'] = severity;
+    if (startDate != null && startDate.isNotEmpty) queryParams['start_date'] = startDate;
+    if (endDate != null && endDate.isNotEmpty) queryParams['end_date'] = endDate;
+
+    return Uri.parse('${AppConfig.apiBaseUrl}/auditlogs/export').replace(queryParameters: queryParams).toString();
+  }
+
+  // ─── Documents ───
+  Future<Map<String, dynamic>> getDocuments({
+    int limit = 15,
+    String? cursor,
+    String? entityType,
+    String? entityId,
+    String? propertyId,
+    String? docType,
+    String? status,
+    bool? isArchived,
+    String? search,
+  }) async {
+    final queryParams = <String, String>{'limit': limit.toString()};
+    if (cursor != null) queryParams['cursor'] = cursor;
+    if (entityType != null && entityType.isNotEmpty) queryParams['entity_type'] = entityType;
+    if (entityId != null && entityId.isNotEmpty) queryParams['entity_id'] = entityId;
+    if (propertyId != null && propertyId.isNotEmpty) queryParams['property_id'] = propertyId;
+    if (docType != null && docType.isNotEmpty) queryParams['document_type'] = docType;
+    if (status != null && status.isNotEmpty) queryParams['status'] = status;
+    if (isArchived != null) queryParams['is_archived'] = isArchived.toString();
+    if (search != null && search.isNotEmpty) queryParams['search'] = search;
+
+    final uri = Uri.parse('${AppConfig.apiBaseUrl}/documents/').replace(queryParameters: queryParams);
+    final res = await http.get(uri, headers: _headers);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> getDocument(dynamic id) async {
+    final uri = Uri.parse('${AppConfig.apiBaseUrl}/documents/$id');
+    final res = await http.get(uri, headers: _headers);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> createDocument(
+    Map<String, dynamic> data, {
+    required http.MultipartFile file,
+  }) async {
+    final req = http.MultipartRequest('POST', Uri.parse('${AppConfig.apiBaseUrl}/documents/'));
+    req.headers.addAll({
+      if (_auth.accessToken != null) 'Authorization': 'Bearer ${_auth.accessToken}',
+    });
+
+    data.forEach((key, value) {
+      if (value != null) {
+        req.fields[key] = value.toString();
+      }
+    });
+
+    req.files.add(file);
+
+    final streamedResponse = await req.send();
+    final res = await http.Response.fromStream(streamedResponse);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> uploadDocumentVersion(
+    dynamic parentDocId,
+    Map<String, dynamic> data, {
+    required http.MultipartFile file,
+  }) async {
+    final req = http.MultipartRequest('POST', Uri.parse('${AppConfig.apiBaseUrl}/documents/$parentDocId/versions'));
+    req.headers.addAll({
+      if (_auth.accessToken != null) 'Authorization': 'Bearer ${_auth.accessToken}',
+    });
+
+    data.forEach((key, value) {
+      if (value != null) {
+        req.fields[key] = value.toString();
+      }
+    });
+
+    req.files.add(file);
+
+    final streamedResponse = await req.send();
+    final res = await http.Response.fromStream(streamedResponse);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> updateDocument(dynamic id, Map<String, dynamic> data) async {
+    final res = await http.patch(
+      Uri.parse('${AppConfig.apiBaseUrl}/documents/$id'),
+      headers: _headers,
+      body: jsonEncode(data),
+    );
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> deleteDocument(dynamic id, {bool permanent = false}) async {
+    final uri = Uri.parse('${AppConfig.apiBaseUrl}/documents/$id?permanent=$permanent');
+    final res = await http.delete(uri, headers: _headers);
+    return _processResponse(res);
+  }
+
+  String getDocumentDownloadUrl(dynamic id, {bool preview = false}) {
+    final base = '${AppConfig.apiBaseUrl}/documents/$id/${preview ? 'preview' : 'download'}';
+    return base;
   }
 
   // ─── Helper: extract list from any response shape ───

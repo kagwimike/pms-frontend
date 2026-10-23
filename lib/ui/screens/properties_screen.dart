@@ -303,7 +303,7 @@ class _PropertyCard extends StatelessWidget {
                       ApiEndpoints.resolveMediaUrl(property.images.first),
                       fit: BoxFit.cover,
                       width: double.infinity,
-                      errorBuilder: (_, _, _) => _imageFallback(),
+                      errorBuilder: (context, error, stackTrace) => _imageFallback(),
                     ),
             ),
             Padding(
@@ -413,7 +413,7 @@ class _PropertyDetailsSheet extends StatelessWidget {
                           ApiEndpoints.resolveMediaUrl(property.images[idx]),
                           width: 240,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => Container(
+                          errorBuilder: (context, error, stackTrace) => Container(
                             width: 240,
                             color: const Color(0xFFDCEBE2),
                             child: const Icon(Icons.home_work_outlined, size: 48, color: Color(0xFF54836D)),

@@ -9,13 +9,18 @@ import 'screens/communication/communication_inbox_screen.dart';
 import 'features/caretaker/caretaker_dashboard_screen.dart';
 import 'features/vendor/vendor_dashboard_screen.dart';
 
+import 'screens/workspace_onboarding_screen.dart';
+
 import 'package:provider/provider.dart';
 import 'providers/chat_provider.dart';
 import 'providers/search_provider.dart';
 import 'providers/theme_provider.dart';
 
-void main() {
+import 'services/auth_service.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AuthService().initGoogleSignIn();
   runApp(const PmsProApp());
 }
 
@@ -47,6 +52,7 @@ class PmsProApp extends StatelessWidget {
               '/caretaker-dashboard': (_) => const CaretakerDashboardScreen(),
               '/vendor-dashboard': (_) => const VendorDashboardScreen(),
               '/communication-inbox': (_) => const CommunicationInboxScreen(),
+              '/workspace-onboarding': (_) => const WorkspaceOnboardingScreen(),
             },
           );
         },

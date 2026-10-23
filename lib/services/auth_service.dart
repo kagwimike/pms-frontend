@@ -2,20 +2,38 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../config.dart';
+import '../widgets/google_auth/web_wrapper.dart' as gsi;
 
 class UserModel {
   final int id;
   final String username;
   final String email;
   final String role;
+  final String? firstName;
+  final String? lastName;
+  final String? profilePicture;
 
   UserModel({
     required this.id,
     required this.username,
     required this.email,
     required this.role,
+    this.firstName,
+    this.lastName,
+    this.profilePicture,
   });
+
+  String get displayName {
+    if (firstName != null && firstName!.isNotEmpty) {
+      if (lastName != null && lastName!.isNotEmpty) {
+        return '$firstName $lastName';
+      }
+      return firstName!;
+    }
+    return username;
+  }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
@@ -23,6 +41,9 @@ class UserModel {
       username: json['username'] ?? '',
       email: json['email'] ?? '',
       role: json['role'] ?? 'GUEST',
+      firstName: json['first_name'] ?? json['firstName'],
+      lastName: json['last_name'] ?? json['lastName'],
+      profilePicture: json['profile_picture'] ?? json['profilePicture'],
     );
   }
 
@@ -31,6 +52,9 @@ class UserModel {
         'username': username,
         'email': email,
         'role': role,
+        'first_name': firstName,
+        'last_name': lastName,
+        'profile_picture': profilePicture,
       };
 }
 
@@ -60,6 +84,7 @@ class AuthService extends ChangeNotifier {
     String? phone,
     String? firstName,
     String? lastName,
+    String? tenantIdPassport,
   }) async {
     _isLoading = true;
     _error = null;
@@ -75,6 +100,9 @@ class AuthService extends ChangeNotifier {
       if (phone != null && phone.isNotEmpty) body['phone'] = phone;
       if (firstName != null && firstName.isNotEmpty) body['first_name'] = firstName;
       if (lastName != null && lastName.isNotEmpty) body['last_name'] = lastName;
+      if (tenantIdPassport != null && tenantIdPassport.isNotEmpty) {
+        body['tenant_id_passport'] = tenantIdPassport;
+      }
 
       final response = await http.post(
         Uri.parse('${AppConfig.apiBaseUrl}/auth/register'),
@@ -140,6 +168,146 @@ class AuthService extends ChangeNotifier {
       }
     } catch (e) {
       _error = 'Connection error. Please check that the server is running.';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  bool _googleInitialized = false;
+  String? _pendingRole;
+
+  /// Set the preferred role for Google Fast-Track registration
+  void setPendingRole(String? role) {
+    _pendingRole = role;
+  }
+
+  /// Initialize Google Sign-In and register stream listener
+  Future<void> initGoogleSignIn() async {
+    if (_googleInitialized) return;
+    try {
+      gsi.ensureGoogleSignInWebPlugin();
+      await GoogleSignIn.instance.initialize(
+        clientId: AppConfig.googleClientId,
+      );
+      _googleInitialized = true;
+
+      // Listen to incoming sign-in events from Google Identity Services
+      GoogleSignIn.instance.authenticationEvents.listen(
+        (event) async {
+          if (event is GoogleSignInAuthenticationEventSignIn) {
+            final idToken = event.user.authentication.idToken;
+            if (idToken != null && idToken.isNotEmpty) {
+              await loginWithGoogleToken(idToken, role: _pendingRole);
+            }
+          }
+        },
+        onError: (err) {
+          debugPrint('Google Sign-In stream error: $err');
+          _error = 'Google Sign-In error: $err';
+          _isLoading = false;
+          notifyListeners();
+        },
+      );
+    } catch (e) {
+      debugPrint('Google Sign-In init error: $e');
+    }
+  }
+
+  /// Exchange Google ID token or dev token with backend
+  Future<bool> loginWithGoogleToken(String idToken, {String? role}) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final targetRole = role ?? _pendingRole;
+      final response = await http.post(
+        Uri.parse('${AppConfig.apiBaseUrl}/auth/google'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'token': idToken,
+          if (targetRole != null && targetRole.isNotEmpty) 'role': targetRole,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if ((response.statusCode == 200 || response.statusCode == 201) && data['success'] == true) {
+        _accessToken = data['data']['access'];
+        _refreshToken = data['data']['refresh'];
+        _user = UserModel.fromJson(data['data']['user']);
+        await _persistSession();
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } else {
+        _error = data['message'] ?? 'Google authentication failed on server.';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _error = 'Connection error communicating with PMS Pro server: $e';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Sign in with Google (Cross-platform)
+  Future<bool> signInWithGoogle({String? devToken, String? role}) async {
+    if (role != null) _pendingRole = role;
+
+    if (devToken != null && devToken.isNotEmpty) {
+      return await loginWithGoogleToken(devToken, role: role);
+    }
+
+    await initGoogleSignIn();
+
+    if (GoogleSignIn.instance.supportsAuthenticate()) {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      try {
+        final account = await GoogleSignIn.instance.authenticate();
+        final idToken = account.authentication.idToken;
+        if (idToken != null && idToken.isNotEmpty) {
+          return await loginWithGoogleToken(idToken, role: role);
+        } else {
+          _error = 'Could not obtain Google authentication token.';
+          _isLoading = false;
+          notifyListeners();
+          return false;
+        }
+      } catch (googleErr) {
+        debugPrint('Google Sign-In authenticate error: $googleErr');
+        _error = 'Google Sign-In was cancelled or failed: $googleErr';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+    } else {
+      // On Web: GIS does not allow custom button clicks to call authenticate() directly.
+      // We attempt lightweight / OneTap authentication
+      try {
+        final future = GoogleSignIn.instance.attemptLightweightAuthentication();
+        if (future != null) {
+          final account = await future;
+          if (account != null) {
+            final idToken = account.authentication.idToken;
+            if (idToken != null && idToken.isNotEmpty) {
+              return await loginWithGoogleToken(idToken, role: role);
+            }
+          }
+        }
+      } catch (e) {
+        debugPrint('Google lightweight auth error: $e');
+      }
+
+      // If GIS button is needed on web, report the helpful instruction
+      _error = 'Please click the Google button to sign in.';
       _isLoading = false;
       notifyListeners();
       return false;

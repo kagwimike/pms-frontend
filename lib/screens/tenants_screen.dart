@@ -65,8 +65,11 @@ class _TenantsScreenState extends State<TenantsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 16,
+            runSpacing: 12,
             children: [
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('Tenants', style: GoogleFonts.bricolageGrotesque(fontSize: 26, fontWeight: FontWeight.w700, color: AppTheme.navy)),
@@ -81,14 +84,16 @@ class _TenantsScreenState extends State<TenantsScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 24),
-          Row(children: [
-            _chip('TENANT', 'Active Tenants'),
-            const SizedBox(width: 8),
-            _chip('FORMER_TENANT', 'Former Tenants'),
-            const SizedBox(width: 8),
-            _chip('ALL', 'All'),
-          ]),
+          const SizedBox(height: 20),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _chip('TENANT', 'Active Tenants'),
+              _chip('FORMER_TENANT', 'Former Tenants'),
+              _chip('ALL', 'All'),
+            ],
+          ),
           const SizedBox(height: 24),
           Expanded(
             child: _isLoading
@@ -111,6 +116,7 @@ class _TenantsScreenState extends State<TenantsScreen> {
                           ]))
                         : SingleChildScrollView(
                             child: ResponsiveDataTable<dynamic>(
+                              breakpoint: 750.0,
                               columns: const [
                                 ResponsiveColumn(label: 'TENANT', flex: 3),
                                 ResponsiveColumn(label: 'EMAIL', flex: 3),
@@ -133,7 +139,6 @@ class _TenantsScreenState extends State<TenantsScreen> {
                                 return [
                                   // Tenant name & avatar
                                   Row(
-                                    mainAxisSize: MainAxisSize.min,
                                     children: [
                                       CircleAvatar(
                                         radius: 16,
@@ -144,20 +149,28 @@ class _TenantsScreenState extends State<TenantsScreen> {
                                         ),
                                       ),
                                       const SizedBox(width: 10),
-                                      Text(
-                                        displayName,
-                                        style: GoogleFonts.dmSans(fontWeight: FontWeight.w600, fontSize: 14, color: AppTheme.navy),
+                                      Expanded(
+                                        child: Text(
+                                          displayName,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: GoogleFonts.dmSans(fontWeight: FontWeight.w600, fontSize: 14, color: AppTheme.navy),
+                                        ),
                                       ),
                                     ],
                                   ),
                                   // Email
                                   Text(
                                     tenant['email'] ?? '-',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText),
                                   ),
                                   // Phone
                                   Text(
                                     tenant['phone'] ?? '-',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText),
                                   ),
                                   // Role / Status
@@ -292,19 +305,46 @@ class _TenantRow extends StatelessWidget {
             Expanded(child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(displayName, style: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.navy)),
+                Text(
+                  displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.navy),
+                ),
                 const SizedBox(height: 4),
-                Row(children: [
-                  const Icon(Icons.email_outlined, size: 14, color: AppTheme.mutedText),
-                  const SizedBox(width: 4),
-                  Text(tenant['email'] ?? '', style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText)),
-                  const SizedBox(width: 16),
-                  if (tenant['phone'] != null) ...[
-                    const Icon(Icons.phone_outlined, size: 14, color: AppTheme.mutedText),
-                    const SizedBox(width: 4),
-                    Text(tenant['phone'], style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText)),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 4,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.email_outlined, size: 14, color: AppTheme.mutedText),
+                        const SizedBox(width: 4),
+                        Text(
+                          tenant['email'] ?? '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText),
+                        ),
+                      ],
+                    ),
+                    if (tenant['phone'] != null)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.phone_outlined, size: 14, color: AppTheme.mutedText),
+                          const SizedBox(width: 4),
+                          Text(
+                            tenant['phone'],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText),
+                          ),
+                        ],
+                      ),
                   ],
-                ]),
+                ),
               ],
             )),
             Container(
