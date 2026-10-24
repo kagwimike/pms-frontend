@@ -6,6 +6,7 @@ import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../widgets/dashboard_sidebar.dart';
 import '../ui/widgets/top_nav_bar.dart';
+import '../ui/widgets/responsive_helper.dart';
 import 'maintenance_screen.dart';
 import 'notifications_screen.dart';
 import 'inspections_screen.dart';
@@ -125,7 +126,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
       backgroundColor: AppTheme.bgGreyGreen,
       body: LayoutBuilder(
         builder: (context, constraints) {
-          final isMobile = constraints.maxWidth < 900;
+          final isMobile = constraints.maxWidth < AppBreakpoints.sidebarCollapse;
 
           if (isMobile) {
             return Scaffold(

@@ -69,11 +69,40 @@ class AuthService extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
+  static const String _kRememberMe = 'auth_remember_me';
+  static const String _kRememberedEmail = 'auth_remembered_email';
+
   UserModel? get user => _user;
   String? get accessToken => _accessToken;
   bool get isLoading => _isLoading;
   bool get isLoggedIn => _user != null && _accessToken != null;
   String? get error => _error;
+
+  /// Get saved "Remember Me" preference
+  Future<bool> getRememberMePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_kRememberMe) ?? false;
+  }
+
+  /// Get remembered email address
+  Future<String?> getRememberedEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_kRememberedEmail);
+  }
+
+  /// Persist or clear remember me preference and email
+  Future<void> saveRememberMe({required bool rememberMe, String? email}) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (rememberMe) {
+      await prefs.setBool(_kRememberMe, true);
+      if (email != null && email.trim().isNotEmpty) {
+        await prefs.setString(_kRememberedEmail, email.trim());
+      }
+    } else {
+      await prefs.setBool(_kRememberMe, false);
+      await prefs.remove(_kRememberedEmail);
+    }
+  }
 
   /// Register a new user
   Future<bool> register({
@@ -138,6 +167,7 @@ class AuthService extends ChangeNotifier {
   Future<bool> login({
     required String email,
     required String password,
+    bool rememberMe = false,
   }) async {
     _isLoading = true;
     _error = null;
@@ -156,7 +186,8 @@ class AuthService extends ChangeNotifier {
         _accessToken = data['data']['access'];
         _refreshToken = data['data']['refresh'];
         _user = UserModel.fromJson(data['data']['user']);
-        await _persistSession();
+        await _persistSession(rememberMe: rememberMe);
+        await saveRememberMe(rememberMe: rememberMe, email: email);
         _isLoading = false;
         notifyListeners();
         return true;
@@ -340,6 +371,13 @@ class AuthService extends ChangeNotifier {
     await prefs.remove('access_token');
     await prefs.remove('refresh_token');
     await prefs.remove('user_json');
+
+    // If "Remember Me" was disabled, clean up remembered credentials
+    final rememberMe = prefs.getBool(_kRememberMe) ?? false;
+    if (!rememberMe) {
+      await prefs.remove(_kRememberedEmail);
+      await prefs.remove(_kRememberMe);
+    }
     notifyListeners();
   }
 
@@ -359,10 +397,11 @@ class AuthService extends ChangeNotifier {
     return false;
   }
 
-  Future<void> _persistSession() async {
+  Future<void> _persistSession({bool rememberMe = true}) async {
     final prefs = await SharedPreferences.getInstance();
     if (_accessToken != null) await prefs.setString('access_token', _accessToken!);
     if (_refreshToken != null) await prefs.setString('refresh_token', _refreshToken!);
     if (_user != null) await prefs.setString('user_json', jsonEncode(_user!.toJson()));
+    await prefs.setBool(_kRememberMe, rememberMe);
   }
 }

@@ -6,6 +6,7 @@ import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../widgets/dashboard_sidebar.dart';
 import '../ui/widgets/top_nav_bar.dart';
+import '../ui/widgets/responsive_helper.dart';
 import 'properties_screen.dart';
 import 'units_screen.dart';
 import 'leases_screen.dart';
@@ -21,6 +22,7 @@ import 'communication/communication_inbox_screen.dart';
 import 'communication/announcements_screen.dart';
 import 'settings_screen.dart';
 import 'bank_reconciliation_screen.dart';
+import 'accounting/accounting_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/chat_provider.dart';
 
@@ -123,6 +125,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
     SidebarItem(icon: Icons.receipt_long_outlined, label: 'Rent Collection', key: 'invoices'),
     SidebarItem(icon: Icons.account_balance_wallet_outlined, label: 'Deposits & Charges', key: 'payments'),
     SidebarItem(icon: Icons.account_balance_outlined, label: 'Bank Reconciliation', key: 'bank_reconciliation'),
+    SidebarItem(icon: Icons.menu_book_outlined, label: 'Accounting & Ledger', key: 'accounting'),
     SidebarItem(icon: Icons.build_outlined, label: 'Maintenance', key: 'maintenance'),
     SidebarItem(icon: Icons.engineering_outlined, label: 'Vendors', key: 'vendors'),
     SidebarItem(icon: Icons.checklist_outlined, label: 'Inspections', key: 'inspections'),
@@ -137,7 +140,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
       backgroundColor: AppTheme.bgGreyGreen,
       body: LayoutBuilder(
         builder: (context, constraints) {
-          final isMobile = constraints.maxWidth < 900;
+          final isMobile = constraints.maxWidth < AppBreakpoints.sidebarCollapse;
 
           if (isMobile) {
             return Scaffold(
@@ -214,6 +217,8 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
         return const PaymentsScreen(isOwner: true);
       case 'bank_reconciliation':
         return const BankReconciliationScreen();
+      case 'accounting':
+        return const AccountingScreen();
       case 'maintenance':
         return const MaintenanceScreen(isOwner: true);
       case 'vendors':

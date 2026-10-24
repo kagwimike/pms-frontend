@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
+import 'responsive_helper.dart';
 
 /// Column descriptor for `ResponsiveDataTable`
 class ResponsiveColumn {
@@ -16,7 +17,7 @@ class ResponsiveColumn {
 }
 
 /// A responsive table component that automatically adapts based on screen size:
-/// - **Desktop / Tablet (>= breakpoint, default 650px)**: Displays a clean, structured table with a header row and aligned cells.
+/// - **Desktop / Tablet (>= breakpoint, default AppBreakpoints.tableToCard)**: Displays a clean, structured table with a header row and aligned cells.
 /// - **Mobile (< breakpoint)**: Automatically transforms each row into a beautiful, elevated Card with labeled fields.
 class ResponsiveDataTable<T> extends StatelessWidget {
   final List<ResponsiveColumn> columns;
@@ -35,7 +36,7 @@ class ResponsiveDataTable<T> extends StatelessWidget {
     this.buildMobileCard,
     this.onItemTap,
     this.emptyState,
-    this.breakpoint = 650.0,
+    this.breakpoint = AppBreakpoints.tableToCard,
   });
 
   @override

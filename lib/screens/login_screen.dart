@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import '../config.dart';
 import '../services/auth_service.dart';
 import '../widgets/google_auth/google_sign_in_section.dart';
+import '../ui/widgets/responsive_helper.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -18,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  FocusNode? _passwordFocusNode = FocusNode();
   bool _obscurePassword = true;
   bool _rememberMe = false;
   final _authService = AuthService();
@@ -26,6 +28,27 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
     _authService.addListener(_onAuthStateChanged);
+    _loadRememberedCredentials();
+  }
+
+  Future<void> _loadRememberedCredentials() async {
+    final rememberMe = await _authService.getRememberMePreference();
+    final savedEmail = await _authService.getRememberedEmail();
+    if (mounted) {
+      setState(() {
+        _rememberMe = rememberMe;
+        if (savedEmail != null && savedEmail.isNotEmpty) {
+          _emailController.text = savedEmail;
+        }
+      });
+      if (savedEmail != null && savedEmail.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _emailController.text.isNotEmpty) {
+            _passwordFocusNode?.requestFocus();
+          }
+        });
+      }
+    }
   }
 
   @override
@@ -33,6 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
     _authService.removeListener(_onAuthStateChanged);
     _emailController.dispose();
     _passwordController.dispose();
+    _passwordFocusNode?.dispose();
     super.dispose();
   }
 
@@ -63,6 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final success = await _authService.login(
       email: _emailController.text.trim(),
       password: _passwordController.text,
+      rememberMe: _rememberMe,
     );
 
     if (!mounted) return;
@@ -86,7 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, constraints) {
-          final isMobile = constraints.maxWidth < 800;
+          final isMobile = constraints.maxWidth < AppBreakpoints.authSplit;
           return Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -359,6 +384,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _passwordController,
+                  focusNode: _passwordFocusNode ??= FocusNode(),
                   obscureText: _obscurePassword,
                   decoration: _inputDecoration(
                     hint: '••••••••',
@@ -383,20 +409,36 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Remember me + Forgot
                 Row(
                   children: [
-                    SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: Checkbox(
-                        value: _rememberMe,
-                        onChanged: (val) => setState(() => _rememberMe = val ?? false),
-                        activeColor: AppTheme.teal,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                    InkWell(
+                      onTap: () => setState(() => _rememberMe = !_rememberMe),
+                      borderRadius: BorderRadius.circular(6),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: Checkbox(
+                                value: _rememberMe,
+                                onChanged: (val) => setState(() => _rememberMe = val ?? false),
+                                activeColor: AppTheme.teal,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Remember me',
+                              style: GoogleFonts.dmSans(
+                                fontSize: 13,
+                                color: _rememberMe ? AppTheme.navy : AppTheme.mutedText,
+                                fontWeight: _rememberMe ? FontWeight.w600 : FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Remember me',
-                      style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText),
                     ),
                     const Spacer(),
                     TextButton(

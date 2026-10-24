@@ -840,8 +840,8 @@ class ApiService {
 
   // ─── Helper: extract map/data object from response shape ───
   static Map<String, dynamic> extractMap(Map<String, dynamic> response) {
-    if (response.containsKey('data') && response['data'] is Map<String, dynamic>) {
-      return response['data'] as Map<String, dynamic>;
+    if (response.containsKey('data') && response['data'] is Map) {
+      return Map<String, dynamic>.from(response['data'] as Map);
     }
     return response;
   }
