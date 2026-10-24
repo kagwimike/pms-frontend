@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
+import '../ui/widgets/responsive_helper.dart';
 import 'package:intl/intl.dart';
 
 import 'communication/inspection_detail_screen.dart';
@@ -96,10 +97,19 @@ class _InspectionsScreenState extends State<InspectionsScreen> {
   @override
   Widget build(BuildContext context) {
     final filtered = _filteredInspections;
+    final isMobile = AppBreakpoints.isMobile(context);
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: Text('Unit Inspections & Settlements', style: GoogleFonts.inter(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18)),
+        title: Text(
+          isMobile ? 'Inspections' : 'Unit Inspections & Settlements',
+          style: GoogleFonts.inter(
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+            fontSize: isMobile ? 17 : 18,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
         backgroundColor: Colors.white,
         elevation: 0.5,
         actions: [
@@ -110,21 +120,39 @@ class _InspectionsScreenState extends State<InspectionsScreen> {
           ),
           if (widget.isOwner)
             Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => const AddInspectionDialog(),
-                  ).then((val) {
-                    if (val == true) _loadInspections();
-                  });
-                },
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('New Inspection'),
-                style: AppTheme.actionButtonStyle,
-              ),
-            )
+              padding: const EdgeInsets.only(right: 12.0),
+              child: isMobile
+                  ? IconButton.filled(
+                      tooltip: 'New Inspection',
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppTheme.primaryGreen,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      icon: const Icon(Icons.add, size: 20),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => const AddInspectionDialog(),
+                        ).then((val) {
+                          if (val == true) _loadInspections();
+                        });
+                      },
+                    )
+                  : ElevatedButton.icon(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => const AddInspectionDialog(),
+                        ).then((val) {
+                          if (val == true) _loadInspections();
+                        });
+                      },
+                      icon: const Icon(Icons.add, size: 18),
+                      label: const Text('New Inspection'),
+                      style: AppTheme.actionButtonStyle,
+                    ),
+            ),
         ],
       ),
       body: Column(
@@ -249,13 +277,17 @@ class _InspectionsScreenState extends State<InspectionsScreen> {
                                             children: [
                                               Row(
                                                 children: [
-                                                  Text(
-                                                    type == 'MOVE_IN' || type == 'CHECKIN'
-                                                        ? 'Move-In Inspection'
-                                                        : (type == 'MOVE_OUT' || type == 'CHECKOUT' ? 'Move-Out Inspection' : 'Routine Inspection'),
-                                                    style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 15),
+                                                  Expanded(
+                                                    child: Text(
+                                                      type == 'MOVE_IN' || type == 'CHECKIN'
+                                                          ? 'Move-In Inspection'
+                                                          : (type == 'MOVE_OUT' || type == 'CHECKOUT' ? 'Move-Out Inspection' : 'Routine Inspection'),
+                                                      style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 15),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
                                                   ),
-                                                  const Spacer(),
+                                                  const SizedBox(width: 8),
                                                   Container(
                                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                                     decoration: BoxDecoration(
@@ -277,27 +309,39 @@ class _InspectionsScreenState extends State<InspectionsScreen> {
                                               Text(
                                                 '$unitName • $tenantName',
                                                 style: TextStyle(color: Colors.grey.shade800, fontSize: 13, fontWeight: FontWeight.w500),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
                                               const SizedBox(height: 6),
-                                              Row(
+                                              Wrap(
+                                                crossAxisAlignment: WrapCrossAlignment.center,
+                                                spacing: 14,
+                                                runSpacing: 4,
                                                 children: [
-                                                  if (date != null) ...[
-                                                    Icon(Icons.calendar_today, size: 12, color: Colors.grey.shade600),
-                                                    const SizedBox(width: 4),
-                                                    Text(
-                                                      DateFormat('MMM d, yyyy').format(date),
-                                                      style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                                                  if (date != null)
+                                                    Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        Icon(Icons.calendar_today, size: 12, color: Colors.grey.shade600),
+                                                        const SizedBox(width: 4),
+                                                        Text(
+                                                          DateFormat('MMM d, yyyy').format(date),
+                                                          style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                                                        ),
+                                                      ],
                                                     ),
-                                                    const SizedBox(width: 14),
-                                                  ],
-                                                  if (deductions > 0) ...[
-                                                    Icon(Icons.money_off, size: 12, color: Colors.red.shade700),
-                                                    const SizedBox(width: 4),
-                                                    Text(
-                                                      'Deductions: KES ${deductions.toStringAsFixed(0)}',
-                                                      style: TextStyle(color: Colors.red.shade700, fontSize: 12, fontWeight: FontWeight.bold),
+                                                  if (deductions > 0)
+                                                    Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        Icon(Icons.money_off, size: 12, color: Colors.red.shade700),
+                                                        const SizedBox(width: 4),
+                                                        Text(
+                                                          'Deductions: KES ${deductions.toStringAsFixed(0)}',
+                                                          style: TextStyle(color: Colors.red.shade700, fontSize: 12, fontWeight: FontWeight.bold),
+                                                        ),
+                                                      ],
                                                     ),
-                                                  ],
                                                 ],
                                               ),
                                             ],
