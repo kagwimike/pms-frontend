@@ -3,14 +3,37 @@ import '../../theme/app_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class RoleExperienceSection extends StatefulWidget {
-  const RoleExperienceSection({super.key});
+  final int? selectedRoleIndex;
+  final ValueChanged<int>? onRoleChanged;
+
+  const RoleExperienceSection({
+    super.key,
+    this.selectedRoleIndex,
+    this.onRoleChanged,
+  });
 
   @override
   State<RoleExperienceSection> createState() => _RoleExperienceSectionState();
 }
 
 class _RoleExperienceSectionState extends State<RoleExperienceSection> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.selectedRoleIndex ?? 0;
+  }
+
+  @override
+  void didUpdateWidget(covariant RoleExperienceSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedRoleIndex != null && widget.selectedRoleIndex != _selectedIndex) {
+      setState(() {
+        _selectedIndex = widget.selectedRoleIndex!;
+      });
+    }
+  }
 
   final List<Map<String, dynamic>> _roles = [
     {
@@ -40,7 +63,7 @@ class _RoleExperienceSectionState extends State<RoleExperienceSection> {
     return Container(
       width: double.infinity,
       color: AppTheme.navy,
-      padding: const EdgeInsets.symmetric(vertical: 100, horizontal: 24),
+      padding: const EdgeInsets.symmetric(vertical: 56, horizontal: 24),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1200),
@@ -50,12 +73,12 @@ class _RoleExperienceSectionState extends State<RoleExperienceSection> {
                 'One platform. Every role.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.bricolageGrotesque(
-                  fontSize: 40,
+                  fontSize: 34,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),
               ),
-              const SizedBox(height: 64),
+              const SizedBox(height: 36),
               LayoutBuilder(
                 builder: (context, constraints) {
                   final isMobile = constraints.maxWidth < 768;
@@ -125,7 +148,10 @@ class _RoleExperienceSectionState extends State<RoleExperienceSection> {
                             final role = entry.value;
                             final isSelected = _selectedIndex == idx;
                             return InkWell(
-                              onTap: () => setState(() => _selectedIndex = idx),
+                              onTap: () {
+                                setState(() => _selectedIndex = idx);
+                                widget.onRoleChanged?.call(idx);
+                              },
                               child: Container(
                                 width: double.infinity,
                                 padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),

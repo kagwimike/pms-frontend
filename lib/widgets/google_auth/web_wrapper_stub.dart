@@ -6,6 +6,9 @@ void ensureGoogleSignInWebPlugin() {}
 Widget renderGsiButton({
   double? width,
   bool isSignUp = false,
+  bool isDark = true,
+  bool isPill = true,
 }) {
   return const SizedBox.shrink();
 }
+

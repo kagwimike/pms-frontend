@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../theme/app_theme.dart';
+import '../../../ui/widgets/responsive_helper.dart';
 import '../../../services/accounting_service.dart';
 import '../../../models/accounting_models.dart';
 
@@ -244,62 +245,114 @@ class _JournalEntriesTabState extends State<JournalEntriesTab> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = AppBreakpoints.isMobile(context);
+
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobile ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Journal Entries (${_entries.length})', style: GoogleFonts.bricolageGrotesque(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.navy)),
+              Expanded(
+                child: Text(
+                  'Journal Entries (${_entries.length})',
+                  style: GoogleFonts.bricolageGrotesque(
+                    fontSize: isMobile ? 16 : 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.navy,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
               ElevatedButton.icon(
                 onPressed: _showCreateJournalModal,
                 icon: const Icon(Icons.add, size: 16),
-                label: const Text('New Manual Journal'),
+                label: Text(isMobile ? 'New' : 'New Manual Journal'),
                 style: AppTheme.actionButtonStyle,
               ),
             ],
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: SizedBox(
-                  height: 40,
-                  child: TextField(
-                    onChanged: (v) {
-                      _searchQuery = v;
-                      _loadJournals();
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Search entry # or description...',
-                      prefixIcon: const Icon(Icons.search, size: 18),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      filled: true,
-                      fillColor: Colors.white,
+          if (isMobile) ...[
+            SizedBox(
+              height: 40,
+              child: TextField(
+                onChanged: (v) {
+                  _searchQuery = v;
+                  _loadJournals();
+                },
+                decoration: InputDecoration(
+                  hintText: 'Search entry # or description...',
+                  prefixIcon: const Icon(Icons.search, size: 18),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: ['ALL', 'POSTED', 'REVERSED'].map((st) {
+                  final isSel = _selectedStatus == st;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(st),
+                      selected: isSel,
+                      onSelected: (_) {
+                        setState(() => _selectedStatus = st);
+                        _loadJournals();
+                      },
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ] else
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 40,
+                    child: TextField(
+                      onChanged: (v) {
+                        _searchQuery = v;
+                        _loadJournals();
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Search entry # or description...',
+                        prefixIcon: const Icon(Icons.search, size: 18),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              ...['ALL', 'POSTED', 'REVERSED'].map((st) {
-                final isSel = _selectedStatus == st;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(st),
-                    selected: isSel,
-                    onSelected: (_) {
-                      setState(() => _selectedStatus = st);
-                      _loadJournals();
-                    },
-                  ),
-                );
-              }),
-            ],
-          ),
+                const SizedBox(width: 16),
+                ...['ALL', 'POSTED', 'REVERSED'].map((st) {
+                  final isSel = _selectedStatus == st;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(st),
+                      selected: isSel,
+                      onSelected: (_) {
+                        setState(() => _selectedStatus = st);
+                        _loadJournals();
+                      },
+                    ),
+                  );
+                }),
+              ],
+            ),
           const SizedBox(height: 20),
           Expanded(
             child: _loading

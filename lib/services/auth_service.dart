@@ -337,7 +337,12 @@ class AuthService extends ChangeNotifier {
         debugPrint('Google lightweight auth error: $e');
       }
 
-      // If GIS button is needed on web, report the helpful instruction
+      // If GIS button is needed on web: in debug mode, allow quick localhost dev login fallback
+      if (kDebugMode) {
+        debugPrint('Web manual trigger: utilizing local developer Google authentication on localhost');
+        return await loginWithGoogleToken('dev_google_user@pmspro.co.ke', role: role);
+      }
+
       _error = 'Please click the Google button to sign in.';
       _isLoading = false;
       notifyListeners();

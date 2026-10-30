@@ -14,6 +14,7 @@ class GoogleSignInSection extends StatefulWidget {
   final String? role;
   final VoidCallback? onSuccess;
   final Function(String message)? onError;
+  final bool isDark;
 
   const GoogleSignInSection({
     super.key,
@@ -21,6 +22,7 @@ class GoogleSignInSection extends StatefulWidget {
     this.role,
     this.onSuccess,
     this.onError,
+    this.isDark = true,
   });
 
   @override
@@ -64,24 +66,7 @@ class _GoogleSignInSectionState extends State<GoogleSignInSection> {
     setState(() {});
   }
 
-  Future<void> _handleDevLogin() async {
-    setState(() => _localProcessing = true);
-    final role = widget.role ?? 'OWNER';
-    final success = await _authService.signInWithGoogle(
-      devToken: 'dev_google_user@pmspro.co.ke',
-      role: role,
-    );
-    if (!mounted) return;
-    setState(() => _localProcessing = false);
-
-    if (success) {
-      widget.onSuccess?.call();
-    } else {
-      widget.onError?.call(_authService.error ?? 'Demo Google Sign-In failed');
-    }
-  }
-
-  Future<void> _handleNativeGoogleSignIn() async {
+  Future<void> _handleGoogleSignIn() async {
     setState(() => _localProcessing = true);
     final success = await _authService.signInWithGoogle(role: widget.role);
     if (!mounted) return;
@@ -97,114 +82,98 @@ class _GoogleSignInSectionState extends State<GoogleSignInSection> {
   @override
   Widget build(BuildContext context) {
     final buttonLabel = widget.isSignUp ? 'Sign up with Google' : 'Sign in with Google';
+    final isDark = widget.isDark;
 
     if (kIsWeb) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      return Stack(
+        alignment: Alignment.center,
         children: [
-          // Web Google Identity Services (GIS) Button Container with Loading Overlay
-          Stack(
+          Container(
+            height: 48,
             alignment: Alignment.center,
-            children: [
-              Container(
-                height: 46,
-                alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF160421) : Colors.white,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(
+                color: isDark ? Colors.white.withValues(alpha: 0.35) : AppTheme.border,
+                width: 1.2,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28),
+              child: gsi.renderGsiButton(
+                width: 380,
+                isSignUp: widget.isSignUp,
+                isDark: isDark,
+                isPill: true,
+              ),
+            ),
+          ),
+
+          // Smooth Loading Overlay while authenticating with PMS Pro backend
+          if (_isLoading)
+            Positioned.fill(
+              child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppTheme.border),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x0A000000),
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
+                  color: isDark ? const Color(0xE6160421) : const Color(0xF0FFFFFF),
+                  borderRadius: BorderRadius.circular(28),
+                  border: Border.all(
+                    color: isDark ? Colors.white.withValues(alpha: 0.4) : AppTheme.border,
+                    width: 1.2,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          isDark ? Colors.white : AppTheme.navy,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Connecting with Google...',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : AppTheme.navy,
+                      ),
                     ),
                   ],
                 ),
-                child: gsi.renderGsiButton(
-                  width: 320,
-                  isSignUp: widget.isSignUp,
-                ),
-              ),
-
-              // Smooth Loading Overlay while authenticating with PMS Pro backend
-              if (_isLoading)
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xF0FFFFFF),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppTheme.border),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.2,
-                            valueColor: AlwaysStoppedAnimation<Color>(AppTheme.navy),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          'Connecting with Google...',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.navy,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          ),
-
-          // Developer Quick-Test Option (Only visible in Debug Mode)
-          if (kDebugMode) ...[
-            const SizedBox(height: 8),
-            Center(
-              child: TextButton.icon(
-                onPressed: _isLoading ? null : _handleDevLogin,
-                icon: const Icon(Icons.flash_on_rounded, size: 14, color: AppTheme.mutedText),
-                label: Text(
-                  'Quick-test Google OAuth (Localhost Dev Mode)',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 12,
-                    color: AppTheme.mutedText,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-                style: TextButton.styleFrom(
-                  visualDensity: VisualDensity.compact,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                ),
               ),
             ),
-          ],
         ],
       );
     }
 
-    // Native Mobile (Android/iOS) and Desktop Button
+    // Native Mobile (Android/iOS) and Desktop Pill Button
     return SizedBox(
       height: 48,
       child: OutlinedButton(
-        onPressed: _isLoading ? null : _handleNativeGoogleSignIn,
+        onPressed: _isLoading ? null : _handleGoogleSignIn,
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: AppTheme.border),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          backgroundColor: Colors.white,
+          side: BorderSide(
+            color: isDark ? Colors.white.withValues(alpha: 0.35) : AppTheme.border,
+            width: 1.2,
+          ),
+          shape: const StadiumBorder(),
+          backgroundColor: isDark ? Colors.transparent : Colors.white,
           elevation: 0,
         ),
         child: _isLoading
-            ? const SizedBox(
+            ? SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.navy),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: isDark ? Colors.white : AppTheme.navy,
+                ),
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -217,9 +186,9 @@ class _GoogleSignInSectionState extends State<GoogleSignInSection> {
                   Text(
                     buttonLabel,
                     style: GoogleFonts.dmSans(
-                      fontSize: 14,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1F2937),
+                      color: isDark ? Colors.white : const Color(0xFF1F2937),
                     ),
                   ),
                 ],

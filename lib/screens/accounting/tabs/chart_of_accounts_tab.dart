@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../theme/app_theme.dart';
+import '../../../ui/widgets/responsive_helper.dart';
 import '../../../services/accounting_service.dart';
 import '../../../models/accounting_models.dart';
 
@@ -148,67 +149,118 @@ class _ChartOfAccountsTabState extends State<ChartOfAccountsTab> {
       return a.accountCode.toLowerCase().contains(q) || a.accountName.toLowerCase().contains(q) || a.category.toLowerCase().contains(q);
     }).toList();
 
+    final isMobile = AppBreakpoints.isMobile(context);
+
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobile ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Chart of Accounts (${filtered.length})', style: GoogleFonts.bricolageGrotesque(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.navy)),
+              Expanded(
+                child: Text(
+                  'Chart of Accounts (${filtered.length})',
+                  style: GoogleFonts.bricolageGrotesque(
+                    fontSize: isMobile ? 16 : 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.navy,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
               ElevatedButton.icon(
                 onPressed: _showAddAccountDialog,
                 icon: const Icon(Icons.add, size: 16),
-                label: const Text('New Account'),
+                label: Text(isMobile ? 'New' : 'New Account'),
                 style: AppTheme.actionButtonStyle,
               ),
             ],
           ),
           const SizedBox(height: 16),
           // Filter Chips & Search
-          Row(
-            children: [
-              Expanded(
-                child: SizedBox(
-                  height: 40,
-                  child: TextField(
-                    onChanged: (v) => setState(() => _searchQuery = v),
-                    decoration: InputDecoration(
-                      hintText: 'Search code or name...',
-                      prefixIcon: const Icon(Icons.search, size: 18),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.border)),
-                      filled: true,
-                      fillColor: Colors.white,
+          if (isMobile) ...[
+            SizedBox(
+              height: 40,
+              child: TextField(
+                onChanged: (v) => setState(() => _searchQuery = v),
+                decoration: InputDecoration(
+                  hintText: 'Search code or name...',
+                  prefixIcon: const Icon(Icons.search, size: 18),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.border)),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: ['ALL', 'ASSET', 'LIABILITY', 'EQUITY', 'REVENUE', 'EXPENSE'].map((t) {
+                  final isSel = _selectedType == t;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(t, style: GoogleFonts.dmSans(fontSize: 12, fontWeight: isSel ? FontWeight.w700 : FontWeight.w500, color: isSel ? Colors.white : AppTheme.navy)),
+                      selected: isSel,
+                      selectedColor: AppTheme.navy,
+                      backgroundColor: Colors.white,
+                      onSelected: (_) {
+                        setState(() => _selectedType = t);
+                        _loadAccounts();
+                      },
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ] else
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 40,
+                    child: TextField(
+                      onChanged: (v) => setState(() => _searchQuery = v),
+                      decoration: InputDecoration(
+                        hintText: 'Search code or name...',
+                        prefixIcon: const Icon(Icons.search, size: 18),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.border)),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: ['ALL', 'ASSET', 'LIABILITY', 'EQUITY', 'REVENUE', 'EXPENSE'].map((t) {
-                    final isSel = _selectedType == t;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
-                        label: Text(t, style: GoogleFonts.dmSans(fontSize: 12, fontWeight: isSel ? FontWeight.w700 : FontWeight.w500, color: isSel ? Colors.white : AppTheme.navy)),
-                        selected: isSel,
-                        selectedColor: AppTheme.navy,
-                        backgroundColor: Colors.white,
-                        onSelected: (_) {
-                          setState(() => _selectedType = t);
-                          _loadAccounts();
-                        },
-                      ),
-                    );
-                  }).toList(),
+                const SizedBox(width: 16),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: ['ALL', 'ASSET', 'LIABILITY', 'EQUITY', 'REVENUE', 'EXPENSE'].map((t) {
+                      final isSel = _selectedType == t;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: FilterChip(
+                          label: Text(t, style: GoogleFonts.dmSans(fontSize: 12, fontWeight: isSel ? FontWeight.w700 : FontWeight.w500, color: isSel ? Colors.white : AppTheme.navy)),
+                          selected: isSel,
+                          selectedColor: AppTheme.navy,
+                          backgroundColor: Colors.white,
+                          onSelected: (_) {
+                            setState(() => _selectedType = t);
+                            _loadAccounts();
+                          },
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           const SizedBox(height: 20),
           Expanded(
             child: _loading

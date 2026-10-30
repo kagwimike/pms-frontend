@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
-import '../widgets/google_auth/google_sign_in_section.dart';
 import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -79,18 +78,55 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool _isSubmitting = false;
 
-  final List<String> _counties = [
-    'Nairobi',
-    'Mombasa',
-    'Kiambu',
-    'Nakuru',
-    'Kisumu',
-    'Eldoret (Uasin Gishu)',
-    'Machakos',
+  // All 47 counties of Kenya (alphabetical)
+  final List<String> _counties = const [
+    'Baringo',
+    'Bomet',
+    'Bungoma',
+    'Busia',
+    'Elgeyo-Marakwet',
+    'Embu',
+    'Garissa',
+    'Homa Bay',
+    'Isiolo',
     'Kajiado',
+    'Kakamega',
+    'Kericho',
+    'Kiambu',
     'Kilifi',
+    'Kirinyaga',
+    'Kisii',
+    'Kisumu',
+    'Kitui',
+    'Kwale',
+    'Laikipia',
+    'Lamu',
+    'Machakos',
+    'Makueni',
+    'Mandera',
+    'Marsabit',
+    'Meru',
+    'Migori',
+    'Mombasa',
+    'Murang\'a',
+    'Nairobi',
+    'Nakuru',
+    'Nandi',
+    'Narok',
+    'Nyamira',
+    'Nyandarua',
     'Nyeri',
-    'Other County',
+    'Samburu',
+    'Siaya',
+    'Taita-Taveta',
+    'Tana River',
+    'Tharaka-Nithi',
+    'Trans Nzoia',
+    'Turkana',
+    'Uasin Gishu',
+    'Vihiga',
+    'Wajir',
+    'West Pokot',
   ];
 
   final List<Map<String, String>> _kenyanBanks = [
@@ -1080,26 +1116,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           const SizedBox(height: 18),
 
-          // Google Fast-Track Button
-          GoogleSignInSection(
-            isSignUp: true,
-            role: _selectedRoleType == 'LANDLORD' ? 'OWNER' : _selectedRoleType,
-            onSuccess: () => _navigateToDashboard(),
-            onError: (msg) => _showToast(msg, isError: true),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              const Expanded(child: Divider(color: Color(0xFFE5E7EB))),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text('or register manually below', style: GoogleFonts.dmSans(fontSize: 12, color: const Color(0xFF9CA3AF))),
-              ),
-              const Expanded(child: Divider(color: Color(0xFFE5E7EB))),
-            ],
-          ),
-          const SizedBox(height: 20),
-
           // Role cards (Agent, Landlord, Tenant)
           _buildSectionHeader('SELECT YOUR ACCOUNT TYPE', Icons.badge_outlined),
           const SizedBox(height: 10),
@@ -1167,6 +1183,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   flex: 4,
                   child: DropdownButtonFormField<String>(
                     initialValue: _selectedCounty,
+                    isExpanded: true,
+                    menuMaxHeight: 320,
                     decoration: _inputDecoration(
                       label: 'County / City',
                       hint: 'County',

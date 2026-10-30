@@ -22,6 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   FocusNode? _passwordFocusNode = FocusNode();
   bool _obscurePassword = true;
   bool _rememberMe = false;
+  bool _isNavigating = false;
   final _authService = AuthService();
 
   @override
@@ -67,6 +68,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _navigateToDashboard() {
+    if (_isNavigating) return;
+    _isNavigating = true;
     final role = _authService.user?.role ?? 'OWNER';
     if (role == 'OWNER' || role == 'ADMIN') {
       Navigator.of(context).pushReplacementNamed('/owner-dashboard');
@@ -117,7 +120,11 @@ class _LoginScreenState extends State<LoginScreen> {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFF0F766E), Color(0xFF14233B)],
+                colors: [
+                  Color(0xFF140320),
+                  Color(0xFF1B072C),
+                  Color(0xFF0F0418),
+                ],
               ),
             ),
             child: Center(
@@ -126,9 +133,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Container(
                   constraints: const BoxConstraints(maxWidth: 1000),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
+                    color: const Color(0xFF160421),
                     borderRadius: BorderRadius.circular(32),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                    border: Border.all(color: const Color(0xFF381552), width: 1.2),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x7F000000),
+                        blurRadius: 36,
+                        offset: Offset(0, 18),
+                      ),
+                    ],
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(32),
@@ -178,7 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF0F766E), Color(0xFF14233B)],
+          colors: [Color(0xFF1F0832), Color(0xFF0F2623)],
         ),
       ),
       child: Column(
@@ -229,7 +243,7 @@ class _LoginScreenState extends State<LoginScreen> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF0F766E), Color(0xFF14233B)],
+          colors: [Color(0xFF1F0832), Color(0xFF0F2623)],
         ),
       ),
       child: Column(
@@ -284,7 +298,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: Colors.white.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
             ),
@@ -330,8 +344,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildFormPanel() {
     return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 48),
+      color: const Color(0xFF160421),
+      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 44),
       child: ListenableBuilder(
         listenable: _authService,
         builder: (context, _) {
@@ -348,18 +362,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: GoogleFonts.bricolageGrotesque(
                     fontSize: 32,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.navy,
+                    color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Welcome back! Sign in to your account.',
                   style: GoogleFonts.dmSans(
-                    fontSize: 15,
-                    color: AppTheme.mutedText,
+                    fontSize: 14,
+                    color: const Color(0xFFBCA7D4),
                   ),
                 ),
-                const SizedBox(height: 36),
+                const SizedBox(height: 32),
 
                 // Email
                 _buildLabel('Email Address'),
@@ -367,6 +381,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
+                  style: const TextStyle(color: Colors.white, fontSize: 15),
+                  cursorColor: const Color(0xFFA855F7),
                   decoration: _inputDecoration(
                     hint: 'you@example.com',
                     icon: Icons.email_outlined,
@@ -377,7 +393,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
 
                 // Password
                 _buildLabel('Password'),
@@ -386,6 +402,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _passwordController,
                   focusNode: _passwordFocusNode ??= FocusNode(),
                   obscureText: _obscurePassword,
+                  style: const TextStyle(color: Colors.white, fontSize: 15),
+                  cursorColor: const Color(0xFFA855F7),
                   decoration: _inputDecoration(
                     hint: '••••••••',
                     icon: Icons.lock_outline,
@@ -393,7 +411,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                        color: AppTheme.mutedText,
+                        color: const Color(0xFFB580E2),
                         size: 20,
                       ),
                       onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
@@ -423,7 +441,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: Checkbox(
                                 value: _rememberMe,
                                 onChanged: (val) => setState(() => _rememberMe = val ?? false),
-                                activeColor: AppTheme.teal,
+                                activeColor: const Color(0xFFA855F7),
+                                checkColor: Colors.white,
+                                side: const BorderSide(color: Color(0xFF5B2282), width: 1.5),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                               ),
                             ),
@@ -432,7 +452,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               'Remember me',
                               style: GoogleFonts.dmSans(
                                 fontSize: 13,
-                                color: _rememberMe ? AppTheme.navy : AppTheme.mutedText,
+                                color: _rememberMe ? Colors.white : Colors.white70,
                                 fontWeight: _rememberMe ? FontWeight.w600 : FontWeight.w500,
                               ),
                             ),
@@ -446,22 +466,26 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextButton.styleFrom(padding: EdgeInsets.zero),
                       child: Text(
                         'Forgot password?',
-                        style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.teal, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.dmSans(
+                          fontSize: 13,
+                          color: const Color(0xFFD8B4FE),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 28),
 
-                // Login button
+                // ─── Sign In Button (Solid White Pill Button) ───
                 SizedBox(
-                  height: 52,
+                  height: 50,
                   child: ElevatedButton(
                     onPressed: _authService.isLoading ? null : _handleLogin,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.navy,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFF26053D),
+                      shape: const StadiumBorder(),
                       elevation: 0,
                     ),
                     child: _authService.isLoading
@@ -470,38 +494,60 @@ class _LoginScreenState extends State<LoginScreen> {
                             height: 22,
                             child: CircularProgressIndicator(
                               strokeWidth: 2.5,
-                              color: Colors.white,
+                              color: Color(0xFF26053D),
                             ),
                           )
                         : Text(
                             'Sign In',
-                            style: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w600),
+                            style: GoogleFonts.dmSans(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF26053D),
+                            ),
                           ),
                   ),
                 ),
-                const SizedBox(height: 24),
 
-                // Divider
-                Row(
-                  children: [
-                    const Expanded(child: Divider(color: AppTheme.border)),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'or',
-                        style: GoogleFonts.dmSans(fontSize: 13, color: AppTheme.mutedText),
+                // ─── Divider with purple lines and 'Or' ───
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 22),
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Divider(
+                          color: Color(0xFF582375),
+                          thickness: 1.2,
+                        ),
                       ),
-                    ),
-                    const Expanded(child: Divider(color: AppTheme.border)),
-                  ],
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'Or',
+                          style: GoogleFonts.dmSans(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ),
+                      const Expanded(
+                        child: Divider(
+                          color: Color(0xFF582375),
+                          thickness: 1.2,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 24),
 
-                // Social logins arranged vertically
+                // ─── Social Logins (Google & Facebook Pill Buttons) ───
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // Sign in with Google (Pill Button)
                     GoogleSignInSection(
+                      isDark: true,
                       onSuccess: () => _navigateToDashboard(),
                       onError: (msg) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -515,16 +561,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                     ),
                     const SizedBox(height: 12),
-                    _buildSocialButton(
-                      Icons.facebook,
-                      'Sign in with Facebook',
-                      iconColor: const Color(0xFF1877F2),
-                    ),
+                    // Sign in with Facebook (Pill Button)
+                    _buildFacebookButton(),
                   ],
                 ),
                 const SizedBox(height: 28),
 
-                // Sign up prompt (Question on top, Create Account link below)
+                // Sign up prompt
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -532,7 +575,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       "Don't have an account?",
                       style: GoogleFonts.dmSans(
                         fontSize: 14,
-                        color: AppTheme.mutedText,
+                        color: Colors.white60,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -549,7 +592,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           'Create Account',
                           style: GoogleFonts.dmSans(
                             fontSize: 15,
-                            color: AppTheme.teal,
+                            color: const Color(0xFFD8B4FE),
                             fontWeight: FontWeight.w700,
                             decoration: TextDecoration.underline,
                           ),
@@ -566,13 +609,52 @@ class _LoginScreenState extends State<LoginScreen> {
     ).animate().fadeIn(duration: 500.ms, delay: 200.ms).slideX(begin: 0.05);
   }
 
+  Widget _buildFacebookButton() {
+    return SizedBox(
+      height: 48,
+      child: OutlinedButton(
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Facebook sign-in will be available in the next release.'),
+              backgroundColor: const Color(0xFF1877F2),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          );
+        },
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.35), width: 1.2),
+          shape: const StadiumBorder(),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.facebook, size: 22, color: Colors.white),
+            const SizedBox(width: 10),
+            Text(
+              'Sign in with Facebook',
+              style: GoogleFonts.dmSans(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildLabel(String text) {
     return Text(
       text,
       style: GoogleFonts.dmSans(
         fontSize: 13,
         fontWeight: FontWeight.w600,
-        color: AppTheme.navy,
+        color: const Color(0xFFE9D5FF),
       ),
     );
   }
@@ -580,50 +662,26 @@ class _LoginScreenState extends State<LoginScreen> {
   InputDecoration _inputDecoration({required String hint, required IconData icon}) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: GoogleFonts.dmSans(fontSize: 14, color: AppTheme.mutedText.withValues(alpha: 0.5)),
-      prefixIcon: Icon(icon, size: 20, color: AppTheme.mutedText),
+      hintStyle: const TextStyle(fontSize: 14, color: Colors.white38),
+      prefixIcon: Icon(icon, size: 20, color: const Color(0xFFB580E2)),
       filled: true,
-      fillColor: AppTheme.bgGreyGreen,
+      fillColor: const Color(0xFF210931),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppTheme.border),
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFF451965)),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppTheme.border),
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFF451965)),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppTheme.teal, width: 2),
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFFA855F7), width: 1.8),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.red.shade300, width: 1.5),
-      ),
-    );
-  }
-
-  Widget _buildSocialButton(IconData icon, String label, {Color? iconColor, VoidCallback? onPressed}) {
-    return SizedBox(
-      height: 48,
-      child: OutlinedButton.icon(
-        onPressed: onPressed ?? () {},
-        icon: Icon(icon, size: 22, color: iconColor ?? AppTheme.navy),
-        label: Text(
-          label,
-          style: GoogleFonts.dmSans(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.navy,
-          ),
-        ),
-        style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: AppTheme.border),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          backgroundColor: Colors.white,
-          elevation: 0,
-        ),
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: Colors.red.shade400, width: 1.5),
       ),
     );
   }

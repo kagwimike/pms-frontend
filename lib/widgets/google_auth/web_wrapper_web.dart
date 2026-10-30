@@ -18,16 +18,18 @@ void ensureGoogleSignInWebPlugin() {
 Widget renderGsiButton({
   double? width,
   bool isSignUp = false,
+  bool isDark = true,
+  bool isPill = true,
 }) {
   try {
     ensureGoogleSignInWebPlugin();
     return gsi_web.renderButton(
       configuration: gsi_web.GSIButtonConfiguration(
         type: gsi_web.GSIButtonType.standard,
-        theme: gsi_web.GSIButtonTheme.outline,
+        theme: isDark ? gsi_web.GSIButtonTheme.filledBlack : gsi_web.GSIButtonTheme.outline,
         size: gsi_web.GSIButtonSize.large,
         text: isSignUp ? gsi_web.GSIButtonText.signupWith : gsi_web.GSIButtonText.signinWith,
-        shape: gsi_web.GSIButtonShape.rectangular,
+        shape: isPill ? gsi_web.GSIButtonShape.pill : gsi_web.GSIButtonShape.rectangular,
         logoAlignment: gsi_web.GSIButtonLogoAlignment.left,
         minimumWidth: width ?? 320,
       ),

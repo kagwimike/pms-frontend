@@ -10,7 +10,7 @@ class HowItWorksSection extends StatelessWidget {
     return Container(
       width: double.infinity,
       color: Colors.white,
-      padding: const EdgeInsets.symmetric(vertical: 100, horizontal: 24),
+      padding: const EdgeInsets.symmetric(vertical: 56, horizontal: 24),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1000),
@@ -20,12 +20,12 @@ class HowItWorksSection extends StatelessWidget {
                 'Get your property operation under control in four steps.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.bricolageGrotesque(
-                  fontSize: 40,
+                  fontSize: 34,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.navy,
                 ),
               ),
-              const SizedBox(height: 80),
+              const SizedBox(height: 36),
               LayoutBuilder(
                 builder: (context, constraints) {
                   final isMobile = constraints.maxWidth < 768;

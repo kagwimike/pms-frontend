@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
+import '../../ui/widgets/responsive_helper.dart';
 import 'tabs/accounting_dashboard_tab.dart';
 import 'tabs/chart_of_accounts_tab.dart';
 import 'tabs/general_ledger_tab.dart';
@@ -43,6 +44,7 @@ class _AccountingScreenState extends State<AccountingScreen> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = AppBreakpoints.isMobile(context);
     return Scaffold(
       backgroundColor: AppTheme.bgGreyGreen,
       body: Column(
@@ -50,7 +52,10 @@ class _AccountingScreenState extends State<AccountingScreen> with SingleTickerPr
         children: [
           // Professional Header Banner
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            padding: EdgeInsets.symmetric(
+              horizontal: isMobile ? 16 : 24,
+              vertical: isMobile ? 12 : 16,
+            ),
             decoration: const BoxDecoration(
               color: Colors.white,
               border: Border(bottom: BorderSide(color: AppTheme.border)),
@@ -58,58 +63,99 @@ class _AccountingScreenState extends State<AccountingScreen> with SingleTickerPr
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppTheme.navy,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(Icons.account_balance, color: Colors.white, size: 22),
-                    ),
-                    const SizedBox(width: 14),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Double-Entry Accounting & Ledger',
-                          style: GoogleFonts.bricolageGrotesque(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.navy,
-                          ),
-                        ),
-                        Text(
-                          'Compliant general ledger, chart of accounts, and financial reporting',
-                          style: GoogleFonts.dmSans(fontSize: 12, color: AppTheme.mutedText),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppTheme.teal.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppTheme.teal.withValues(alpha: 0.3)),
-                  ),
+                Expanded(
                   child: Row(
                     children: [
-                      const Icon(Icons.check_circle, size: 14, color: AppTheme.teal),
-                      const SizedBox(width: 6),
-                      Text(
-                        'BALANCED & AUDITED',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.teal,
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppTheme.navy,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.account_balance, color: Colors.white, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              isMobile ? 'Accounting & Ledger' : 'Double-Entry Accounting & Ledger',
+                              style: GoogleFonts.bricolageGrotesque(
+                                fontSize: isMobile ? 17 : 20,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.navy,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              isMobile
+                                  ? 'General ledger & financial reporting'
+                                  : 'Compliant general ledger, chart of accounts, and financial reporting',
+                              style: GoogleFonts.dmSans(fontSize: 12, color: AppTheme.mutedText),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(width: 8),
+                if (isMobile)
+                  Tooltip(
+                    message: 'Balanced & Audited',
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppTheme.teal.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppTheme.teal.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.check_circle, size: 14, color: AppTheme.teal),
+                          const SizedBox(width: 4),
+                          Text(
+                            'AUDITED',
+                            style: GoogleFonts.dmSans(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.teal,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppTheme.teal.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppTheme.teal.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.check_circle, size: 14, color: AppTheme.teal),
+                        const SizedBox(width: 6),
+                        Text(
+                          'BALANCED & AUDITED',
+                          style: GoogleFonts.dmSans(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.teal,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),
@@ -117,7 +163,7 @@ class _AccountingScreenState extends State<AccountingScreen> with SingleTickerPr
           // Sub-Tab Navigation Bar
           Container(
             color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24),
             child: TabBar(
               controller: _tabController,
               isScrollable: true,

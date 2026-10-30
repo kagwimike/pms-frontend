@@ -11,7 +11,7 @@ class LandingFooterSection extends StatelessWidget {
     return Container(
       width: double.infinity,
       color: AppTheme.navy,
-      padding: const EdgeInsets.only(top: 100, bottom: 40, left: 24, right: 24),
+      padding: const EdgeInsets.only(top: 52, bottom: 28, left: 24, right: 24),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1200),
@@ -26,7 +26,7 @@ class LandingFooterSection extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildBrand(),
-                        const SizedBox(height: 48),
+                        const SizedBox(height: 28),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -34,7 +34,7 @@ class LandingFooterSection extends StatelessWidget {
                             Expanded(child: _buildColumn('Solutions', ['Property Managers', 'Owners', 'Landlords', 'Caretakers', 'Tenants', 'Vendors'])),
                           ],
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 20),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -58,9 +58,9 @@ class LandingFooterSection extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(height: 80),
+              const SizedBox(height: 36),
               Container(height: 1, color: Colors.white.withValues(alpha: 0.1)),
-              const SizedBox(height: 32),
+              const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

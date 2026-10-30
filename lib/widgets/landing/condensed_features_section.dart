@@ -10,7 +10,7 @@ class CondensedFeaturesSection extends StatelessWidget {
     return Container(
       width: double.infinity,
       color: Colors.white,
-      padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 24),
+      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1200),
@@ -20,26 +20,26 @@ class CondensedFeaturesSection extends StatelessWidget {
                 'Everything you need to manage your properties.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.bricolageGrotesque(
-                  fontSize: 36,
+                  fontSize: 30,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.navy,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               const Text(
                 'A single platform for rent, tenants, maintenance, and communication.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 18, color: AppTheme.mutedText),
+                style: TextStyle(fontSize: 15, color: AppTheme.mutedText),
               ),
-              const SizedBox(height: 64),
+              const SizedBox(height: 28),
               LayoutBuilder(
                 builder: (context, constraints) {
                   final isMobile = constraints.maxWidth < 768;
-                  final double cardWidth = isMobile ? constraints.maxWidth : (constraints.maxWidth - 32) / 2;
+                  final double cardWidth = isMobile ? constraints.maxWidth : (constraints.maxWidth - 24) / 2;
 
                   return Wrap(
-                    spacing: 32,
-                    runSpacing: 32,
+                    spacing: 24,
+                    runSpacing: 24,
                     children: [
                       _buildFeatureCard(
                         width: cardWidth,
@@ -91,16 +91,16 @@ class CondensedFeaturesSection extends StatelessWidget {
       width: width,
       decoration: BoxDecoration(
         color: AppTheme.bgGreyGreen,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppTheme.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 200,
+            height: 150,
             decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
               image: DecorationImage(
                 image: AssetImage(imagePath),
                 fit: BoxFit.cover,
@@ -109,31 +109,31 @@ class CondensedFeaturesSection extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Icon(icon, color: AppTheme.teal, size: 24),
-                    const SizedBox(width: 12),
+                    Icon(icon, color: AppTheme.teal, size: 22),
+                    const SizedBox(width: 10),
                     Text(
                       title,
                       style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.navy,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 Text(
                   description,
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     color: AppTheme.mutedText,
-                    height: 1.5,
+                    height: 1.45,
                   ),
                 ),
               ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../theme/app_theme.dart';
+import '../../../ui/widgets/responsive_helper.dart';
 import '../../../services/accounting_service.dart';
 import '../../../models/accounting_models.dart';
 
@@ -85,8 +86,10 @@ class _GeneralLedgerTabState extends State<GeneralLedgerTab> {
     final totalCredits = double.tryParse(_ledgerData?['total_credits']?.toString() ?? '0') ?? 0.0;
     final transactions = (_ledgerData?['transactions'] as List<dynamic>? ?? []);
 
+    final isMobile = AppBreakpoints.isMobile(context);
+
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobile ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -124,16 +127,34 @@ class _GeneralLedgerTabState extends State<GeneralLedgerTab> {
 
           // Ledger Header Summary Cards
           if (accountMap != null)
-            Row(
-              children: [
-                _summaryBox('Opening Balance', _currency.format(openingBalance), AppTheme.navy),
-                const SizedBox(width: 12),
-                _summaryBox('Period Debits', _currency.format(totalDebits), AppTheme.teal),
-                const SizedBox(width: 12),
-                _summaryBox('Period Credits', _currency.format(totalCredits), Colors.orange.shade800),
-                const SizedBox(width: 12),
-                _summaryBox('Closing Balance', _currency.format(closingBalance), closingBalance >= 0 ? AppTheme.primaryGreen : Colors.red.shade700),
-              ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isNarrow = constraints.maxWidth < 650;
+                if (isNarrow) {
+                  final cardWidth = (constraints.maxWidth - 10) / 2;
+                  return Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      _summaryCard('Opening Balance', _currency.format(openingBalance), AppTheme.navy, width: cardWidth),
+                      _summaryCard('Period Debits', _currency.format(totalDebits), AppTheme.teal, width: cardWidth),
+                      _summaryCard('Period Credits', _currency.format(totalCredits), Colors.orange.shade800, width: cardWidth),
+                      _summaryCard('Closing Balance', _currency.format(closingBalance), closingBalance >= 0 ? AppTheme.primaryGreen : Colors.red.shade700, width: cardWidth),
+                    ],
+                  );
+                }
+                return Row(
+                  children: [
+                    _summaryBox('Opening Balance', _currency.format(openingBalance), AppTheme.navy),
+                    const SizedBox(width: 12),
+                    _summaryBox('Period Debits', _currency.format(totalDebits), AppTheme.teal),
+                    const SizedBox(width: 12),
+                    _summaryBox('Period Credits', _currency.format(totalCredits), Colors.orange.shade800),
+                    const SizedBox(width: 12),
+                    _summaryBox('Closing Balance', _currency.format(closingBalance), closingBalance >= 0 ? AppTheme.primaryGreen : Colors.red.shade700),
+                  ],
+                );
+              },
             ),
           const SizedBox(height: 20),
 
@@ -215,6 +236,22 @@ class _GeneralLedgerTabState extends State<GeneralLedgerTab> {
             Text(value, style: GoogleFonts.bricolageGrotesque(fontSize: 16, fontWeight: FontWeight.w700, color: color)),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _summaryCard(String label, String value, Color color, {required double width}) {
+    return Container(
+      width: width,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppTheme.border)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: GoogleFonts.dmSans(fontSize: 11, color: AppTheme.mutedText)),
+          const SizedBox(height: 4),
+          Text(value, style: GoogleFonts.bricolageGrotesque(fontSize: 14, fontWeight: FontWeight.w700, color: color)),
+        ],
       ),
     );
   }

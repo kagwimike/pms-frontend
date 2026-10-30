@@ -17,7 +17,7 @@ class LocationsGridSection extends StatelessWidget {
     return Container(
       width: double.infinity,
       color: Colors.white,
-      padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 24),
+      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1200),
@@ -26,21 +26,23 @@ class LocationsGridSection extends StatelessWidget {
               Text(
                 'BUILT FOR EVERY PORTFOLIO',
                 style: GoogleFonts.bricolageGrotesque(
-                  color: const Color(0xFF6B66FF),
+                  color: AppTheme.teal,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.5,
+                  fontSize: 13,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               Text(
                 'Empowering Property Managers Everywhere',
+                textAlign: TextAlign.center,
                 style: GoogleFonts.bricolageGrotesque(
-                  fontSize: 40,
+                  fontSize: MediaQuery.of(context).size.width < 768 ? 26 : 32,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.navy,
                 ),
               ),
-              const SizedBox(height: 48),
+              const SizedBox(height: 28),
               
               LayoutBuilder(
                 builder: (context, constraints) {
@@ -48,7 +50,7 @@ class LocationsGridSection extends StatelessWidget {
                   if (isMobile) {
                     return Column(
                       children: locations.map((loc) => Padding(
-                        padding: const EdgeInsets.only(bottom: 24),
+                        padding: const EdgeInsets.only(bottom: 16),
                         child: _buildLocationCard(
                           width: constraints.maxWidth,
                           title: loc['title']!,
@@ -59,7 +61,7 @@ class LocationsGridSection extends StatelessWidget {
                     );
                   }
                   
-                  final cardWidth = (constraints.maxWidth - 72) / 4;
+                  final cardWidth = (constraints.maxWidth - 48) / 4;
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: locations.map((loc) => _buildLocationCard(
@@ -83,16 +85,16 @@ class LocationsGridSection extends StatelessWidget {
       width: width,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppTheme.border),
       ),
       child: Column(
         children: [
           Container(
-            height: 240,
-            margin: const EdgeInsets.all(8),
+            height: 150,
+            margin: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               image: DecorationImage(
                 image: AssetImage(imagePath),
                 fit: BoxFit.cover,
@@ -100,23 +102,23 @@ class LocationsGridSection extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
             child: Column(
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.navy),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.navy),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6B66FF),
-                    borderRadius: BorderRadius.circular(16),
+                    color: AppTheme.teal.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     count,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12),
+                    style: const TextStyle(color: AppTheme.teal, fontWeight: FontWeight.bold, fontSize: 11),
                   ),
                 ),
               ],
