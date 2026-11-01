@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 import '../ui/widgets/responsive_helper.dart';
+import '../widgets/plan_upgrade_modal.dart';
 import 'unit_details_screen.dart';
 
 class UnitsScreen extends StatefulWidget {
@@ -16,6 +18,7 @@ class _UnitsScreenState extends State<UnitsScreen> {
   final ApiService _apiService = ApiService();
   bool _isLoading = true;
   List<dynamic> _units = [];
+  Map<String, dynamic>? _subscriptionData;
   String? _error;
   String _statusFilter = 'ALL';
 
@@ -23,6 +26,20 @@ class _UnitsScreenState extends State<UnitsScreen> {
   void initState() {
     super.initState();
     _loadUnits();
+    _loadSubscriptionInfo();
+  }
+
+  Future<void> _loadSubscriptionInfo() async {
+    final role = AuthService().user?.role;
+    if (role != 'OWNER' && role != 'AGENT' && role != 'ADMIN') return;
+    try {
+      final res = await _apiService.getCurrentSubscription();
+      if (res['success'] == true && mounted) {
+        setState(() {
+          _subscriptionData = res['data'];
+        });
+      }
+    } catch (_) {}
   }
 
   Future<void> _loadUnits() async {
@@ -56,14 +73,135 @@ class _UnitsScreenState extends State<UnitsScreen> {
   }
 
   void _showAddUnitDialog() {
+    // Check if current subscription is expired or quota is reached
+    if (_subscriptionData != null) {
+      final sub = _subscriptionData!['subscription'];
+      final status = sub?['status']?.toString().toUpperCase();
+      final plan = sub?['plan'];
+      final maxUnits = (plan?['max_units'] as num?)?.toInt() ?? 100;
+      final currentUnits = _units.length;
+
+      if (status == 'EXPIRED') {
+        PlanUpgradeModal.show(
+          context,
+          message: 'Your PMS Pro subscription has expired. Please renew your plan in Subscription & Billing to add more units.',
+        );
+        return;
+      }
+
+      if (currentUnits >= maxUnits) {
+        PlanUpgradeModal.show(
+          context,
+          message: 'Plan limit reached: You have $currentUnits of $maxUnits units on your ${plan?['name'] ?? 'current'} plan. Upgrade to the next tier to add more units.',
+        );
+        return;
+      }
+    }
+
     ResponsiveHelper.showResponsiveDialog(
       context: context,
       builder: (context) => const AddUnitDialog(),
     ).then((result) {
       if (result == true) {
         _loadUnits();
+        _loadSubscriptionInfo();
       }
     });
+  }
+
+  Widget _buildQuotaBanner(bool isSmall) {
+    if (_subscriptionData == null) return const SizedBox.shrink();
+
+    final sub = _subscriptionData!['subscription'];
+    final plan = sub?['plan'];
+    final planName = plan?['name'] ?? 'Starter';
+    final maxUnits = (plan?['max_units'] as num?)?.toInt() ?? 25;
+    final currentUnits = _units.length;
+    final progress = (currentUnits / maxUnits).clamp(0.0, 1.0);
+    final isNearLimit = currentUnits >= maxUnits * 0.8;
+    final isLimitReached = currentUnits >= maxUnits;
+
+    Color barColor = AppTheme.teal;
+    if (isLimitReached) {
+      barColor = const Color(0xFFEF4444);
+    } else if (isNearLimit) {
+      barColor = const Color(0xFFF59E0B);
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(top: 14, bottom: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: barColor.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: barColor.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            isLimitReached ? Icons.warning_amber_rounded : Icons.pie_chart_outline_rounded,
+            color: barColor,
+            size: 20,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '$planName Plan: $currentUnits of $maxUnits units used',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.navy,
+                      ),
+                    ),
+                    Text(
+                      '${(progress * 100).toInt()}%',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: barColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 5,
+                    backgroundColor: barColor.withValues(alpha: 0.15),
+                    valueColor: AlwaysStoppedAnimation<Color>(barColor),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          TextButton(
+            onPressed: () => PlanUpgradeModal.show(context),
+            style: TextButton.styleFrom(
+              foregroundColor: barColor,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Upgrade', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
+                SizedBox(width: 4),
+                Icon(Icons.arrow_forward_rounded, size: 13),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -111,6 +249,7 @@ class _UnitsScreenState extends State<UnitsScreen> {
               ),
             ],
           ),
+          _buildQuotaBanner(isSmall),
           SizedBox(height: isSmall ? 16 : 24),
           // Filter Bar - Wrap instead of Row
           Wrap(
@@ -419,8 +558,11 @@ class _AddUnitDialogState extends State<AddUnitDialog> {
       List<dynamic> props = [];
       if (response.containsKey('data') && response['data'] is List) {
         props = response['data'];
-      } else if (response.containsKey('results') && response['results'] is List) props = response['results'];
-      else props = response.values.firstWhere((v) => v is List, orElse: () => []);
+      } else if (response.containsKey('results') && response['results'] is List) {
+        props = response['results'];
+      } else {
+        props = response.values.firstWhere((v) => v is List, orElse: () => []);
+      }
       
       setState(() {
         _properties = props;
@@ -480,8 +622,21 @@ class _AddUnitDialogState extends State<AddUnitDialog> {
         );
       }
     } catch (e) {
+      final errorMsg = e is ApiException ? e.message : e.toString();
+      final isQuotaError = (e is ApiException && e.requiresUpgrade) ||
+          errorMsg.toLowerCase().contains('quota') ||
+          errorMsg.toLowerCase().contains('plan limit') ||
+          errorMsg.toLowerCase().contains('expired') ||
+          errorMsg.toLowerCase().contains('upgrade');
+
+      if (isQuotaError && mounted) {
+        Navigator.of(context).pop();
+        PlanUpgradeModal.show(context, message: errorMsg);
+        return;
+      }
+
       setState(() {
-        _error = 'Failed to create unit: Please check your connection and try again.';
+        _error = errorMsg.isNotEmpty ? errorMsg : 'Failed to create unit. Please try again.';
       });
     } finally {
       if (mounted) {

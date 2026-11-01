@@ -5,7 +5,17 @@ import 'auth_service.dart';
 
 class ApiException implements Exception {
   final String message;
-  ApiException(this.message);
+  final String? code;
+  final bool requiresUpgrade;
+  final int? statusCode;
+
+  ApiException(
+    this.message, {
+    this.code,
+    this.requiresUpgrade = false,
+    this.statusCode,
+  });
+
   @override
   String toString() => message;
 }
@@ -27,7 +37,16 @@ class ApiService {
       final body = jsonDecode(res.body);
       if (res.statusCode >= 400) {
         final message = body['message'] ?? 'An error occurred (Status ${res.statusCode})';
-        throw ApiException(message);
+        final code = body['code']?.toString();
+        final requiresUpgrade = body['requires_upgrade'] == true ||
+            code == 'UNIT_QUOTA_EXCEEDED' ||
+            code == 'SUBSCRIPTION_EXPIRED';
+        throw ApiException(
+          message,
+          code: code,
+          requiresUpgrade: requiresUpgrade,
+          statusCode: res.statusCode,
+        );
       }
       return body;
     } catch (e) {
@@ -826,6 +845,55 @@ class ApiService {
   String getDocumentDownloadUrl(dynamic id, {bool preview = false}) {
     final base = '${AppConfig.apiBaseUrl}/documents/$id/${preview ? 'preview' : 'download'}';
     return base;
+  }
+
+  // ─── Subscriptions & Billing ───
+  Future<Map<String, dynamic>> getSubscriptionPlans() async {
+    final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/subscriptions/plans'), headers: _headers);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> getCurrentSubscription() async {
+    final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/subscriptions/current'), headers: _headers);
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> initiateMpesaSubscription({
+    required String planCode,
+    String billingCycle = 'MONTHLY',
+    required String phoneNumber,
+  }) async {
+    final res = await http.post(
+      Uri.parse('${AppConfig.apiBaseUrl}/subscriptions/initiate-mpesa'),
+      headers: _headers,
+      body: jsonEncode({
+        'planCode': planCode,
+        'billingCycle': billingCycle,
+        'phoneNumber': phoneNumber,
+      }),
+    );
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> confirmSubscriptionPayment(
+    dynamic invoiceId, {
+    String? mpesaReceiptNumber,
+  }) async {
+    final res = await http.post(
+      Uri.parse('${AppConfig.apiBaseUrl}/subscriptions/confirm-payment'),
+      headers: _headers,
+      body: jsonEncode({
+        'invoiceId': invoiceId,
+        if (mpesaReceiptNumber != null && mpesaReceiptNumber.isNotEmpty)
+          'mpesaReceiptNumber': mpesaReceiptNumber,
+      }),
+    );
+    return _processResponse(res);
+  }
+
+  Future<Map<String, dynamic>> getSubscriptionInvoices() async {
+    final res = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/subscriptions/invoices'), headers: _headers);
+    return _processResponse(res);
   }
 
   // ─── Helper: extract list from any response shape ───

@@ -11,11 +11,17 @@ import 'settings/rental_finance_settings_section.dart';
 import 'settings/integrations_settings_section.dart';
 import 'settings/security_audit_settings_section.dart';
 import 'settings/notifications_settings_section.dart';
+import 'settings/subscription_billing_section.dart';
 
 class SettingsScreen extends StatefulWidget {
   final bool isOwner;
+  final String initialCategory;
 
-  const SettingsScreen({super.key, this.isOwner = true});
+  const SettingsScreen({
+    super.key,
+    this.isOwner = true,
+    this.initialCategory = 'account',
+  });
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -25,7 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _api = ApiService();
   final _auth = AuthService();
 
-  String _selectedCategory = 'account';
+  late String _selectedCategory;
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -40,6 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
+    _selectedCategory = widget.initialCategory;
     _loadAllSettings();
   }
 
@@ -97,13 +104,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final isStaff = ['ADMIN', 'OWNER'].contains(_auth.user?.role);
 
     final categories = [
-      _Category('account', 'Profile & Account', Icons.person_outline),
-      _Category('appearance', 'Theme & Display', Icons.palette_outlined),
-      _Category('security', 'Security & Audit', Icons.shield_outlined),
-      if (isStaff) _Category('organization', 'Organization', Icons.business_outlined),
-      if (isStaff) _Category('rental_finance', 'Rental & Finance', Icons.account_balance_wallet_outlined),
-      if (isStaff) _Category('notifications', 'Notifications', Icons.notifications_none_outlined),
-      if (isStaff) _Category('integrations', 'Integrations', Icons.hub_outlined),
+      const _Category('account', 'Profile & Account', Icons.person_outline),
+      const _Category('appearance', 'Theme & Display', Icons.palette_outlined),
+      const _Category('security', 'Security & Audit', Icons.shield_outlined),
+      if (isStaff) const _Category('subscription', 'Subscription & Billing', Icons.card_membership_rounded),
+      if (isStaff) const _Category('organization', 'Organization', Icons.business_outlined),
+      if (isStaff) const _Category('rental_finance', 'Rental & Finance', Icons.account_balance_wallet_outlined),
+      if (isStaff) const _Category('notifications', 'Notifications', Icons.notifications_none_outlined),
+      if (isStaff) const _Category('integrations', 'Integrations', Icons.hub_outlined),
     ];
 
     if (_isLoading) {
@@ -132,6 +140,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 'Configure your profile, security, policies, and role-scoped settings.',
                 style: GoogleFonts.dmSans(fontSize: 14, color: muted),
               ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline, size: 18, color: Color(0xFFEF4444)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _errorMessage!,
+                          style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 24),
 
               if (isMobile)
@@ -233,6 +264,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       case 'appearance':
         return _buildAppearanceSection(cardBg, borderColor, textColor, muted, isDark);
+      case 'subscription':
+        return SubscriptionBillingSection(
+          onSubscriptionChanged: _loadAllSettings,
+        );
       case 'organization':
         return OrganizationSettingsSection(
           initialConfig: _orgConfig,

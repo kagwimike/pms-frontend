@@ -6,6 +6,7 @@ import '../../widgets/quick_create_modal.dart';
 import 'package:provider/provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../screens/settings_screen.dart';
+import '../../theme/app_theme.dart';
 
 class TopNavBar extends StatefulWidget {
   final bool isCompact;
@@ -27,11 +28,26 @@ class _TopNavBarState extends State<TopNavBar> {
   final AuthService _auth = AuthService();
   final ApiService _apiService = ApiService();
   int _unreadCount = 0;
+  Map<String, dynamic>? _subscriptionData;
 
   @override
   void initState() {
     super.initState();
     _loadUnreadCount();
+    _loadSubscriptionStatus();
+  }
+
+  Future<void> _loadSubscriptionStatus() async {
+    final role = _auth.user?.role;
+    if (role != 'OWNER' && role != 'ADMIN' && role != 'AGENT') return;
+    try {
+      final res = await _apiService.getCurrentSubscription();
+      if (res['success'] == true && mounted) {
+        setState(() {
+          _subscriptionData = res['data'];
+        });
+      }
+    } catch (_) {}
   }
 
   Future<void> _loadUnreadCount() async {
@@ -168,20 +184,9 @@ class _TopNavBarState extends State<TopNavBar> {
           
           const SizedBox(width: 12),
           
-          // Upgrade Button
+          // Subscription Status Pill (Trial / Active / Expired)
           if (!widget.isCompact)
-            TextButton.icon(
-              onPressed: () {},
-              style: TextButton.styleFrom(
-                backgroundColor: const Color(0xFF27624D).withValues(alpha: 0.1),
-                foregroundColor: const Color(0xFF27624D),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                minimumSize: const Size(0, 36),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-              ),
-              icon: const Icon(Icons.rocket_launch_outlined, size: 16),
-              label: const Text('Upgrade', style: TextStyle(fontWeight: FontWeight.w600)),
-            ),
+            _buildSubscriptionPill(context, isDark),
           
           const SizedBox(width: 16),
           
@@ -345,6 +350,115 @@ class _TopNavBarState extends State<TopNavBar> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _openSubscriptionSettings() {
+    final isOwner = _auth.user?.role == 'OWNER' || _auth.user?.role == 'ADMIN' || _auth.user?.role == 'AGENT';
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            title: const Text('Settings'),
+            elevation: 0.5,
+          ),
+          body: SettingsScreen(isOwner: isOwner, initialCategory: 'subscription'),
+        ),
+      ),
+    ).then((_) => _loadSubscriptionStatus());
+  }
+
+  Widget _buildSubscriptionPill(BuildContext context, bool isDark) {
+    final role = _auth.user?.role;
+    // Only show subscription pill to workspace operators
+    if (role != 'OWNER' && role != 'ADMIN' && role != 'AGENT') {
+      return const SizedBox.shrink();
+    }
+
+    final sub = _subscriptionData?['subscription'];
+    final status = sub?['status']?.toString().toUpperCase() ?? 'TRIALING';
+    final plan = sub?['plan'];
+    final planName = plan?['name'] ?? 'Professional';
+    final daysRemaining = _subscriptionData?['days_remaining'] ?? 14;
+
+    Color badgeBg;
+    Color textColor;
+    IconData icon;
+    String label;
+    String actionLabel;
+
+    if (status == 'EXPIRED') {
+      badgeBg = const Color(0xFFEF4444).withValues(alpha: 0.12);
+      textColor = const Color(0xFFEF4444);
+      icon = Icons.warning_amber_rounded;
+      label = 'Plan Expired';
+      actionLabel = 'Renew';
+    } else if (status == 'TRIALING') {
+      badgeBg = const Color(0xFFF59E0B).withValues(alpha: 0.14);
+      textColor = isDark ? const Color(0xFFFBBF24) : const Color(0xFFB45309);
+      icon = Icons.hourglass_top_rounded;
+      label = 'Trial: ${daysRemaining}d left';
+      actionLabel = 'Upgrade';
+    } else if (status == 'GRACE_PERIOD') {
+      badgeBg = const Color(0xFFF97316).withValues(alpha: 0.14);
+      textColor = const Color(0xFFEA580C);
+      icon = Icons.access_time_filled;
+      label = 'Grace Period';
+      actionLabel = 'Renew';
+    } else {
+      // ACTIVE
+      badgeBg = AppTheme.teal.withValues(alpha: 0.12);
+      textColor = AppTheme.teal;
+      icon = Icons.verified_rounded;
+      label = '$planName Plan';
+      actionLabel = 'Billing';
+    }
+
+    return Tooltip(
+      message: 'Workspace Subscription ($label) - Click to manage or upgrade',
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: _openSubscriptionSettings,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: badgeBg,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: textColor.withValues(alpha: 0.35)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 15, color: textColor),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: textColor,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  actionLabel,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -6,6 +6,7 @@ import '../../models/unit_model.dart';
 import '../../models/unit_type_model.dart';
 import '../../providers/property_provider.dart';
 import '../../providers/unit_provider.dart';
+import '../../widgets/plan_upgrade_modal.dart';
 
 class UnitsScreen extends StatefulWidget {
   const UnitsScreen({super.key});
@@ -734,8 +735,20 @@ class _UnitEditorModalState extends State<_UnitEditorModal> {
         SnackBar(content: Text(editing ? 'Unit updated' : 'Unit created')),
       );
     } else {
+      final errorMsg = provider.errorMessage ?? 'Failed to save unit';
+      final isQuotaError = errorMsg.toLowerCase().contains('quota') ||
+          errorMsg.toLowerCase().contains('plan limit') ||
+          errorMsg.toLowerCase().contains('expired') ||
+          errorMsg.toLowerCase().contains('upgrade');
+
+      if (isQuotaError && mounted) {
+        Navigator.pop(context);
+        PlanUpgradeModal.show(context, message: errorMsg);
+        return;
+      }
+
       messenger.showSnackBar(
-        SnackBar(content: Text(provider.errorMessage ?? 'Failed to save unit')),
+        SnackBar(content: Text(errorMsg)),
       );
     }
   }
