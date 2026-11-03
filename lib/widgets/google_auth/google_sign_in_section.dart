@@ -22,7 +22,7 @@ class GoogleSignInSection extends StatefulWidget {
     this.role,
     this.onSuccess,
     this.onError,
-    this.isDark = true,
+    this.isDark = false,
   });
 
   @override
@@ -92,7 +92,7 @@ class _GoogleSignInSectionState extends State<GoogleSignInSection> {
             height: 48,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF160421) : Colors.white,
+              color: isDark ? AppTheme.darkSurface : Colors.white,
               borderRadius: BorderRadius.circular(28),
               border: Border.all(
                 color: isDark ? Colors.white.withValues(alpha: 0.35) : AppTheme.border,
@@ -115,7 +115,7 @@ class _GoogleSignInSectionState extends State<GoogleSignInSection> {
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xE6160421) : const Color(0xF0FFFFFF),
+                  color: isDark ? AppTheme.darkSurface.withValues(alpha: 0.9) : const Color(0xF0FFFFFF),
                   borderRadius: BorderRadius.circular(28),
                   border: Border.all(
                     color: isDark ? Colors.white.withValues(alpha: 0.4) : AppTheme.border,
@@ -183,12 +183,15 @@ class _GoogleSignInSectionState extends State<GoogleSignInSection> {
                     painter: GoogleLogoPainter(),
                   ),
                   const SizedBox(width: 10),
-                  Text(
-                    buttonLabel,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.white : const Color(0xFF1F2937),
+                  Flexible(
+                    child: Text(
+                      buttonLabel,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : const Color(0xFF1F2937),
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
